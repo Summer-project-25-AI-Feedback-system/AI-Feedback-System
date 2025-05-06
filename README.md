@@ -1,54 +1,65 @@
-# React + TypeScript + Vite
+# AI-Feedback System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p>
+  
+<img alt="React Badge" src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" />
 
-Currently, two official plugins are available:
+<img alt="Vite Badge" src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" />
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<img alt="Nodejs Badge" src="https://img.shields.io/badge/Node%20js-3c873a?style=for-the-badge&logo=nodedotjs&logoColor=white" />
 
-## Expanding the ESLint configuration
+<img alt="TypeScript Badge" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+<img alt="Tailwind_CSS Badge" src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
+<img alt="chatGPT" src="https://img.shields.io/badge/chatGPT-0A0A0A?style=for-the-badge&logo=openai&logoColor=white" />
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+</p>
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+## :books: Table of the content
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
-```
+- [Introduction](#bulb-introduction)
+- [Start](#rocket-start)
+- [UI Diagram](#art-ui-diagram)
+- [API document](#page_with_curl-api-document)
+- [Deployment](#gear-deployment)
+- [Video Demonstration](#video_camera-video-demonstration)
+- [Contacts](#email-contacts)
+
+## :bulb: Introduction
+
+This system is designed as a full-stack web application that automates feedback for programming assignments submitted via GitHub Classroom. It consists of three core layers—Frontend, Backend, and External Integrations—each playing a distinct role in delivering real-time, AI-assisted insights to both students and teachers.
+
+The Frontend, built with React, provides a user-friendly interface for authentication, repository selection, and feedback visualization. It communicates with the Backend via RESTful APIs.
+
+The Backend, powered by Node.js and Express, handles user authentication through GitHub OAuth, fetches repository data via the GitHub API, and manages prompt generation and communication with AI services like OpenAI or DeepSeek. It also formats and returns feedback, summaries, and CSV exports to the frontend.
+
+The system leverages external APIs—GitHub API for accessing student submissions and AI APIs for analyzing code and generating feedback—without requiring a dedicated database for the MVP.
+
+Components are containerized using Docker to ensure portability and consistent development environments.
+
+## :rocket: Start
+
+TBD
+
+## :art: UI Diagram
+
+TBD
+
+## :video_camera: Video Demonstration
+
+TBD
+
+## :page_with_curl: API document
+
+TBD
+
+## :gear: Deployment
+
+TBD
+
+## :email: Contacts
+
+- [Helmi Griffiths](https://github.com/HelmiGr) - Full Stack developer
+- [Sam Chou](https://github.com/FuzzyKala) - Full Stack developer
+- [Ville Matilainen](https://github.com/vima20) - Full Stack developer

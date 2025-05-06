@@ -8,7 +8,7 @@ Organize your features and user stories into broader epics.
 
 #### Goal: Enable secure and seamless access to student repositories using GitHub's API.
 
-##### User stories
+##### User stories:
 
 - As a teacher, I want to authenticate with GitHub using OAuth so I can securely access student repositories.
 - As a teacher, I want to view a list of student repositories so I can select which ones to analyze.
@@ -23,7 +23,7 @@ Organize your features and user stories into broader epics.
 
 #### Goal: Provide automated, context-aware feedback on student code using LLMs.
 
-##### User stories
+##### User stories:
 
 - As a teacher, I want to automatically generate prompts from student code so I can get feedback from the AI without manual formatting.
 - As a system, I need to send these prompts to an AI engine (OpenAI or DeepSeek) and receive relevant, structured feedback.
@@ -39,7 +39,7 @@ Organize your features and user stories into broader epics.
 
 #### Goal: Display AI feedback clearly and helpfully for each student’s submission.
 
-##### User stories
+##### User stories:
 
 - As a teacher, I want to view AI-generated feedback per student with syntax-highlighted code.
 - As a teacher, I want common issues or coding patterns visually highlighted.
@@ -54,7 +54,7 @@ Organize your features and user stories into broader epics.
 
 #### Goal: Aggregate and export meaningful summaries of student feedback and performance.
 
-##### User stories
+##### User stories:
 
 - As a teacher, I want to generate group-level summaries to identify widespread challenges.
 - As a teacher, I want to export all feedback and points as a CSV file for grading or archival purposes.
@@ -69,7 +69,7 @@ Organize your features and user stories into broader epics.
 
 #### Goal: Support scalable development and deployment through reliable tooling.
 
-##### User stories
+##### User stories:
 
 - As a developer, I want Docker containers for both frontend and backend to ensure consistency across environments.
 - As a team, I want a basic CI/CD pipeline to run tests and deploy the app automatically (optional in MVP).

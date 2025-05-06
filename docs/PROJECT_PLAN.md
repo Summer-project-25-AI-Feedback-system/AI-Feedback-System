@@ -2,14 +2,13 @@
 
 ## Team Members and Roles
 
-- Name – Role (e.g., Frontend lead, Backend/API, AI prompt designer, Documentation)
 - [Helmi Griffiths](https://github.com/HelmiGr) - Full Stack developer
 - [Sam Chou](https://github.com/FuzzyKala) - Full Stack developer
 - [Ville Matilainen](https://github.com/vima20) - Full Stack developer
 
 ## Working Methods
 
-- Weekly check-ins on [day/time]
+- Daily check-ins on working day[11 AM]
 - GitHub [Project board](https://github.com/orgs/Summer-project-25-AI-Feedback-system/projects/1) to manage tasks
 - Time tracking in [Time Sheet](https://unioulu-my.sharepoint.com/:x:/r/personal/t3chsa01_students_oamk_fi/_layouts/15/Doc.aspx?sourcedoc=%7B7D663633-A44C-426A-B63D-24642BF47BFC%7D&file=worked_hours.xlsx&action=default&mobileredirect=true)
 

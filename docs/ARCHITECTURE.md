@@ -15,13 +15,13 @@ Components are containerized using Docker to ensure portability and consistent d
 ## Components
 
 - **Frontend (React):**
-  Built with React and Vite, the frontend provides the user interface for students and teachers. It includes components for login, repository selection, feedback display, and summary reports. Optionally styled with Tailwind CSS, it communicates with the backend via a structured API service layer using axios.
+  Built with React and Vite, the frontend provides the user interface for teachers. It includes components for login, repository selection, feedback display, and summary reports. Styled with Tailwind CSS, it communicates with the backend via a structured API service layer using axios.
 
 - **Backend (Node.js/Express):** Handles authentication, repository reading, AI communication.
   Acts as the main server layer. It handles GitHub OAuth authentication, fetches repositories, processes requests, and orchestrates interactions between GitHub and AI services. Follows a modular structure with routes, controllers, and services.
 
-- **AI Integration (OpenAI/DeepSeek):** Generates feedback from student code.
-  Uses AI APIs to analyze student code, generate insightful feedback, and suggest improvements. Prompts are crafted dynamically based on submission context and user roles (teacher/student).
+- **AI Integration (OpenAI):** Generates feedback from student code.
+  Uses AI APIs to analyze student code, generate insightful feedback, and suggest improvements. Prompts are crafted dynamically based on submission context and user roles (teacher).
 
 - **GitHub API:** Used to access student repositories and commit history.
   Integrates GitHub REST APIs to authenticate users, list repositories, and fetch student assignment code and metadata (e.g., commits, diffs). It serves as the bridge between GitHub Classroom and the feedback system.
