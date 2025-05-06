@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Modern JS features
+    "module": "ESNext", // Use native ES Modules
+    "moduleResolution": "node", // Node-style resolution
+    "rootDir": ".", // Source root
+    "outDir": "./dist", // Output folder
+    "esModuleInterop": true, // Support commonjs modules
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["./"], // Include all files in this folder
+  "exclude": ["node_modules", "dist"] // Avoid compiling node_modules and output
+}
