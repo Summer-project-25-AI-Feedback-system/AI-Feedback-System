@@ -2,6 +2,10 @@
 
 export default function Header() {
   return (
-    <div>Header</div>
+    <div>
+      <h1 className="text-3xl font-bold underline">
+        Header
+      </h1>
+    </div>
   )
 }
