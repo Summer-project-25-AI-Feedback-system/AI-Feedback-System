@@ -1,0 +1,35 @@
+# Ignore node_modules (since we install dependencies in Docker)
+node_modules/
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Ignore environment files (make sure not to include .env files in your image)
+.env
+.env.* 
+
+# Ignore Git-related files and directories
+.git/
+.gitignore
+
+# Ignore Docker files (you don't want to copy the Dockerfile itself)
+Dockerfile
+.dockerignore
+
+# Ignore package manager logs (npm-debug.log, yarn-error.log)
+npm-debug.log*
+yarn-error.log*
+
+# Ignore build and dist directories (as the image should be built within Docker)
+dist/
+build/
+
+# Ignore any IDE specific files (like VS Code, JetBrains, etc.)
+.vscode/
+.idea/
+
+# Ignore other temporary files
+*.bak
+*.orig
