@@ -19,4 +19,4 @@ RUN npm run build
 EXPOSE 5000
 
 # 7. Start the server
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
