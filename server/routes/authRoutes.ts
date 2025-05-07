@@ -1,25 +1,22 @@
 import { Router } from "express";
+import passport from "../utils/passport";
+import dotenv from "dotenv";
+import { githubCallback } from "../controllers/authController";
 
+dotenv.config();
 const router = Router();
 
-// Example login route
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
+// GitHub login route (start GitHub OAuth flow)
+router.get(
+  "/login",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
 
-  // Dummy authentication logic
-  if (email === "test@example.com" && password === "password123") {
-    res.status(200).json({ token: "fake-jwt-token", user: { email } });
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
-  }
-});
-
-// Example register route
-router.post("/register", (req, res) => {
-  const { email, password } = req.body;
-
-  // Here you'd insert logic to save user to DB
-  res.status(201).json({ message: "User registered successfully", email });
-});
+// GitHub callback route (handle GitHub OAuth response)
+router.get(
+  "/callback",
+  passport.authenticate("github", { failureRedirect: "/login" }),
+  githubCallback
+);
 
 export default router;
