@@ -4,10 +4,10 @@ import Footer from '../components/Footer';
 
 export default function MainLayout() {
   return (
-    <>
-        <Header />
-        <main><Outlet /></main>
-        <Footer />
-    </>
+    <div>
+      <Header />
+       <main className="flex items-center justify-center min-h-screen"><Outlet /></main>
+      <Footer />
+    </div>
   )
 }
