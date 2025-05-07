@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020", // Modern JS features
-    "module": "ESNext", // Use native ES Modules
+    "module": "CommonJS",
     "moduleResolution": "node", // Node-style resolution
     "rootDir": ".", // Source root
     "outDir": "./dist", // Output folder
