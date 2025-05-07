@@ -33,3 +33,8 @@ build/
 # Ignore other temporary files
 *.bak
 *.orig
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
