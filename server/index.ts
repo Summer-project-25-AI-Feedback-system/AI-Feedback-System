@@ -1,4 +1,6 @@
 import express from "express";
+import session from "express-session";
+import passport from "./utils/passport";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
@@ -11,6 +13,19 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Set up session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // test message
 app.get("/api/message", (req, res) => {
