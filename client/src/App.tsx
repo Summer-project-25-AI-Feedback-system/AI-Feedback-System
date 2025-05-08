@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<LoginPage />} />
-          <Route path="repos" element={<RepositoryListPage />} />
+          <Route path="/repos" element={<RepositoryListPage />} />
         </Route>
       </Routes>
     </Router>

@@ -1,7 +1,7 @@
 interface BasicHeadingProps {
     heading: string;
     styling?: string;
-  }
+}
 
 export default function BasicHeading({ heading, styling = "" }: BasicHeadingProps) {
   return (
