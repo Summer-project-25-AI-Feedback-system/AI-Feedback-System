@@ -21,7 +21,9 @@ dist-ssr
 # Environment variables
 .env.*
 client/.env.*
+client/.env
 server/.env.*
+server/.env
 
 
 # Editor directories and files
