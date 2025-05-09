@@ -1,7 +1,8 @@
+import BasicList from "../../components/basicList/BasicList";
 
 
 export default function RepositoryListPage() {
   return (
-    <div> RepositoryListPage </div>
+    <BasicList></BasicList>
   )
 }
