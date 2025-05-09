@@ -4,6 +4,7 @@ import passport from "./utils/passport";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
+import githubRoutes from "./routes/githubRoutes";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.get("/api/message", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/github", githubRoutes);
 
 // Error handling
 app.use(
