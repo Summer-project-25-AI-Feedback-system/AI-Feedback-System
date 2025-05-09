@@ -24,6 +24,7 @@ client/.env.*
 client/.env
 server/.env.*
 server/.env
+server/.env.vault
 
 
 # Editor directories and files
@@ -41,4 +42,5 @@ server/.env
 
 # System files
 .DS_Store
+
 
