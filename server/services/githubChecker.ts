@@ -1,32 +1,62 @@
+// services/githubChecker.ts
 import { Octokit } from "@octokit/rest";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_PAT,
 });
 
-export async function getStudentRepos(org: string) {
+export async function findAssignmentRepositories(
+  org: string,
+  assignmentPrefix: string
+) {
+  const ownerIdentifier = `organization ${org}`;
+
+  console.log(
+    `Searching for repositories with prefix '${assignmentPrefix}' under ${ownerIdentifier}...`
+  );
+
+  const repositories: any[] = [];
+  let query = `fork:true ${assignmentPrefix} in:name`;
+
+  query += ` org:${org}`;
+
   try {
-    const response = await octokit.rest.repos.listForOrg({
-      org, // GitHub organization name
-      type: "all", // Can filter by repo type (public, private, forks, etc.)
+    const iterator = octokit.paginate.iterator(octokit.rest.search.repos, {
+      q: query,
+      per_page: 100,
     });
 
-    const repos = response.data;
+    for await (const { data: reposPage } of iterator) {
+      for (const repo of reposPage) {
+        if (
+          repo.name
+            .toLowerCase()
+            .includes((assignmentPrefix || "").toLowerCase())
+        ) {
+          repositories.push({
+            name: repo.name,
+            owner: repo.owner?.login || "unknown",
+            url: repo.html_url,
+            lastPush: repo.pushed_at,
+          });
+        }
+      }
+    }
 
-    // Filter only student assignment repos (optional)
-    const studentRepos = repos.filter(
-      (repo: any) => repo.name.includes("assignment") // Adjust according to your repo naming convention
-    );
-
-    console.log(studentRepos);
-
-    return studentRepos.map((repo: any) => ({
-      name: repo.name,
-      url: repo.html_url,
-      lastPush: repo.pushed_at,
-    }));
-  } catch (error) {
-    console.error("Error fetching repos:", error);
+    console.log(`Found ${repositories.length} matching repositories.`);
+    return repositories;
+  } catch (error: any) {
+    console.error(`Error fetching repositories: ${error.message}`);
+    if (error.status === 401) {
+      console.error("Authentication failed. Check your GitHub PAT.");
+    } else if (error.status === 404) {
+      console.error(`Organization/User not found.`);
+    } else if (error.status === 403) {
+      console.error("Rate limit or scope issue.");
+    }
     return [];
   }
 }
