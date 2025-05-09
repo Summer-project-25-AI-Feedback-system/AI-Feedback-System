@@ -1,29 +1,25 @@
-import axios from "axios";
+import { Octokit } from "@octokit/rest";
 
-const GITHUB_ORG = process.env.GITHUB_ORG!;
-const GITHUB_PAT = process.env.GITHUB_PAT!;
-
-const github = axios.create({
-  baseURL: "https://api.github.com",
-  headers: {
-    Authorization: `Bearer ${GITHUB_PAT}`,
-    Accept: "application/vnd.github.v3+json",
-  },
+const octokit = new Octokit({
+  auth: process.env.GITHUB_PAT,
 });
 
-export async function getStudentRepos() {
+export async function getStudentRepos(org: string) {
   try {
-    const response = await github.get(`/orgs/${GITHUB_ORG}/repos`, {
-      params: { per_page: 100 },
+    const response = await octokit.rest.repos.listForOrg({
+      org, // GitHub organization name
+      type: "all", // Can filter by repo type (public, private, forks, etc.)
     });
 
     const repos = response.data;
 
     // Filter only student assignment repos (optional)
     const studentRepos = repos.filter(
-      (repo: any) => repo.name.includes("assignment") // adjust based on your naming pattern
+      (repo: any) => repo.name.includes("assignment") // Adjust according to your repo naming convention
     );
+
     console.log(studentRepos);
+
     return studentRepos.map((repo: any) => ({
       name: repo.name,
       url: repo.html_url,
