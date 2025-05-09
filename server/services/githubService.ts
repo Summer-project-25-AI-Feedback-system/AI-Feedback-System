@@ -4,9 +4,21 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_PAT,
-});
+const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
+
+export async function getOrganizations() {
+  try {
+    const response = await octokit.rest.orgs.listForAuthenticatedUser();
+    return response.data.map((org) => ({
+      login: org.login,
+      description: org.description,
+      avatarUrl: org.avatar_url,
+    }));
+  } catch (error: any) {
+    console.error("Error fetching organizations:", error.message);
+    throw new Error("Failed to fetch organizations");
+  }
+}
 
 export async function findAssignmentRepositories(
   org: string,

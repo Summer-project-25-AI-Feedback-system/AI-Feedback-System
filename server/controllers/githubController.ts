@@ -1,5 +1,20 @@
 import { Request, Response } from "express";
-import { findAssignmentRepositories } from "../services/githubChecker";
+import {
+  findAssignmentRepositories,
+  getOrganizations,
+} from "../services/githubService";
+
+export async function handleGetOrganizations(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const orgs = await getOrganizations();
+    res.json(orgs);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch organizations" });
+  }
+}
 
 export async function handleGetStudentRepos(
   req: Request,
