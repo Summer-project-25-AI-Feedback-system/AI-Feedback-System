@@ -20,7 +20,7 @@ export async function getOrganizations() {
   }
 }
 
-export async function findAssignmentRepositories(
+export async function getAssignmentRepositories(
   org: string,
   assignmentPrefix: string
 ) {
