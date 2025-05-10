@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/loginPage/LoginPage';
 import RepositoryListPage from './pages/repositoryListPage/RepositoryListPage';
-import './App.css'
 
 function App() {
   return (
@@ -10,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<LoginPage />} />
-          <Route path="repos" element={<RepositoryListPage />} />
+          <Route path="/repos" element={<RepositoryListPage />} />
         </Route>
       </Routes>
     </Router>
