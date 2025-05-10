@@ -99,3 +99,24 @@ export async function getFileContents(
 
   return contents;
 }
+
+export async function getRepositoryFileTree(owner: string, repo: string) {
+  const { data: refData } = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: "heads/main", // or use repo.default_branch if dynamic
+  });
+  console.log();
+
+  const { data: treeData } = await octokit.rest.git.getTree({
+    owner,
+    repo,
+    tree_sha: refData.object.sha,
+    recursive: "true",
+  });
+  console.log(treeData);
+
+  return treeData.tree
+    .filter((item) => item.type === "blob") // Only files
+    .map((item) => item.path);
+}

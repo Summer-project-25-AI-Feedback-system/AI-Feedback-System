@@ -3,6 +3,7 @@ import {
   getAssignmentRepositories,
   getOrganizations,
   getFileContents,
+  getRepositoryFileTree,
 } from "../services/github/githubService";
 
 export async function handleGetOrganizations(
@@ -40,24 +41,72 @@ export async function handleGetStudentRepos(
   }
 }
 
-export async function handleGetFileContents(
+// export async function handleGetFileContents(
+//   req: Request,
+//   res: Response
+// ): Promise<void> {
+//   const { owner, repo, files } = req.body;
+
+//   if (!owner || !repo || !Array.isArray(files)) {
+//     res
+//       .status(400)
+//       .json({ error: "Missing required parameters: owner, repo, files[]" });
+//     return;
+//   }
+
+//   try {
+//     const contents = await getFileContents(owner, repo, files);
+//     res.json(contents);
+//   } catch (error) {
+//     console.error("Failed to fetch file contents:", error);
+//     res.status(500).json({ error: "Failed to fetch file contents" });
+//   }
+// }
+
+// export async function handleGetRepoTree(
+//   req: Request,
+//   res: Response
+// ): Promise<void> {
+//   const { owner, repo } = req.query;
+
+//   if (!owner || !repo) {
+//     res.status(400).json({ error: "Missing required parameters" });
+//     return;
+//   }
+
+//   try {
+//     const tree = await getRepositoryFileTree(owner as string, repo as string);
+//     res.json(tree);
+//   } catch (error) {
+//     console.error("Failed to fetch repo tree:", error);
+//     res.status(500).json({ error: "Failed to fetch repository tree" });
+//   }
+// }
+
+export async function handleRepoFilesWithTree(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { owner, repo, files } = req.body;
+  const { owner, repo } = req.query;
 
-  if (!owner || !repo || !Array.isArray(files)) {
-    res
-      .status(400)
-      .json({ error: "Missing required parameters: owner, repo, files[]" });
+  if (!owner || !repo) {
+    res.status(400).json({ error: "Missing required parameters: owner, repo" });
     return;
   }
 
   try {
-    const contents = await getFileContents(owner, repo, files);
+    const tree = await getRepositoryFileTree(owner as string, repo as string);
+    const filteredTree = tree.filter(
+      (path): path is string => path !== undefined
+    );
+    const contents = await getFileContents(
+      owner as string,
+      repo as string,
+      filteredTree
+    );
     res.json(contents);
   } catch (error) {
-    console.error("Failed to fetch file contents:", error);
-    res.status(500).json({ error: "Failed to fetch file contents" });
+    console.error("Failed to fetch tree and contents:", error);
+    res.status(500).json({ error: "Failed to fetch files" });
   }
 }
