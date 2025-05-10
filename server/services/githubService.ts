@@ -20,6 +20,27 @@ export async function getOrganizations() {
   }
 }
 
+export async function getRepoCollaborators(org: string, repo: string) {
+  try {
+    const response = await octokit.rest.repos.listCollaborators({
+      owner: org,
+      repo,
+      affiliation: "direct", // or 'all'
+    });
+
+    return response.data.map((user) => ({
+      login: user.login,
+      id: user.id,
+      avatarUrl: user.avatar_url,
+      htmlUrl: user.html_url,
+      permissions: user.permissions,
+    }));
+  } catch (error: any) {
+    console.error(`Error fetching collaborators for ${repo}:`, error.message);
+    return [];
+  }
+}
+
 export async function getAssignmentRepositories(
   org: string,
   assignmentPrefix: string
@@ -53,6 +74,7 @@ export async function getAssignmentRepositories(
             owner: repo.owner?.login || "unknown",
             url: repo.html_url,
             lastPush: repo.pushed_at,
+            collaborators: await getRepoCollaborators(org, repo.name),
           });
         }
       }
