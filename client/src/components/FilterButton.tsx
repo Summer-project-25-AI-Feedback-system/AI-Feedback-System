@@ -12,8 +12,8 @@ export default function FilterButton({ buttonText, items }: FilterButtonProps) {
 
   return (
     <div className="relative inline-block">
-        <button onClick={toggleDropdown} className="flex items-center justify-between border border-[#D9D9D9] px-4 py-3 h-[40px] rounded-full w-fit gap-2">
-            <span className="text-sm text-[#1E1E1E] text-[16px]">{buttonText}</span>
+        <button onClick={toggleDropdown} className="flex items-center justify-between border border-[#D9D9D9] px-4 py-3 h-[40px] rounded-full w-fit min-w-[95px] gap-2">
+            <span className="text-xs sm:text-sm text-[#1E1E1E]">{buttonText}</span>
             <BiSolidDownArrow className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "" : "rotate-180"}`}/>
         </button>
         {isOpen && (
