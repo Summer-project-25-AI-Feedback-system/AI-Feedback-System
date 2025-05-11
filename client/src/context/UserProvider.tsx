@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
-import type { User } from "../types/UserInfo";
+import type { UserContextType, User } from "../types/UserInfo";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -31,17 +31,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     refreshUser();
   }, []);
 
+  const contextValue: UserContextType = {
+    user,
+    loggedIn: !!user,
+    refreshUser,
+    logout,
+    login,
+  };
+
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        loggedIn: !!user,
-        refreshUser,
-        logout,
-        login,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 };

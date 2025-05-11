@@ -5,14 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/useUser";
 
 export default function LoginPage() {
-  const userContext = useUser();
+  const { loggedIn, login } = useUser();
   const navigate = useNavigate();
-
-  if (!userContext) {
-    throw new Error("User context is missing");
-  }
-
-  const { loggedIn, login } = userContext;
 
   useEffect(() => {
     if (loggedIn) navigate("/repos");
