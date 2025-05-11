@@ -1,39 +1,28 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import { useUser } from "../context/useUser";
 
 export default function MainLayout() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const userContext = useUser();
+  const { user, loggedIn, refreshUser, logout } = userContext ?? {};
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    axios
-      .get(`${baseUrl}/api/auth/me`, { withCredentials: true })
-      .then((res) => {
-        console.log("Authenticated user data:", res.data);
-        setLoggedIn(!!res.data.user);
-        if (res.data.user) navigate("/repos");
-      })
-      .catch(() => {
-        setLoggedIn(false);
-      });
-  }, []);
+    refreshUser?.().then(() => {
+      if (user && location.pathname === "/") {
+        navigate("/repos");
+      }
+    });
+  }, [refreshUser, navigate, user, location.pathname]);
 
   const handleHeaderButtonClick = async () => {
     if (loggedIn) {
-      try {
-        await axios.get(`${baseUrl}/api/auth/logout`, {
-          withCredentials: true,
-        });
-        setLoggedIn(false);
-        navigate("/");
-      } catch (error) {
-        console.error("Logout failed", error);
-      }
+      await logout?.();
+      navigate("/");
     } else {
       navigate("/");
     }
@@ -41,7 +30,7 @@ export default function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header loggedIn={loggedIn} onClick={handleHeaderButtonClick} />
+      <Header loggedIn={!!loggedIn} onClick={handleHeaderButtonClick} />
       <main className="flex-1 flex items-center justify-center">
         <Outlet />
       </main>

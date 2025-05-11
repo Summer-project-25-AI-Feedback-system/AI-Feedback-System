@@ -6,7 +6,7 @@ export const githubCallback = (req: Request, res: Response) => {
 };
 
 export const getCurrentUser = (req: Request, res: Response) => {
-  console.log("Session info:", req.session);
+  // console.log("Session info:", req.session);
   if (req.isAuthenticated()) {
     res.json({ user: req.user });
   } else {

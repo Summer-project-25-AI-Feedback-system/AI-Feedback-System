@@ -1,12 +1,22 @@
 import BasicHeading from "../../components/BasicHeading";
+import { useEffect } from "react";
 import LoginButton from "./LoginButton";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/useUser";
 
 export default function LoginPage() {
-  const GITHUB_OAUTH_URL = "http://localhost:5000/api/auth/login";
+  const userContext = useUser();
+  const navigate = useNavigate();
 
-  const handleLoginClick = () => {
-    window.location.href = GITHUB_OAUTH_URL;
-  };
+  if (!userContext) {
+    throw new Error("User context is missing");
+  }
+
+  const { loggedIn, login } = userContext;
+
+  useEffect(() => {
+    if (loggedIn) navigate("/repos");
+  }, [loggedIn, navigate]);
 
   return (
     <div className="flex flex-col gap-20">
@@ -21,7 +31,7 @@ export default function LoginPage() {
         </p>
       </div>
       <div className="flex flex-col items-center gap-10 px-4">
-        <LoginButton onClick={handleLoginClick} />
+        <LoginButton onClick={login} />
         <p className="text-[16px] text-center">
           Only GitHub Classroom instructors can access this tool.
         </p>

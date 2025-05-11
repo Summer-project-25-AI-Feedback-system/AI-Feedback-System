@@ -24,6 +24,6 @@ router.get(
 );
 
 router.get("/me", getCurrentUser);
-router.get("/logout", logout); // <- new endpoint
+router.get("/logout", logout);
 
 export default router;
