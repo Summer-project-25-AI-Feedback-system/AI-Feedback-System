@@ -11,7 +11,7 @@ export default function RepoButton({ text }: RepoButtonProps) {
   const handleClick = () => {
     setIsSpinning(true);
 
-    // todo: add refreshing functionality 
+    // TODO: add refreshing functionality 
     setTimeout(() => {
       setIsSpinning(false); 
     }, 1000); 

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
@@ -8,18 +9,21 @@ import RepoButton from "./RepoButton";
 // delete mock data once data from backend is retrieved
 const mockRepoList: RepoInfo[] = [
   {
+    id: "1",
     repoPicture: "aa",
     name: "Algebra Repo",
     amountOfStudents: "23",
     timeOfLastUpdate: "2 hours ago",
   },
   {
+    id: "2",
     repoPicture: "aa",
     name: "Biology Repo Biology",
     amountOfStudents: "18",
     timeOfLastUpdate: "Yesterday",
   },
   {
+    id: "3",
     repoPicture: "aa",
     name: "History Repo",
     amountOfStudents: "30",
@@ -28,6 +32,17 @@ const mockRepoList: RepoInfo[] = [
 ];
 
 export default function RepositoryListPage() {
+  const [repoList, setRepoList] = useState<RepoInfo[]>([]);
+
+  useEffect(() => {
+    const fetchRepos = async () => {
+      // TODO: replace this with a real fetch
+      setRepoList(mockRepoList);
+    };
+
+    fetchRepos();
+  }, []);
+
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
@@ -40,7 +55,7 @@ export default function RepositoryListPage() {
         </div>
         <BasicSearchBar />
       </div>
-      <BasicList repoList={mockRepoList}/> 
+      <BasicList repoList={repoList}/> 
     </div>
   )
 }
