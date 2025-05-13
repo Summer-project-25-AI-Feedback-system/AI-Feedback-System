@@ -1,18 +1,29 @@
-import ListButton from "./ListButton";
 import type { RepoInfo } from "../../types/RepoInfo";
+import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 
-interface ListItemProps {
-  repoInfo: RepoInfo;
-}
+type ListItemProps =
+  | { repoInfo: RepoInfo; onClick?: () => void; specificRepoInfo?: never }
+  | { specificRepoInfo: StudentSubmissionInfo; onClick?: () => void; repoInfo?: never };
 
-export default function ListItem({ repoInfo }: ListItemProps) {
+export default function ListItem({ repoInfo, specificRepoInfo, onClick }: ListItemProps) {
   return (
-    <div className="grid grid-cols-[40px_2fr_1fr_1fr_auto] h-[56px] w-full max-w-[870px] items-center border-b border-l border-r border-[#D9D9D9] text-xs sm:text-sm px-4 gap-4">
-      <img src={repoInfo.repoPicture} alt="repo" className="w-6 h-6" />
-      <p>{repoInfo.name}</p>
-      <p>{repoInfo.amountOfStudents}</p>
-      <p>{repoInfo.timeOfLastUpdate}</p>
-      <ListButton text="View Details" />
+    <div onClick={onClick} className="grid grid-cols-[40px_1fr_1fr_1fr_auto] h-[56px] w-full items-center border-b border-l border-r border-[#D9D9D9] text-xs sm:text-sm px-4 gap-4 hover:bg-gray-100 cursor-pointer">
+      {repoInfo && (
+        <>
+          <img src={repoInfo.repoPicture} alt="repo" className="w-6 h-6 rounded-full" />
+          <p className="text-center">{repoInfo.name}</p>
+          <p className="text-center">{repoInfo.amountOfStudents}</p>
+          <p className="text-center">{repoInfo.timeOfLastUpdate}</p>
+        </>
+      )}
+      {specificRepoInfo && (
+        <>
+          <img src={specificRepoInfo.studentProfilePicture} alt="student" className="w-6 h-6 rounded-full"/>
+          <p className="text-center">{specificRepoInfo.studentName}</p>
+          <p className="text-center">{specificRepoInfo.submissionStatus}</p>
+          <p className="text-center">{specificRepoInfo.currentGrade}</p>
+        </>
+      )}
     </div>
   )
 }

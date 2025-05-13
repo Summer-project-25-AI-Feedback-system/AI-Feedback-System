@@ -1,24 +1,29 @@
+import { useEffect, useState } from "react";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
 import BasicSearchBar from "./BasicSearchBar";
 import type { RepoInfo } from "../../types/RepoInfo";
+import RepoButton from "./RepoButton";
 
 // delete mock data once data from backend is retrieved
 const mockRepoList: RepoInfo[] = [
   {
+    id: "1",
     repoPicture: "aa",
     name: "Algebra Repo",
     amountOfStudents: "23",
     timeOfLastUpdate: "2 hours ago",
   },
   {
+    id: "2",
     repoPicture: "aa",
-    name: "Biology Repo",
+    name: "Biology Repo Biology",
     amountOfStudents: "18",
     timeOfLastUpdate: "Yesterday",
   },
   {
+    id: "3",
     repoPicture: "aa",
     name: "History Repo",
     amountOfStudents: "30",
@@ -27,18 +32,30 @@ const mockRepoList: RepoInfo[] = [
 ];
 
 export default function RepositoryListPage() {
+  const [repoList, setRepoList] = useState<RepoInfo[]>([]);
+
+  useEffect(() => {
+    const fetchRepos = async () => {
+      // TODO: replace this with a real fetch
+      setRepoList(mockRepoList);
+    };
+
+    fetchRepos();
+  }, []);
+
   return (
-    <div className="flex flex-col space-y-20 m-2">
+    <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex justify-between items-center">
           <BasicHeading heading="Your Classroom Repositories"></BasicHeading>
-          <div>
+          <div className="ml-4 flex flex-col md:flex-row gap-2">
+            <RepoButton text="Re-sync Repositories"></RepoButton>
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]}></FilterButton>
           </div>
         </div>
         <BasicSearchBar />
       </div>
-      <BasicList repoList={mockRepoList}/> 
+      <BasicList repoList={repoList}/> 
     </div>
   )
 }
