@@ -17,10 +17,12 @@ export async function getOrganizations() {
 
 export async function getAssignmentRepositories(
   org: string,
-  assignmentPrefix: string
+  assignmentPrefix?: string
 ) {
   console.log(
-    `Searching for repositories with prefix '${assignmentPrefix}' under organization ${org}...`
+    `Searching for repositories ${
+      assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
+    }under organization ${org}...`
   );
 
   const repositories: any[] = [];
@@ -30,7 +32,10 @@ export async function getAssignmentRepositories(
 
     for await (const { data: reposPage } of iterator) {
       for (const repo of reposPage) {
-        if (repo.name.toLowerCase().includes(assignmentPrefix.toLowerCase())) {
+        if (
+          !assignmentPrefix ||
+          repo.name.toLowerCase().includes(assignmentPrefix.toLowerCase())
+        ) {
           const details = await extractRepositoryDetails(org, repo);
           repositories.push(details);
         }

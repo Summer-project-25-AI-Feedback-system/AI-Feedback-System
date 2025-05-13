@@ -9,10 +9,10 @@ interface BasicListProps {
 export default function BasicList({ repoList }: BasicListProps) {
   return (
     <div className="flex flex-col">
-        <ListHeader></ListHeader>
-        {repoList.map((repo, index) => (
+      <ListHeader></ListHeader>
+      {repoList.map((repo, index) => (
         <ListItem key={index} repoInfo={repo} />
       ))}
     </div>
-  )
+  );
 }

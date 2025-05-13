@@ -4,7 +4,7 @@ dotenv.config();
 
 export const githubCallback = (req: Request, res: Response) => {
   console.log("Authenticated user:", req.user);
-  res.redirect(`${process.env.FRONTEND_ORIGIN}/repos`);
+  res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
 };
 
 export const getCurrentUser = (req: Request, res: Response) => {
