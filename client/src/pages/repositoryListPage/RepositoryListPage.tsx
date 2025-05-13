@@ -31,6 +31,7 @@ import { useParams } from "react-router-dom";
 // ];
 
 const mapToRepoInfo = (repo: Repo): RepoInfo => ({
+  id: "",
   name: repo.name,
   repoPicture: repo.owner.avatar_url,
   amountOfStudents: "N/A", // You can fill this in once backend adds it
