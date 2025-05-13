@@ -1,7 +1,10 @@
 import { octokit } from "./octokitClient"; // see suggestion below
 
-export async function buildSearchQuery(org: string, assignmentPrefix: string) {
-  const query = `fork:true ${assignmentPrefix} in:name org:${org}`;
+export async function buildSearchQuery(org: string, assignmentPrefix?: string) {
+  const query =
+    `fork:true org:${org}` +
+    (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
+
   return octokit.paginate.iterator(octokit.rest.search.repos, {
     q: query,
     per_page: 100,

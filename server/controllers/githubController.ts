@@ -23,12 +23,10 @@ export async function handleGetStudentRepos(
   res: Response
 ): Promise<void> {
   const org = req.query.org as string;
-  const assignmentPrefix = req.query.assignmentPrefix as string;
+  const assignmentPrefix = req.query.assignmentPrefix as string | undefined;
 
-  if (!org || !assignmentPrefix) {
-    res
-      .status(400)
-      .json({ error: "Organization or Assignment Prefix not specified" });
+  if (!org) {
+    res.status(400).json({ error: "Organization not specified" });
     return;
   }
 
