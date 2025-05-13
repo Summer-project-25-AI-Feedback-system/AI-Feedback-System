@@ -1,5 +1,5 @@
 // Provides state and logic (data + functions)
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
 import type { UserContextType, User } from "../types/UserInfo";
@@ -31,13 +31,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     refreshUser();
   }, []);
 
-  const contextValue: UserContextType = {
-    user,
-    loggedIn: !!user,
-    refreshUser,
-    logout,
-    login,
-  };
+  const contextValue: UserContextType = useMemo(
+    () => ({
+      user,
+      loggedIn: !!user,
+      refreshUser,
+      logout,
+      login,
+    }),
+    [user]
+  );
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>

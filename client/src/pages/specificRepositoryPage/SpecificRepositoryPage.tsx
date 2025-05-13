@@ -59,6 +59,7 @@ const mockStudentSubmissions: Record<string, StudentSubmissionInfo[]> = {
 
 export default function SpecificRepositoryPage() {
   const { id } = useParams<{ id: string }>(); 
+  const [repoName, setRepoName] = useState<string>("");
   const [submissions, setSubmissions] = useState<StudentSubmissionInfo[]>([]);
   const [gradedSubmissions, setGradedSubmissions] = useState(0);
   const [totalSubmissions, setTotalSubmissions] = useState(0);
@@ -66,6 +67,12 @@ export default function SpecificRepositoryPage() {
 
   const handleClick = () => {
     console.log("click")
+  };
+
+  const getRepoName = () => {
+    // TODO: get repository name
+    const repoName = "Repository Name"
+    setRepoName(repoName);
   };
 
   const getSubmission = () => {
@@ -85,6 +92,7 @@ export default function SpecificRepositoryPage() {
   };
 
   useEffect(() => {
+    getRepoName();
     getSubmission();
     getLastRunAnalysisTime();
   }, [id]);
@@ -95,7 +103,7 @@ export default function SpecificRepositoryPage() {
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between align-top">
             <div className="space-y-2">
-              <BasicHeading heading="Your Classroom Repositories"></BasicHeading>
+              <BasicHeading heading={repoName}></BasicHeading> 
               <div>
                 <Subtext text={`${gradedSubmissions}/${totalSubmissions} submissions graded.`} />
                 <Subtext text={`Last analysis run ${lastRunTime}.`} />
