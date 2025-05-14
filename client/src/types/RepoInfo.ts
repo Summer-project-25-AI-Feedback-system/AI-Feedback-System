@@ -1,6 +1,7 @@
+// UI view model
 export interface RepoInfo {
   id: string;
-  repoPicture: string;
+  studentAvatar: string;
   name: string;
   amountOfStudents: string;
   timeOfLastUpdate: string;

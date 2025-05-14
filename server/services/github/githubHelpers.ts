@@ -19,8 +19,10 @@ export async function extractRepositoryDetails(org: string, repo: any) {
   });
 
   return {
+    id: repo.node_id,
     name: repo.name,
     owner: repo.owner?.login || "unknown",
+    avatarUrl: repo.owner?.avatar_url ?? null,
     url: repo.html_url,
     description: repo.description,
     defaultBranch: repo.default_branch,

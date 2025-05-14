@@ -8,34 +8,12 @@ import { useGitHub } from "../../context/useGitHub";
 import type { Repo } from "../../types/GitHubInfo";
 import { useParams } from "react-router-dom";
 
-// // delete mock data once data from backend is retrieved
-// const mockRepoList: RepoInfo[] = [
-//   {
-//     repoPicture: "aa",
-//     name: "Algebra Repo",
-//     amountOfStudents: "23",
-//     timeOfLastUpdate: "2 hours ago",
-//   },
-//   {
-//     repoPicture: "aa",
-//     name: "Biology Repo",
-//     amountOfStudents: "18",
-//     timeOfLastUpdate: "Yesterday",
-//   },
-//   {
-//     repoPicture: "aa",
-//     name: "History Repo",
-//     amountOfStudents: "30",
-//     timeOfLastUpdate: "3 days ago",
-//   },
-// ];
-
 const mapToRepoInfo = (repo: Repo): RepoInfo => ({
-  id: "",
+  id: repo.id,
   name: repo.name,
-  repoPicture: repo.owner.avatar_url,
-  amountOfStudents: "N/A", // You can fill this in once backend adds it
-  timeOfLastUpdate: new Date(repo.updated_at).toLocaleString(),
+  studentAvatar: repo.collaborators?.[0]?.avatarUrl ?? "",
+  amountOfStudents: String(repo.collaborators?.length ?? 0),
+  timeOfLastUpdate: new Date(repo.updatedAt).toLocaleString(),
 });
 
 export default function RepositoryListPage() {
@@ -48,6 +26,7 @@ export default function RepositoryListPage() {
       github
         .getStudentRepos(orgLogin)
         .then((data) => {
+          console.log("data", data);
           const mapped = data.map(mapToRepoInfo);
           setRepos(mapped);
         })
@@ -55,6 +34,7 @@ export default function RepositoryListPage() {
     }
   }, [orgLogin, github]);
 
+  console.log("repos", repos);
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">

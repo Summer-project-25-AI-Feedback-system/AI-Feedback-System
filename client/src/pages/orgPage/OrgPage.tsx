@@ -1,10 +1,8 @@
-// pages/orgPage/OrgPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGitHub } from "../../context/useGitHub";
 import type { Org } from "../../types/GitHubInfo";
 import BasicHeading from "../../components/BasicHeading";
-// import BasicCard from "../../components/BasicCard"; // or whatever component you use
 
 export default function OrgPage() {
   const [orgs, setOrgs] = useState<Org[]>([]);
@@ -19,6 +17,7 @@ export default function OrgPage() {
     navigate(`/orgs/${orgLogin}/repos`);
   };
 
+  // console.log(orgs);
   return (
     <div className="flex flex-col gap-6 m-4">
       <BasicHeading heading="Your Organizations" />

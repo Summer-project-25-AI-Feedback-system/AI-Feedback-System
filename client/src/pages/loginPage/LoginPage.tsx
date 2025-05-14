@@ -9,7 +9,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Logged in:", loggedIn);
     if (loggedIn) navigate("/orgs");
   }, [loggedIn, navigate]);
 
