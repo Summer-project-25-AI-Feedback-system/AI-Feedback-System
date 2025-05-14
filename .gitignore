@@ -21,7 +21,11 @@ dist-ssr
 # Environment variables
 .env.*
 client/.env.*
+client/.env
+client/.env.vault
 server/.env.*
+server/.env
+server/.env.vault
 
 
 # Editor directories and files
@@ -39,4 +43,5 @@ server/.env.*
 
 # System files
 .DS_Store
+
 

@@ -1,7 +1,11 @@
 import { Router } from "express";
 import passport from "../utils/passport";
 import dotenv from "dotenv";
-import { githubCallback } from "../controllers/authController";
+import {
+  githubCallback,
+  getCurrentUser,
+  logout,
+} from "../controllers/authController";
 
 dotenv.config();
 const router = Router();
@@ -18,5 +22,8 @@ router.get(
   passport.authenticate("github", { failureRedirect: "/login" }),
   githubCallback
 );
+
+router.get("/me", getCurrentUser);
+router.get("/logout", logout);
 
 export default router;

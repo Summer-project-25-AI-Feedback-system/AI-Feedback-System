@@ -4,13 +4,20 @@ import passport from "./utils/passport";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
+import githubRoutes from "./routes/githubRoutes";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -20,6 +27,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      httpOnly: true,
+      secure: false, // Set to true only in production (HTTPS)
+      sameSite: "lax", // or "none" if secure: true for cross-origin
+    },
   })
 );
 
@@ -34,6 +46,7 @@ app.get("/api/message", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/github", githubRoutes);
 
 // Error handling
 app.use(
