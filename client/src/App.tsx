@@ -6,6 +6,7 @@ import RepositoryListPage from "./pages/repositoryListPage/RepositoryListPage";
 import { UserProvider } from "./context/UserProvider";
 import SpecificRepositoryPage from "./pages/specificRepositoryPage/SpecificRepositoryPage";
 import { GitHubProvider } from "./context/GitHubProvider";
+import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 
 function App() {
   return (
@@ -16,10 +17,9 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<LoginPage />} />
               <Route path="/orgs" element={<OrgPage />} />
-              <Route
-                path="/orgs/:orgLogin/repos"
-                element={<RepositoryListPage />}
-              />
+              <Route path="/orgs/:orgLogin/repos" element={<RepositoryListPage />} />
+              <Route path="/repos" element={<RepositoryListPage />} />
+              <Route path="/submission/:id" element={<SpecificUserSubmissionScreen />} />
             </Route>
             <Route path="/repos/:id" element={<SpecificRepositoryPage />} />
           </Routes>
