@@ -108,3 +108,27 @@ export async function handleRepoFilesWithTree(
     res.status(500).json({ error: "Failed to fetch files" });
   }
 }
+
+export async function handleGetAllOrganizationData(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const org = req.query.org as string;
+    if (!org) {
+        res.status(400).json({ error: "Missing organization parameter" });
+        return;
+    }
+    const repos = await getAssignmentRepositories(org); 
+    // TODO: later also get the student submissions from services
+    const allData = {
+      org,
+      repos, 
+      students: [], // TODO: add later
+    };
+    res.json(allData);
+  } catch (error) {
+    console.error("Failed to get all data:", error);
+    res.status(500).json({ error: "Failed to generate all data" });
+  }
+}
