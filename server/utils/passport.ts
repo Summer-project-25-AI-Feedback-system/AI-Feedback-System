@@ -18,6 +18,8 @@ passport.use(
       profile: Profile,
       done: (error: any, user?: Express.User | false | null) => void
     ) => {
+      console.log("Access Token:", accessToken);
+      console.log("GitHub Profile:", profile);
       return done(null, profile);
     }
   )

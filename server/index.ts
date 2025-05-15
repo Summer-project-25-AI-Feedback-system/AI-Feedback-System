@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import githubRoutes from "./routes/githubRoutes";
-
+import submitRoute from"./routes/submitRoute";
 dotenv.config();
 
 const app = express();
@@ -47,7 +47,7 @@ app.get("/api/message", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/github", githubRoutes);
-
+app.use("/api", submitRoute);
 // Error handling
 app.use(
   (

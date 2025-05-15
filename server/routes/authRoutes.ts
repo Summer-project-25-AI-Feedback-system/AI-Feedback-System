@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   logout,
 } from "../controllers/authController";
+import { upsertUser } from "../services/UserService"; 
 
 dotenv.config();
 const router = Router();
@@ -20,7 +21,28 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("github", { failureRedirect: "/login" }),
-  githubCallback
+  async (req, res) => {
+    try {
+      const user = req.user as {
+        id: string;
+        username: string;
+        emails?: { value: string }[];
+        profileUrl?: string;
+      };
+
+      const githubId = user.id;
+      const username = user.username;
+      const email = user.emails?.[0]?.value || ""; // fallback jos ei ole emailia
+      const githubUrl = user.profileUrl || "";
+
+      await upsertUser(githubId, username, email, githubUrl);
+
+      res.redirect("http://localhost:5173/"); // tai frontend URL
+    } catch (error) {
+      console.error("Tallennus epäonnistui:", error);
+      res.status(500).json({ error: "Käyttäjän tallennus epäonnistui" });
+    }
+  }
 );
 
 router.get("/me", getCurrentUser);
