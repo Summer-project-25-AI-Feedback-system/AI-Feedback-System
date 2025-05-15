@@ -22,4 +22,5 @@ export interface GitHubContextType {
     { login: string; description: string; avatarUrl: string }[]
   >;
   getStudentRepos: (org: string, assignmentPrefix?: string) => Promise<Repo[]>;
+  getAllOrganizationData: (org: string) => Promise<any>;
 }
