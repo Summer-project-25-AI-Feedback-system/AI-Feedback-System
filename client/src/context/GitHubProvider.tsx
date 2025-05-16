@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import GitHubContext from "./GitHubContext";
 import type { GitHubContextType, OrgInfo, Repo } from "../types/GitHubInfo";
-import type { AssignmentInfo } from "../../../server/shared/AssignmentInfo";
+import type { AssignmentInfo } from "@shared/github";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 

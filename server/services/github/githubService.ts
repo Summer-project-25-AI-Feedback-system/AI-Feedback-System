@@ -23,27 +23,29 @@ export async function getAssignments(
 
   const assignmentMap = new Map<string, AssignmentInfo>();
 
-  for (const repo of repos.data) {
+  repos.data.forEach((repo) => {
     const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
-    const existing = assignmentMap.get(baseName);
     const updatedAt = repo.updated_at ?? undefined;
 
-    if (!existing) {
+    const assignment = assignmentMap.get(baseName);
+
+    if (!assignment) {
       assignmentMap.set(baseName, {
         name: baseName,
         submissionCount: 1,
         lastUpdated: updatedAt,
       });
     } else {
-      existing.submissionCount += 1;
+      assignment.submissionCount++;
       if (
         updatedAt &&
-        new Date(updatedAt) > new Date(existing.lastUpdated ?? 0)
+        (!assignment.lastUpdated ||
+          new Date(updatedAt) > new Date(assignment.lastUpdated))
       ) {
-        existing.lastUpdated = updatedAt;
+        assignment.lastUpdated = updatedAt;
       }
     }
-  }
+  });
 
   return Array.from(assignmentMap.values());
 }
