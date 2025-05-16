@@ -18,15 +18,15 @@ function App() {
               <Route index element={<LoginPage />} />
               <Route path="/orgs" element={<OrgsPage />} />
               <Route
-                path="/orgs/:orgLogin/assignments"
+                path="/orgs/:orgName/assignments"
                 element={<AssignmentListPage />}
               />
               <Route
-                path="/orgs/:orgLogin/assignments/:assignmentId"
+                path="/orgs/:orgName/assignments/:assignmentName"
                 element={<ReposPage />}
               />
               <Route
-                path="/orgs/:orgLogin/repos/:repoId"
+                path="/orgs/:orgName/repos/:repoId"
                 element={<SpecificRepositoryPage />}
               />
             </Route>

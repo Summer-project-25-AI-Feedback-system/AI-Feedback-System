@@ -8,14 +8,14 @@ import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
 type BasicListProps =
   | {
       assignmentList: AssignmentInfo[];
-      orgLogin: string;
+      orgName: string;
       repoList?: never;
       specificRepoInfo?: never;
     }
-  | { repoList: RepoInfo[]; orgLogin: string; specificRepoInfo?: never }
+  | { repoList: RepoInfo[]; orgName: string; specificRepoInfo?: never }
   | {
       specificRepoInfo: StudentSubmissionInfo[];
-      orgLogin?: never;
+      orgName?: never;
       repoList?: never;
     };
 
@@ -40,7 +40,7 @@ export default function BasicList(props: BasicListProps) {
             assignmentName={assignment.name}
             onClick={() =>
               navigate(
-                `/orgs/${props.orgLogin}/assignments/${encodeURIComponent(
+                `/orgs/${props.orgName}/assignments/${encodeURIComponent(
                   assignment.name
                 )}`
               )
@@ -53,7 +53,7 @@ export default function BasicList(props: BasicListProps) {
           <ListItem
             key={`repo-${index}`}
             repoInfo={repo}
-            onClick={() => navigate(`/orgs/${props.orgLogin}/repos/${repo.id}`)}
+            onClick={() => navigate(`/orgs/${props.orgName}/repos/${repo.id}`)}
           />
         ))}
 
