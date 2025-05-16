@@ -26,9 +26,12 @@ function App() {
                 path="/orgs/:orgName/assignments/:assignmentName"
                 element={<ReposPage />}
               />
-              <Route path="/repos" element={<SpecificRepositoryPage />} />
               <Route
-                path="/orgs/:orgName/assignments/:assignmentName/:id"
+                path="/orgs/:orgName/assignments/:assignmentName/:repoId"
+                element={<SpecificRepositoryPage />}
+              />
+              <Route
+                path="/orgs/:orgName/assignments/:assignmentName/submission"
                 element={<SpecificUserSubmissionScreen />}
               />
             </Route>

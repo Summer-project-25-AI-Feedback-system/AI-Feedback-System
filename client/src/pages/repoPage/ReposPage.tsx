@@ -1,7 +1,7 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
-import BasicSearchBar from "../assignmentPage/BasicSearchBar";
+import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "../../types/RepoInfo";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
@@ -39,13 +39,13 @@ export default function ReposPage() {
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
-        <div className="flex justify-between items-center">
-          <BasicHeading heading={`Repositories in ${assignmentName}`} />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <BasicHeading heading={`Assignments in ${assignmentName}`} />
           <div className="flex space-x-4">
+            <BasicSearchBar />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
-        <BasicSearchBar />
       </div>
       <BasicList
         repoList={repos}
