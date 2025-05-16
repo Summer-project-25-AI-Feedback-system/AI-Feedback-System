@@ -18,7 +18,7 @@ export default function AssignmentsPage() {
     }
   }, [orgName, github]);
 
-  console.log("assignments", assignments);
+  console.log("assignments:", assignments);
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">

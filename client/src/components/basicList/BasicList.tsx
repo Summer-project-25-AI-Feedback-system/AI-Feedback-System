@@ -4,11 +4,11 @@ import ListItem from "./ListItem";
 import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
-import type { Org } from "../../types/GitHubInfo";
+import type { OrgInfo } from "../../types/GitHubInfo";
 
 type BasicListProps =
   | {
-      orgList: Org[];
+      orgList: OrgInfo[];
       assignmentList?: never;
       repoList?: never;
       specificRepoInfo?: never;
@@ -56,7 +56,7 @@ export default function BasicList(props: BasicListProps) {
           <ListItem
             key={`org-${index}`}
             orgInfo={org}
-            onClick={() => navigate(`/orgs/${org.login}/assignments`)}
+            onClick={() => navigate(`/orgs/${org.name}/assignments`)}
           />
         ))}
 

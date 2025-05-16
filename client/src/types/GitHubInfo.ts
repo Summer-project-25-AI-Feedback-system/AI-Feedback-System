@@ -28,8 +28,8 @@ export interface Collaborator {
   };
 }
 
-export interface Org {
-  login: string;
+export interface OrgInfo {
+  name: string;
   description: string;
   avatarUrl: string;
 }
@@ -41,7 +41,7 @@ export interface AssignmentInfo {
 }
 
 export interface GitHubContextType {
-  getOrganizations: () => Promise<Org[]>;
+  getOrganizations: () => Promise<OrgInfo[]>;
   getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
   getStudentRepos: (org: string, assignmentPrefix?: string) => Promise<Repo[]>;
 }

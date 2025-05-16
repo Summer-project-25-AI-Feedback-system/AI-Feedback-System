@@ -5,7 +5,7 @@ import { AssignmentInfo } from "../../shared/AssignmentInfo";
 export async function getOrganizations() {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
   return response.data.map((org) => ({
-    login: org.login,
+    name: org.login,
     description: org.description,
     avatarUrl: org.avatar_url,
   }));

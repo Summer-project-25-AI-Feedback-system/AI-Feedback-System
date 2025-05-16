@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { Org } from "../../types/GitHubInfo";
+import type { OrgInfo } from "../../types/GitHubInfo";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
 
 export default function OrgsPage() {
-  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [orgs, setOrgs] = useState<OrgInfo[]>([]);
   const github = useGitHub();
 
   useEffect(() => {

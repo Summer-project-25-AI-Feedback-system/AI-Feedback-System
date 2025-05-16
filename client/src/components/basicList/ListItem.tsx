@@ -1,11 +1,11 @@
 import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type { AssignmentInfo, Org } from "../../types/GitHubInfo";
+import type { AssignmentInfo, OrgInfo } from "../../types/GitHubInfo";
 import type { JSX } from "react";
 
 type ListItemProps =
   | {
-      orgInfo: Org;
+      orgInfo: OrgInfo;
       onClick?: () => void;
       assignmentInfo?: never;
       repoInfo?: never;
@@ -44,11 +44,11 @@ export default function ListItem(props: ListItemProps) {
       <img
         key="img"
         src={props.orgInfo?.avatarUrl}
-        alt={props.orgInfo?.login}
+        alt={props.orgInfo?.name}
         className="w-6 h-6 rounded-full"
       />,
       <p key="name" className="text-left">
-        {props.orgInfo?.login}
+        {props.orgInfo?.name}
       </p>,
       <p key="desc" className="text-left">
         {props.orgInfo?.description || "No description"}
