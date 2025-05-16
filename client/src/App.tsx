@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import LoginPage from "./pages/loginPage/LoginPage";
 import OrgsPage from "./pages/orgPage/OrgsPage";
-import AssignmentListPage from "./pages/assignmentPage/AssignmentsPage";
+import AssignmentsPage from "./pages/assignmentPage/AssignmentsPage";
 import { UserProvider } from "./context/UserProvider";
 import SpecificRepositoryPage from "./pages/specificRepositoryPage/SpecificRepositoryPage";
 import { GitHubProvider } from "./context/GitHubProvider";
@@ -20,7 +20,7 @@ function App() {
               <Route path="/orgs" element={<OrgsPage />} />
               <Route
                 path="/orgs/:orgName/assignments"
-                element={<AssignmentListPage />}
+                element={<AssignmentsPage />}
               />
               <Route
                 path="/orgs/:orgName/assignments/:assignmentName"
@@ -28,7 +28,8 @@ function App() {
               />
               <Route path="/repos" element={<SpecificRepositoryPage />} />
               <Route
-                path="/submission/:id"
+                // path="/submission/:id"
+                path="/orgs/:orgName/assignments/:assignmentName/:id"
                 element={<SpecificUserSubmissionScreen />}
               />
             </Route>

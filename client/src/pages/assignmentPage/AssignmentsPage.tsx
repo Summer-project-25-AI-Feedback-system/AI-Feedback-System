@@ -7,7 +7,7 @@ import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
 import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
 
-export default function AssignmentListPage() {
+export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const github = useGitHub();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
