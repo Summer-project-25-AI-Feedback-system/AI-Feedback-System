@@ -28,7 +28,6 @@ function App() {
               />
               <Route path="/repos" element={<SpecificRepositoryPage />} />
               <Route
-                // path="/submission/:id"
                 path="/orgs/:orgName/assignments/:assignmentName/:id"
                 element={<SpecificUserSubmissionScreen />}
               />

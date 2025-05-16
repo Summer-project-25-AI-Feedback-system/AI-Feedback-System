@@ -4,19 +4,35 @@ import ListItem from "./ListItem";
 import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
+import type { Org } from "../../types/GitHubInfo";
 
 type BasicListProps =
+  | {
+      orgList: Org[];
+      assignmentList?: never;
+      repoList?: never;
+      specificRepoInfo?: never;
+      orgName?: never;
+      assignmentName?: never;
+    }
   | {
       assignmentList: AssignmentInfo[];
       orgName: string;
       repoList?: never;
       specificRepoInfo?: never;
+      assignmentName?: never;
     }
-  | { repoList: RepoInfo[]; orgName: string; specificRepoInfo?: never }
+  | {
+      repoList: RepoInfo[];
+      orgName: string;
+      assignmentName?: string;
+      specificRepoInfo?: never;
+    }
   | {
       specificRepoInfo: StudentSubmissionInfo[];
       orgName?: never;
       repoList?: never;
+      assignmentName?: never;
     };
 
 export default function BasicList(props: BasicListProps) {
@@ -26,13 +42,24 @@ export default function BasicList(props: BasicListProps) {
     <div className="flex flex-col">
       <ListHeader
         type={
-          "assignmentList" in props
+          "orgList" in props
+            ? "org"
+            : "assignmentList" in props
             ? "assignment"
             : "repoList" in props
             ? "repo"
             : "submission"
         }
       />
+      {"orgList" in props &&
+        props.orgList.map((org, index) => (
+          <ListItem
+            key={`org-${index}`}
+            orgInfo={org}
+            onClick={() => navigate(`/orgs/${org.login}/assignments`)}
+          />
+        ))}
+
       {"assignmentList" in props &&
         props.assignmentList?.map((assignment, index) => (
           <ListItem
@@ -53,7 +80,11 @@ export default function BasicList(props: BasicListProps) {
           <ListItem
             key={`repo-${index}`}
             repoInfo={repo}
-            onClick={() => navigate(`/orgs/${props.orgName}/repos/${repo.id}`)}
+            onClick={() =>
+              navigate(
+                `/orgs/${props.orgName}/assignments/${props.assignmentName}/${repo.id}`
+              )
+            }
           />
         ))}
 

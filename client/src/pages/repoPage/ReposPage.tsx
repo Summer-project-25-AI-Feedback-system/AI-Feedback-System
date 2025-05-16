@@ -47,7 +47,11 @@ export default function ReposPage() {
         </div>
         <BasicSearchBar />
       </div>
-      <BasicList repoList={repos} orgName={orgName!} />
+      <BasicList
+        repoList={repos}
+        orgName={orgName!}
+        assignmentName={assignmentName}
+      />
     </div>
   );
 }
