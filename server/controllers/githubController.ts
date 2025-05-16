@@ -19,7 +19,10 @@ export async function handleGetOrganizations(
   }
 }
 
-export async function handleGetAssignments(req: Request, res: Response) {
+export async function handleGetAssignments(
+  req: Request,
+  res: Response
+): Promise<void> {
   const orgLogin = req.params.orgLogin;
 
   if (!orgLogin) {

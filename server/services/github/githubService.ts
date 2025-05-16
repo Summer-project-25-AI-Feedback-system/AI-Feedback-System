@@ -1,14 +1,15 @@
 import { octokit } from "./octokitClient";
+import { OrgInfo, AssignmentInfo } from "@shared/github";
 
-import { AssignmentInfo } from "../../shared/AssignmentInfo";
-
-export async function getOrganizations() {
+export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
-  return response.data.map((org) => ({
-    name: org.login,
-    description: org.description,
-    avatarUrl: org.avatar_url,
-  }));
+  return response.data.map(
+    (org): OrgInfo => ({
+      name: org.login,
+      description: org.description,
+      avatarUrl: org.avatar_url,
+    })
+  );
 }
 
 export async function getAssignments(
