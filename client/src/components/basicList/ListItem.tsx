@@ -82,7 +82,7 @@ export default function ListItem(props: ListItemProps) {
       <p key="name" className="text-left">
         {props.repoInfo?.name}
       </p>,
-      <p key="students" className="text-left">
+      <p key="students" className="text-center">
         {props.repoInfo?.amountOfStudents}
       </p>,
       <p key="update" className="text-left">
