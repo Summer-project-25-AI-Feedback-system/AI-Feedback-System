@@ -37,7 +37,7 @@ export default function BasicList(props: BasicListProps) {
         props.assignmentList?.map((assignment, index) => (
           <ListItem
             key={`assignment-${index}`}
-            assignmentName={assignment.name}
+            assignmentInfo={assignment}
             onClick={() =>
               navigate(
                 `/orgs/${props.orgName}/assignments/${encodeURIComponent(

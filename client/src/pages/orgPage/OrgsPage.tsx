@@ -17,7 +17,7 @@ export default function OrgsPage() {
     navigate(`/orgs/${orgLogin}/assignments`);
   };
 
-  // console.log(orgs);
+  console.log(orgs);
   return (
     <div className="flex flex-col gap-6 m-4">
       <BasicHeading heading="Your Organizations" />
