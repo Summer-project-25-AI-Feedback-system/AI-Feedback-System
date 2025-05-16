@@ -2,51 +2,35 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
 import BasicSearchBar from "./BasicSearchBar";
-import type { RepoInfo } from "../../types/RepoInfo";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { Repo } from "../../types/GitHubInfo";
 import { useParams } from "react-router-dom";
+import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
 
-const mapToRepoInfo = (repo: Repo): RepoInfo => ({
-  id: repo.id,
-  name: repo.name,
-  studentAvatar: repo.collaborators?.[0]?.avatarUrl ?? "",
-  amountOfStudents: String(repo.collaborators?.length ?? 0),
-  timeOfLastUpdate: new Date(repo.updatedAt).toLocaleString(),
-});
-
-export default function RepositoryListPage() {
+export default function AssignmentListPage() {
   const { orgLogin } = useParams<{ orgLogin: string }>();
   const github = useGitHub();
-  const [repos, setRepos] = useState<RepoInfo[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
 
   useEffect(() => {
     if (orgLogin) {
-      github
-        .getStudentRepos(orgLogin)
-        .then((data) => {
-          console.log("data", data);
-          const mapped = data.map(mapToRepoInfo);
-          setRepos(mapped);
-        })
-        .catch(console.error);
+      github.getAssignments(orgLogin).then(setAssignments).catch(console.error);
     }
   }, [orgLogin, github]);
 
-  console.log("repos", repos);
+  console.log("assignments", assignments);
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex justify-between items-center">
-          <BasicHeading heading="Your Classroom Repositories"></BasicHeading>
+          <BasicHeading heading={`Assignments in ${orgLogin}`} />
           <div className="flex space-x-4">
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
         <BasicSearchBar />
       </div>
-      <BasicList repoList={repos} />
+      <BasicList assignmentList={assignments} orgLogin={orgLogin!} />
     </div>
   );
 }

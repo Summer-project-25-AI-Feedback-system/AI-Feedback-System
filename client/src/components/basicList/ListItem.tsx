@@ -2,14 +2,27 @@ import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 
 type ListItemProps =
-  | { repoInfo: RepoInfo; onClick?: () => void; specificRepoInfo?: never }
+  | {
+      assignmentName: string;
+      onClick?: () => void;
+      repoInfo?: never;
+      specificRepoInfo?: never;
+    }
+  | {
+      repoInfo: RepoInfo;
+      onClick?: () => void;
+      assignmentName?: never;
+      specificRepoInfo?: never;
+    }
   | {
       specificRepoInfo: StudentSubmissionInfo;
       onClick?: () => void;
+      assignmentName?: never;
       repoInfo?: never;
     };
 
 export default function ListItem({
+  assignmentName,
   repoInfo,
   specificRepoInfo,
   onClick,
@@ -19,6 +32,10 @@ export default function ListItem({
       onClick={onClick}
       className="grid grid-cols-[40px_1fr_1fr_1fr_auto] h-[56px] w-full items-center border-b border-l border-r border-[#D9D9D9] text-xs sm:text-sm px-4 gap-4 hover:bg-gray-100 cursor-pointer"
     >
+      {assignmentName && (
+        <p className="col-span-5 text-center">{assignmentName}</p>
+      )}
+
       {repoInfo && (
         <>
           <img

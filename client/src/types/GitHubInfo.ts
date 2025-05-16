@@ -34,9 +34,14 @@ export interface Org {
   avatarUrl: string;
 }
 
+export interface AssignmentInfo {
+  name: string;
+  submissionCount: number;
+  lastUpdated?: string;
+}
+
 export interface GitHubContextType {
-  getOrganizations: () => Promise<
-    { login: string; description: string; avatarUrl: string }[]
-  >;
+  getOrganizations: () => Promise<Org[]>;
+  getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
   getStudentRepos: (org: string, assignmentPrefix?: string) => Promise<Repo[]>;
 }

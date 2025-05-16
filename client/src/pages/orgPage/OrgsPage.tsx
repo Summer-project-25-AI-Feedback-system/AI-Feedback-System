@@ -4,7 +4,7 @@ import { useGitHub } from "../../context/useGitHub";
 import type { Org } from "../../types/GitHubInfo";
 import BasicHeading from "../../components/BasicHeading";
 
-export default function OrgPage() {
+export default function OrgsPage() {
   const [orgs, setOrgs] = useState<Org[]>([]);
   const github = useGitHub();
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export default function OrgPage() {
   }, [github]);
 
   const handleViewRepos = (orgLogin: string) => {
-    navigate(`/orgs/${orgLogin}/repos`);
+    navigate(`/orgs/${orgLogin}/assignments`);
   };
 
   // console.log(orgs);
