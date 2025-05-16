@@ -14,7 +14,7 @@ export default function MainLayout() {
   useEffect(() => {
     refreshUser?.().then(() => {
       if (user && location.pathname === "/") {
-        navigate("/repos");
+        navigate("/orgs");
       }
     });
   }, [refreshUser, navigate, user, location.pathname]);
@@ -32,7 +32,9 @@ export default function MainLayout() {
     <div className="flex flex-col min-h-screen">
       <Header loggedIn={!!loggedIn} onClick={handleHeaderButtonClick} />
       <main className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-screen-xl"><Outlet /></div>
+        <div className="w-full max-w-screen-xl">
+          <Outlet />
+        </div>
       </main>
       <Footer />
     </div>
