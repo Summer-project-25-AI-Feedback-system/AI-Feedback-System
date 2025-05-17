@@ -5,7 +5,7 @@ import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
-import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
+import type { AssignmentInfo } from "@shared/githubInterfaces";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();

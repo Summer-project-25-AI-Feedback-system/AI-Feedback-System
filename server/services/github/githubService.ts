@@ -1,5 +1,5 @@
 import { octokit } from "./octokitClient";
-import { OrgInfo, AssignmentInfo } from "@shared/github";
+import { OrgInfo, AssignmentInfo } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();

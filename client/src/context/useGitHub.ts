@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import GitHubContext from "./GitHubContext";
-import type { GitHubContextType } from "../types/GitHubInfo";
+import type { GitHubContextType } from "./types";
 
 export const useGitHub = (): GitHubContextType => {
   const context = useContext(GitHubContext);

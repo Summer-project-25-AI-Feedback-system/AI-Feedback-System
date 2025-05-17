@@ -1,6 +1,9 @@
-import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type { AssignmentInfo, OrgInfo } from "../../types/GitHubInfo";
+import type {
+  AssignmentInfo,
+  OrgInfo,
+  RepoInfo,
+} from "@shared/githubInterfaces";
 import type { JSX } from "react";
 
 type ListItemProps =
@@ -69,24 +72,28 @@ export default function ListItem(props: ListItemProps) {
         {props.assignmentInfo.lastUpdated}
       </p>,
     ];
-  } else if ("repoInfo" in props) {
+  } else if ("repoInfo" in props && props.repoInfo) {
+    const { name, collaborators, updatedAt } = props.repoInfo;
+    const studentAvatar = collaborators[0]?.avatarUrl ?? "";
+    const amountOfStudents = collaborators.length;
+    const timeOfLastUpdate = new Date(updatedAt).toLocaleString();
     className =
       "grid grid-cols-[40px_1fr_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm border-b border-l border-r border-[#D9D9D9] hover:bg-gray-100 cursor-pointer";
     content = [
       <img
         key="img"
-        src={props.repoInfo?.studentAvatar}
+        src={studentAvatar}
         alt="repo"
         className="w-6 h-6 rounded-full"
       />,
       <p key="name" className="text-left">
-        {props.repoInfo?.name}
+        {name}
       </p>,
       <p key="students" className="text-center">
-        {props.repoInfo?.amountOfStudents}
+        {amountOfStudents}
       </p>,
       <p key="update" className="text-left">
-        {props.repoInfo?.timeOfLastUpdate}
+        {timeOfLastUpdate}
       </p>,
     ];
   } else if ("specificRepoInfo" in props) {

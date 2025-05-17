@@ -1,4 +1,16 @@
-export interface Repo {
+export interface OrgInfo {
+  name: string;
+  description: string | null;
+  avatarUrl: string;
+}
+
+export interface AssignmentInfo {
+  name: string;
+  submissionCount: number;
+  lastUpdated?: string;
+}
+
+export interface RepoInfo {
   id: string;
   name: string;
   owner: string;
@@ -15,8 +27,8 @@ export interface Repo {
 }
 
 export interface Collaborator {
-  login: string;
   id: number;
+  name: string;
   avatarUrl: string;
   htmlUrl: string;
   permissions: {
@@ -26,22 +38,4 @@ export interface Collaborator {
     triage: boolean;
     pull: boolean;
   };
-}
-
-export interface OrgInfo {
-  name: string;
-  description: string;
-  avatarUrl: string;
-}
-
-export interface AssignmentInfo {
-  name: string;
-  submissionCount: number;
-  lastUpdated?: string;
-}
-
-export interface GitHubContextType {
-  getOrganizations: () => Promise<OrgInfo[]>;
-  getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
-  getStudentRepos: (org: string, assignmentPrefix?: string) => Promise<Repo[]>;
 }

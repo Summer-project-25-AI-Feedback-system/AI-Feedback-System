@@ -2,19 +2,10 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
-import type { RepoInfo } from "../../types/RepoInfo";
+import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { Repo } from "../../types/GitHubInfo";
 import { useParams } from "react-router-dom";
-
-const mapToRepoInfo = (repo: Repo): RepoInfo => ({
-  id: repo.id,
-  name: repo.name,
-  studentAvatar: repo.collaborators?.[0]?.avatarUrl ?? "",
-  amountOfStudents: String(repo.collaborators?.length ?? 0),
-  timeOfLastUpdate: new Date(repo.updatedAt).toLocaleString(),
-});
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -27,9 +18,8 @@ export default function ReposPage() {
       github
         .getStudentRepos(orgName, assignmentName)
         .then((data) => {
-          console.log("data", data);
-          const mapped = data.map(mapToRepoInfo);
-          setRepos(mapped);
+          console.log("repos data from backend:", data);
+          setRepos(data);
         })
         .catch(console.error);
     }

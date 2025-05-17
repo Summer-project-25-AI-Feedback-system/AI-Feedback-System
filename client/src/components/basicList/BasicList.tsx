@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import ListHeader from "./ListHeader";
 import ListItem from "./ListItem";
-import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type { AssignmentInfo } from "@shared/github";
-import type { OrgInfo } from "../../types/GitHubInfo";
+import type {
+  AssignmentInfo,
+  OrgInfo,
+  RepoInfo,
+} from "@shared/githubInterfaces";
 
 type BasicListProps =
   | {
