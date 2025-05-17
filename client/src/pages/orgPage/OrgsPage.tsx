@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { OrgInfo } from "../../types/GitHubInfo";
+import type { OrgInfo } from "@shared/githubInterfaces";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
