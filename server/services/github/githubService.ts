@@ -12,11 +12,9 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   );
 }
 
-export async function getAssignments(
-  orgLogin: string
-): Promise<AssignmentInfo[]> {
+export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   const repos = await octokit.rest.repos.listForOrg({
-    org: orgLogin,
+    org: org,
     type: "all",
     per_page: 100,
   });
@@ -50,7 +48,7 @@ export async function getAssignments(
   return Array.from(assignmentMap.values());
 }
 
-export async function getRepositories(org: string, assignmentPrefix?: string) {
+export async function getRepos(org: string, assignmentPrefix?: string) {
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""

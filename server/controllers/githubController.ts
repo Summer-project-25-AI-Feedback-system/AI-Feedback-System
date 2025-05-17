@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {
-  getRepositories,
+  getRepos,
   getAssignments,
   getOrganizations,
   getFileContents,
@@ -23,14 +23,14 @@ export async function handleGetAssignments(
   req: Request,
   res: Response
 ): Promise<void> {
-  const orgLogin = req.params.orgLogin;
+  const org = req.params.orgName;
 
-  if (!orgLogin) {
+  if (!org) {
     res.status(400).json({ error: "Organization login not provided" });
     return;
   }
   try {
-    const assignmentInfos = await getAssignments(orgLogin);
+    const assignmentInfos = await getAssignments(org);
     res.json(assignmentInfos);
   } catch (error: any) {
     console.error("Error fetching assignments:", error.message);
@@ -38,20 +38,20 @@ export async function handleGetAssignments(
   }
 }
 
-export async function handleGetStudentRepos(
+export async function handleGetRepos(
   req: Request,
   res: Response
 ): Promise<void> {
-  const org = req.query.org as string;
-  const assignmentPrefix = req.query.assignmentPrefix as string | undefined;
+  const org = req.params.orgName;
+  const assignmentPrefix = req.params.assignmentName;
 
   if (!org) {
-    res.status(400).json({ error: "Organization not specified" });
+    res.status(400).json({ error: "Missing organization or assignment name" });
     return;
   }
 
   try {
-    const repos = await getRepositories(org, assignmentPrefix);
+    const repos = await getRepos(org, assignmentPrefix);
     res.json(repos);
   } catch (error) {
     console.error("Failed to fetch student repos:", error);

@@ -18,11 +18,9 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
-  const getAssignments = async (
-    orgLogin: string
-  ): Promise<AssignmentInfo[]> => {
+  const getAssignments = async (orgName: string): Promise<AssignmentInfo[]> => {
     const res = await axios.get(
-      `${baseUrl}/api/github/orgs/${orgLogin}/assignments`,
+      `${baseUrl}/api/github/orgs/${orgName}/assignments`,
       {
         withCredentials: true,
       }
@@ -30,21 +28,21 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
-  const getStudentRepos = async (
-    org: string,
-    assignmentPrefix = ""
+  const getRepos = async (
+    orgName: string,
+    assignmentName = ""
   ): Promise<RepoInfo[]> => {
-    const res = await axios.get(`${baseUrl}/api/github/student-repos`, {
-      withCredentials: true,
-      params: { org, assignmentPrefix },
-    });
+    const res = await axios.get(
+      `${baseUrl}/api/github/orgs/${orgName}/assignments/${assignmentName}`,
+      { withCredentials: true }
+    );
     return res.data;
   };
 
   const contextValue: GitHubContextType = useMemo(
     () => ({
       getOrganizations,
-      getStudentRepos,
+      getRepos,
       getAssignments,
     }),
     []

@@ -16,7 +16,7 @@ export default function ReposPage() {
   useEffect(() => {
     if (orgName) {
       github
-        .getStudentRepos(orgName, assignmentName)
+        .getRepos(orgName, assignmentName)
         .then((data) => {
           console.log("repos data from backend:", data);
           setRepos(data);

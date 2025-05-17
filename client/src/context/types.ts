@@ -7,8 +7,5 @@ import type {
 export interface GitHubContextType {
   getOrganizations: () => Promise<OrgInfo[]>;
   getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
-  getStudentRepos: (
-    org: string,
-    assignmentPrefix?: string
-  ) => Promise<RepoInfo[]>;
+  getRepos: (org: string, assignmentPrefix?: string) => Promise<RepoInfo[]>;
 }
