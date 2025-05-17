@@ -35,7 +35,7 @@ export default function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header loggedIn={!!isLogin} onClick={handleHeaderButtonClick} />
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex justify-center items-start">
         <div className="w-full max-w-screen-xl">
           <Outlet />
         </div>

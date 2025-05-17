@@ -42,7 +42,7 @@ export default function ListItem(props: ListItemProps) {
 
   if ("orgInfo" in props) {
     className =
-      "grid grid-cols-[40px_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm border-b border-l border-r border-[#D9D9D9] hover:bg-gray-100 cursor-pointer";
+      "grid grid-cols-[40px_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-b border-l border-r border-[#D9D9D9]";
     content = [
       <img
         key="img"
