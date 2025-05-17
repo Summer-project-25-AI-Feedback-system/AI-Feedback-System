@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import type { Repo } from "../../types/GitHubInfo";
 import { useParams } from "react-router-dom";
+import GetCSVFileButton from "./GetCSVFileButton";
 
 // // delete mock data once data from backend is retrieved
 // const mockRepoList: RepoInfo[] = [
@@ -61,6 +62,7 @@ export default function RepositoryListPage() {
         <div className="flex justify-between items-center">
           <BasicHeading heading="Your Classroom Repositories"></BasicHeading>
           <div className="flex space-x-4">
+            <GetCSVFileButton text="Get CSV Report" orgLogin={orgLogin}/>
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
