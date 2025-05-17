@@ -22,7 +22,7 @@ router.get(
   passport.authenticate("github", { failureRedirect: "/login" }),
   githubCallback
 );
-router.get("/me", isAuthenticated, getCurrentUser);
+router.get("/getCurrentUser", isAuthenticated, getCurrentUser);
 router.get("/logout", isAuthenticated, logout);
 
 export default router;

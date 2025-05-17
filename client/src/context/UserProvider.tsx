@@ -2,7 +2,8 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
-import type { UserContextType, User } from "../types/UserInfo";
+import type { UserContextType } from "./types";
+import type { User } from "@shared/githubInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,7 +12,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshUser = async () => {
     try {
-      const res = await axios.get(`${baseUrl}/api/auth/me`, {
+      const res = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
         withCredentials: true,
       });
       setUser(res.data.user || null);
@@ -21,7 +22,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = () => {
-    // Return login URL instead of redirecting here
     return `${baseUrl}/api/auth/login`;
   };
 

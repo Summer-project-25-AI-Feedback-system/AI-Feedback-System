@@ -39,3 +39,11 @@ export interface Collaborator {
     pull: boolean;
   };
 }
+
+export interface User {
+  id: string;
+  username: string;
+  displayName?: string;
+  profileUrl?: string;
+  photos?: { value: string }[];
+}

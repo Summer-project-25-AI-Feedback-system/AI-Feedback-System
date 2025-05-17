@@ -14,6 +14,7 @@ export default function OrgsPage() {
   }, [github]);
 
   console.log("orgs:", orgs);
+
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
