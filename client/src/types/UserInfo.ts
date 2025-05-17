@@ -11,8 +11,8 @@ export interface User {
 
 export interface UserContextType {
   user: User | null;
-  loggedIn: boolean;
+  isLogin: boolean;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
-  login: () => void;
+  login: () => string;
 }

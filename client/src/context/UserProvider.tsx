@@ -10,16 +10,19 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const refreshUser = async () => {
-    return axios
-      .get(`${baseUrl}/api/auth/me`, { withCredentials: true })
-      .then((res) => {
-        setUser(res.data.user || null);
-      })
-      .catch(() => setUser(null));
+    try {
+      const res = await axios.get(`${baseUrl}/api/auth/me`, {
+        withCredentials: true,
+      });
+      setUser(res.data.user || null);
+    } catch {
+      setUser(null);
+    }
   };
 
   const login = () => {
-    window.location.href = `${baseUrl}/api/auth/login`;
+    // Return login URL instead of redirecting here
+    return `${baseUrl}/api/auth/login`;
   };
 
   const logout = async () => {
@@ -34,7 +37,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const contextValue: UserContextType = useMemo(
     () => ({
       user,
-      loggedIn: !!user,
+      isLogin: !!user,
       refreshUser,
       logout,
       login,

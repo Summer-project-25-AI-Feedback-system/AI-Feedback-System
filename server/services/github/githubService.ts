@@ -50,10 +50,7 @@ export async function getAssignments(
   return Array.from(assignmentMap.values());
 }
 
-export async function getAssignmentRepositories(
-  org: string,
-  assignmentPrefix?: string
-) {
+export async function getRepositories(org: string, assignmentPrefix?: string) {
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""

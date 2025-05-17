@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {
-  getAssignmentRepositories,
+  getRepositories,
   getAssignments,
   getOrganizations,
   getFileContents,
@@ -51,7 +51,7 @@ export async function handleGetStudentRepos(
   }
 
   try {
-    const repos = await getAssignmentRepositories(org, assignmentPrefix);
+    const repos = await getRepositories(org, assignmentPrefix);
     res.json(repos);
   } catch (error) {
     console.error("Failed to fetch student repos:", error);

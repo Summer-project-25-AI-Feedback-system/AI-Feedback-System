@@ -7,8 +7,11 @@ import {
   // handleGetRepoTree,
   handleRepoFilesWithTree,
 } from "../controllers/githubController";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = Router();
+
+router.use(isAuthenticated);
 
 router.get("/orgs", handleGetOrganizations);
 router.get("/orgs/:orgLogin/assignments", handleGetAssignments);

@@ -5,32 +5,36 @@ import Footer from "../components/Footer";
 import { useUser } from "../context/useUser";
 
 export default function MainLayout() {
-  const userContext = useUser();
-  const { user, loggedIn, refreshUser, logout } = userContext ?? {};
+  const { user, isLogin, refreshUser, logout, login } = useUser();
 
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    refreshUser?.().then(() => {
+    const checkAndRedirect = async () => {
+      await refreshUser?.();
       if (user && location.pathname === "/") {
         navigate("/orgs");
       }
-    });
+    };
+    checkAndRedirect();
   }, [refreshUser, navigate, user, location.pathname]);
 
   const handleHeaderButtonClick = async () => {
-    if (loggedIn) {
+    if (isLogin) {
       await logout?.();
       navigate("/");
     } else {
-      navigate("/");
+      const loginUrl = login?.();
+      if (loginUrl) {
+        window.location.href = loginUrl;
+      }
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header loggedIn={!!loggedIn} onClick={handleHeaderButtonClick} />
+      <Header loggedIn={!!isLogin} onClick={handleHeaderButtonClick} />
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-screen-xl">
           <Outlet />

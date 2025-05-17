@@ -5,12 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/useUser";
 
 export default function LoginPage() {
-  const { loggedIn, login } = useUser();
+  const { isLogin, login } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loggedIn) navigate("/orgs");
-  }, [loggedIn, navigate]);
+    if (isLogin) navigate("/orgs");
+  }, [isLogin, navigate]);
+
+  const handleLogin = () => {
+    const loginUrl = login?.();
+    if (loginUrl) {
+      window.location.href = loginUrl;
+    }
+  };
 
   return (
     <div className="flex flex-col gap-20">
@@ -25,7 +32,7 @@ export default function LoginPage() {
         </p>
       </div>
       <div className="flex flex-col items-center gap-10 px-4">
-        <LoginButton onClick={login} />
+        <LoginButton onClick={handleLogin} />
         <p className="text-[16px] text-center">
           Only GitHub Classroom instructors can access this tool.
         </p>
