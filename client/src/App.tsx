@@ -1,11 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import LoginPage from "./pages/loginPage/LoginPage";
-import OrgPage from "./pages/orgPage/OrgPage";
-import RepositoryListPage from "./pages/repositoryListPage/RepositoryListPage";
+import OrgsPage from "./pages/orgPage/OrgsPage";
+import AssignmentsPage from "./pages/assignmentPage/AssignmentsPage";
 import { UserProvider } from "./context/UserProvider";
 import SpecificRepositoryPage from "./pages/specificRepositoryPage/SpecificRepositoryPage";
 import { GitHubProvider } from "./context/GitHubProvider";
+import ReposPage from "./pages/repoPage/ReposPage";
 import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 
 function App() {
@@ -16,12 +17,22 @@ function App() {
           <Routes>
             <Route path="/" element={<MainLayout />}>
               <Route index element={<LoginPage />} />
-              <Route path="/orgs" element={<OrgPage />} />
-              <Route path="/orgs/:orgLogin/repos" element={<RepositoryListPage />} />
-              <Route path="/repos" element={<RepositoryListPage />} />
-              <Route path="/submission/:id" element={<SpecificUserSubmissionScreen />} />
+              <Route path="/orgs" element={<OrgsPage />} />
+              <Route
+                path="/orgs/:orgName/assignments"
+                element={<AssignmentsPage />}
+              />
+              <Route
+                path="/orgs/:orgName/assignments/:assignmentName"
+                element={<ReposPage />}
+              />
+              <Route path="/repos" element={<SpecificRepositoryPage />} />
+              <Route
+                // path="/submission/:id"
+                path="/orgs/:orgName/assignments/:assignmentName/:id"
+                element={<SpecificUserSubmissionScreen />}
+              />
             </Route>
-            <Route path="/repos/:id" element={<SpecificRepositoryPage />} />
           </Routes>
         </Router>
       </UserProvider>

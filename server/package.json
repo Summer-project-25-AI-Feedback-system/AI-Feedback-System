@@ -27,7 +27,8 @@
     "dotenv-cli": "^8.0.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "keywords": [],
   "author": "",

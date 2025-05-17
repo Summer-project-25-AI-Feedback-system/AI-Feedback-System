@@ -3,39 +3,63 @@ import ListHeader from "./ListHeader";
 import ListItem from "./ListItem";
 import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
+import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
 
 type BasicListProps =
-  | { repoList: RepoInfo[]; specificRepoInfo?: never }
-  | { specificRepoInfo: StudentSubmissionInfo[]; repoList?: never };
+  | {
+      assignmentList: AssignmentInfo[];
+      orgName: string;
+      repoList?: never;
+      specificRepoInfo?: never;
+    }
+  | { repoList: RepoInfo[]; orgName: string; specificRepoInfo?: never }
+  | {
+      specificRepoInfo: StudentSubmissionInfo[];
+      orgName?: never;
+      repoList?: never;
+    };
 
-export default function BasicList({
-  repoList,
-  specificRepoInfo,
-}: BasicListProps) {
+export default function BasicList(props: BasicListProps) {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col">
-      <ListHeader></ListHeader>
-      {repoList.map((repo, index) => (
-        <ListItem key={index} repoInfo={repo} />
-      ))}
-      <ListHeader type={repoList ? "repo" : "submission"} />
-      {repoList &&
-        repoList.map((repo, index) => (
+      <ListHeader
+        type={
+          "assignmentList" in props
+            ? "assignment"
+            : "repoList" in props
+            ? "repo"
+            : "submission"
+        }
+      />
+      {"assignmentList" in props &&
+        props.assignmentList?.map((assignment, index) => (
+          <ListItem
+            key={`assignment-${index}`}
+            assignmentInfo={assignment}
+            onClick={() =>
+              navigate(
+                `/orgs/${props.orgName}/assignments/${encodeURIComponent(
+                  assignment.name
+                )}`
+              )
+            }
+          />
+        ))}
+
+      {"repoList" in props &&
+        props.repoList?.map((repo, index) => (
           <ListItem
             key={`repo-${index}`}
             repoInfo={repo}
-            onClick={() => navigate(`/repos/${repo.id}`)}
+            onClick={() => navigate(`/orgs/${props.orgName}/repos/${repo.id}`)}
           />
         ))}
-      {specificRepoInfo &&
-        specificRepoInfo.map((submission, index) => (
-          <ListItem
-            key={`submission-${index}`}
-            specificRepoInfo={submission}
-            onClick={() => navigate(`/repos/${submission.id}/${submission.id}`)}
-          />
+
+      {"specificRepoInfo" in props &&
+        props.specificRepoInfo?.map((submission, index) => (
+          <ListItem key={`submission-${index}`} specificRepoInfo={submission} />
         ))}
     </div>
   );
