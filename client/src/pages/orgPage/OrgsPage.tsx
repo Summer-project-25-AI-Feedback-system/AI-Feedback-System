@@ -7,11 +7,16 @@ import BasicSearchBar from "../../components/BasicSearchBar";
 
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const github = useGitHub();
 
   useEffect(() => {
     github.getOrganizations().then(setOrgs).catch(console.error);
   }, [github]);
+
+  const filteredOrgs = orgs.filter((org) =>
+    org.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   console.log("orgs:", orgs);
 
@@ -19,9 +24,9 @@ export default function OrgsPage() {
     <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <BasicHeading heading="Your Organizations" />
-        <BasicSearchBar />
+        <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      <BasicList orgList={orgs} />
+      <BasicList orgList={filteredOrgs} />
     </div>
   );
 }

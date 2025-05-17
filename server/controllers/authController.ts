@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const githubCallback = (req: Request, res: Response) => {
-  console.log("Authenticated user:", req.user);
+  // console.log("Authenticated user:", req.user);
   res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
 };
 
