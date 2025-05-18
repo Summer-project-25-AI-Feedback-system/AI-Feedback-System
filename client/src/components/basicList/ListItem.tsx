@@ -42,7 +42,7 @@ export default function ListItem(props: ListItemProps) {
 
   if ("orgInfo" in props) {
     className =
-      "grid grid-cols-[40px_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-b border-l border-r border-[#D9D9D9]";
+      "grid grid-cols-[40px_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-[#D9D9D9]";
     content = [
       <img
         key="img"
@@ -59,7 +59,7 @@ export default function ListItem(props: ListItemProps) {
     ];
   } else if ("assignmentInfo" in props) {
     className =
-      "grid grid-cols-[40px_1fr_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm border-b border-l border-r border-[#D9D9D9] hover:bg-gray-100 cursor-pointer";
+      "grid grid-cols-[40px_1fr_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-[#D9D9D9]";
     content = [
       <div key="icon" className="w-6 h-6" />,
       <p key="name" className="text-center">
@@ -78,7 +78,7 @@ export default function ListItem(props: ListItemProps) {
     const amountOfStudents = collaborators.length;
     const timeOfLastUpdate = new Date(updatedAt).toLocaleString();
     className =
-      "grid grid-cols-[40px_1fr_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm border-b border-l border-r border-[#D9D9D9] hover:bg-gray-100 cursor-pointer";
+      "grid grid-cols-[40px_1fr_1fr_1fr] h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-[#D9D9D9]";
     content = [
       <img
         key="img"
@@ -98,7 +98,7 @@ export default function ListItem(props: ListItemProps) {
     ];
   } else if ("specificRepoInfo" in props) {
     className =
-      "grid grid-cols-[40px_1fr_1fr_1fr_auto] h-[56px] px-4 gap-4 items-center text-xs sm:text-sm border-b border-l border-r border-[#D9D9D9] hover:bg-gray-100 cursor-pointer";
+      "grid grid-cols-[40px_1fr_1fr_1fr_auto] h-[56px] px-4 gap-4 items-center text-xs sm:text-sm hover:bg-gray-100 cursor-pointer overflow-y-auto max-h-[calc(100vh-240px)] border rounded border-[#D9D9D9]";
     content = [
       <img
         key="img"
