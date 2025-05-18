@@ -27,7 +27,7 @@ export default function OrgsPage() {
         <BasicHeading heading="Your Organizations" />
         <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      <BasicList orgList={filteredOrgs} />
+      <BasicList type="org" items={filteredOrgs} />
     </div>
   );
 }

@@ -9,91 +9,76 @@ import type {
 } from "@shared/githubInterfaces";
 
 type BasicListProps =
-  | {
-      orgList: OrgInfo[];
-      assignmentList?: never;
-      repoList?: never;
-      specificRepoInfo?: never;
-      orgName?: never;
-      assignmentName?: never;
-    }
-  | {
-      assignmentList: AssignmentInfo[];
-      orgName: string;
-      repoList?: never;
-      specificRepoInfo?: never;
-      assignmentName?: never;
-    }
-  | {
-      repoList: RepoInfo[];
-      orgName: string;
-      assignmentName?: string;
-      specificRepoInfo?: never;
-    }
-  | {
-      specificRepoInfo: StudentSubmissionInfo[];
-      orgName?: never;
-      repoList?: never;
-      assignmentName?: never;
-    };
+  | { type: "org"; items: OrgInfo[] }
+  | { type: "assignment"; items: AssignmentInfo[]; orgName: string }
+  | { type: "repo"; items: RepoInfo[]; orgName: string; assignmentName: string }
+  | { type: "submission"; items: StudentSubmissionInfo[] };
 
 export default function BasicList(props: BasicListProps) {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col">
-      <ListHeader
-        type={
-          "orgList" in props
-            ? "org"
-            : "assignmentList" in props
-            ? "assignment"
-            : "repoList" in props
-            ? "repo"
-            : "submission"
+      <ListHeader type={props.type} />
+
+      {props.items.map((item, index) => {
+        const key = `${props.type}-${index}`;
+
+        switch (props.type) {
+          case "org":
+            return (
+              <ListItem
+                key={key}
+                type="org"
+                data={item as OrgInfo}
+                onClick={() =>
+                  navigate(`/orgs/${(item as OrgInfo).name}/assignments`)
+                }
+              />
+            );
+
+          case "assignment":
+            return (
+              <ListItem
+                key={key}
+                type="assignment"
+                data={item as AssignmentInfo}
+                onClick={() =>
+                  navigate(
+                    `/orgs/${props.orgName}/assignments/${encodeURIComponent(
+                      (item as AssignmentInfo).name
+                    )}/repos`
+                  )
+                }
+              />
+            );
+
+          case "repo":
+            return (
+              <ListItem
+                key={key}
+                type="repo"
+                data={item as RepoInfo}
+                onClick={() =>
+                  navigate(
+                    `/orgs/${props.orgName}/assignments/${
+                      props.assignmentName
+                    }/${(item as RepoInfo).id}`
+                  )
+                }
+              />
+            );
+
+          case "submission":
+            return (
+              <ListItem
+                key={key}
+                type="submission"
+                data={item as StudentSubmissionInfo}
+              />
+            );
         }
-      />
-      {"orgList" in props &&
-        props.orgList.map((org, index) => (
-          <ListItem
-            key={`org-${index}`}
-            orgInfo={org}
-            onClick={() => navigate(`/orgs/${org.name}/assignments`)}
-          />
-        ))}
-
-      {"assignmentList" in props &&
-        props.assignmentList?.map((assignment, index) => (
-          <ListItem
-            key={`assignment-${index}`}
-            assignmentInfo={assignment}
-            onClick={() =>
-              navigate(
-                `/orgs/${props.orgName}/assignments/${encodeURIComponent(
-                  assignment.name
-                )}/repos`
-              )
-            }
-          />
-        ))}
-
-      {"repoList" in props &&
-        props.repoList?.map((repo, index) => (
-          <ListItem
-            key={`repo-${index}`}
-            repoInfo={repo}
-            onClick={() =>
-              navigate(
-                `/orgs/${props.orgName}/assignments/${props.assignmentName}/${repo.id}`
-              )
-            }
-          />
-        ))}
-
-      {"specificRepoInfo" in props &&
-        props.specificRepoInfo?.map((submission, index) => (
-          <ListItem key={`submission-${index}`} specificRepoInfo={submission} />
-        ))}
+      })}
     </div>
   );
 }

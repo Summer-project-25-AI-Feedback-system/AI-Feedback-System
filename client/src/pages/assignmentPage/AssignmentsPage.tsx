@@ -38,7 +38,11 @@ export default function AssignmentsPage() {
           </div>
         </div>
       </div>
-      <BasicList assignmentList={filteredAssignments} orgName={orgName!} />
+      <BasicList
+        type="assignment"
+        items={filteredAssignments}
+        orgName={orgName!}
+      />
     </div>
   );
 }

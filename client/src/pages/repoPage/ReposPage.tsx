@@ -44,9 +44,10 @@ export default function ReposPage() {
         </div>
       </div>
       <BasicList
-        repoList={filteredRepos}
+        type="repo"
+        items={filteredRepos}
         orgName={orgName!}
-        assignmentName={assignmentName}
+        assignmentName={assignmentName!}
       />
     </div>
   );
