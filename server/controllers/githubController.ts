@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   getAssignmentRepositories,
+  getAssignments,
   getOrganizations,
   getFileContents,
   getRepositoryFileTree,
@@ -15,6 +16,22 @@ export async function handleGetOrganizations(
     res.json(orgs);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch organizations" });
+  }
+}
+
+export async function handleGetAssignments(req: Request, res: Response) {
+  const orgLogin = req.params.orgLogin;
+
+  if (!orgLogin) {
+    res.status(400).json({ error: "Organization login not provided" });
+    return;
+  }
+  try {
+    const assignmentInfos = await getAssignments(orgLogin);
+    res.json(assignmentInfos);
+  } catch (error: any) {
+    console.error("Error fetching assignments:", error.message);
+    res.status(500).json({ error: "Failed to fetch assignments" });
   }
 }
 

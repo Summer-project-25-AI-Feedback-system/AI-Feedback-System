@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   handleGetOrganizations,
+  handleGetAssignments,
   handleGetStudentRepos,
   // handleGetFileContents,
   // handleGetRepoTree,
@@ -9,7 +10,8 @@ import {
 
 const router = Router();
 
-router.get("/organizations", handleGetOrganizations);
+router.get("/orgs", handleGetOrganizations);
+router.get("/orgs/:orgLogin/assignments", handleGetAssignments);
 router.get("/student-repos", handleGetStudentRepos);
 // router.post("/repo-files", handleGetFileContents);
 // router.get("/repo-tree", handleGetRepoTree);
