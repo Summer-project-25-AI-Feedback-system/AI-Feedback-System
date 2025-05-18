@@ -14,6 +14,7 @@ export default function ReposPage() {
   const github = useGitHub();
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const filteredRepos = useFilteredList(repos, searchTerm, (repo, term) =>
     repo.name.toLowerCase().includes(term.toLowerCase())
@@ -24,7 +25,8 @@ export default function ReposPage() {
       github
         .getRepos(orgName, assignmentName)
         .then(setRepos)
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
   }, [orgName, assignmentName, github]);
 
@@ -45,6 +47,7 @@ export default function ReposPage() {
         items={filteredRepos}
         orgName={orgName!}
         assignmentName={assignmentName!}
+        isLoading={loading}
       />
     </div>
   );

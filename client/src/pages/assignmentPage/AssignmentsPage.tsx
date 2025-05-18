@@ -13,6 +13,7 @@ export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const github = useGitHub();
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const filteredAssignments = useFilteredList(
     assignments,
@@ -22,7 +23,11 @@ export default function AssignmentsPage() {
 
   useEffect(() => {
     if (orgName) {
-      github.getAssignments(orgName).then(setAssignments).catch(console.error);
+      github
+        .getAssignments(orgName)
+        .then(setAssignments)
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
   }, [orgName, github]);
 
@@ -42,6 +47,7 @@ export default function AssignmentsPage() {
         type="assignment"
         items={filteredAssignments}
         orgName={orgName!}
+        isLoading={loading}
       />
     </div>
   );

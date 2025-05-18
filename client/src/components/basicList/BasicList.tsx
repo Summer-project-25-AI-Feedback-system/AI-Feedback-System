@@ -9,19 +9,38 @@ import type {
 } from "@shared/githubInterfaces";
 
 type BasicListProps =
-  | { type: "org"; items: OrgInfo[] }
-  | { type: "assignment"; items: AssignmentInfo[]; orgName: string }
-  | { type: "repo"; items: RepoInfo[]; orgName: string; assignmentName: string }
-  | { type: "submission"; items: StudentSubmissionInfo[] };
+  | { type: "org"; items: OrgInfo[]; isLoading: boolean }
+  | {
+      type: "assignment";
+      items: AssignmentInfo[];
+      orgName: string;
+      isLoading: boolean;
+    }
+  | {
+      type: "repo";
+      items: RepoInfo[];
+      orgName: string;
+      assignmentName: string;
+      isLoading: boolean;
+    }
+  | { type: "submission"; items: StudentSubmissionInfo[]; isLoading: boolean };
 
 export default function BasicList(props: BasicListProps) {
   const navigate = useNavigate();
+
+  const isEmpty = props.items.length === 0;
 
   return (
     <div className="flex flex-col">
       <ListHeader type={props.type} />
 
-      {Array.isArray(props.items) &&
+      {props.isLoading && <div className="text-gray-500 p-4">Loading...</div>}
+
+      {!props.isLoading && isEmpty && (
+        <div className="text-gray-500 p-4">No items found.</div>
+      )}
+      {!props.isLoading &&
+        !isEmpty &&
         props.items.map((item, index) => {
           const key = `${props.type}-${index}`;
 

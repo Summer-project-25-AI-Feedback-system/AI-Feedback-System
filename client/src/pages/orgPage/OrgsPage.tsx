@@ -9,10 +9,15 @@ import { useFilteredList } from "../../hooks/useFilteredList";
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
   const github = useGitHub();
 
   useEffect(() => {
-    github.getOrganizations().then(setOrgs).catch(console.error);
+    github
+      .getOrganizations()
+      .then(setOrgs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [github]);
 
   const filteredOrgs = useFilteredList(orgs, searchTerm, (org, term) =>
@@ -27,7 +32,7 @@ export default function OrgsPage() {
         <BasicHeading heading="Your Organizations" />
         <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      <BasicList type="org" items={filteredOrgs} />
+      <BasicList type="org" items={filteredOrgs} isLoading={loading} />
     </div>
   );
 }
