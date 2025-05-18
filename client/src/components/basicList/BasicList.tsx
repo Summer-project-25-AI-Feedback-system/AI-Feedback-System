@@ -28,7 +28,7 @@ type BasicListProps =
 export default function BasicList(props: BasicListProps) {
   const navigate = useNavigate();
 
-  const isEmpty = props.items.length === 0;
+  const isEmpty = Array.isArray(props.items) && props.items.length === 0;
 
   return (
     <div className="flex flex-col">

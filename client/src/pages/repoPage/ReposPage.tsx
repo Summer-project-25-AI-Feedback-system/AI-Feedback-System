@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
 import { useFilteredList } from "../../hooks/useFilteredList";
+import BackButton from "../../components/BackButton";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -16,7 +17,7 @@ export default function ReposPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const filteredRepos = useFilteredList(repos, searchTerm, (repo, term) =>
+  const filteredRepos = useFilteredList(repos ?? [], searchTerm, (repo, term) =>
     repo.name.toLowerCase().includes(term.toLowerCase())
   );
 
@@ -35,7 +36,10 @@ export default function ReposPage() {
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <BasicHeading heading={`Repositories in ${assignmentName}`} />
+          <div className="flex space-x-4">
+            <BackButton to={`/orgs/${orgName}/assignments`} />
+            <BasicHeading heading={`Repositories in ${assignmentName}`} />
+          </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />

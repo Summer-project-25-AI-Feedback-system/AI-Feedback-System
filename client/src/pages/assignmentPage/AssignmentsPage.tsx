@@ -7,6 +7,7 @@ import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
 import type { AssignmentInfo } from "@shared/githubInterfaces";
 import { useFilteredList } from "../../hooks/useFilteredList";
+import BackButton from "../../components/BackButton";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -36,7 +37,10 @@ export default function AssignmentsPage() {
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <BasicHeading heading={`Assignments in ${orgName}`} />
+          <div className="flex space-x-4">
+            <BackButton to="/orgs" />
+            <BasicHeading heading={`Assignments in ${orgName}`} />
+          </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />

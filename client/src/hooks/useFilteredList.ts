@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 export function useFilteredList<T>(
-  list: T[],
+  list: T[] = [],
   searchTerm: string,
   predicate: (item: T, searchTerm: string) => boolean
 ): T[] {
