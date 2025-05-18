@@ -6,12 +6,18 @@ import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
+import { useFilteredList } from "../../hooks/useFilteredList";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const { assignmentName } = useParams<{ assignmentName: string }>();
   const github = useGitHub();
   const [repos, setRepos] = useState<RepoInfo[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredRepos = useFilteredList(repos, searchTerm, (repo, term) =>
+    repo.name.toLowerCase().includes(term.toLowerCase())
+  );
 
   useEffect(() => {
     if (orgName) {
@@ -32,13 +38,13 @@ export default function ReposPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <BasicHeading heading={`Assignments in ${assignmentName}`} />
           <div className="flex space-x-4">
-            <BasicSearchBar />
+            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
       </div>
       <BasicList
-        repoList={repos}
+        repoList={filteredRepos}
         orgName={orgName!}
         assignmentName={assignmentName}
       />

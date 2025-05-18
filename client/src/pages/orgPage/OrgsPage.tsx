@@ -4,6 +4,7 @@ import type { OrgInfo } from "@shared/githubInterfaces";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
+import { useFilteredList } from "../../hooks/useFilteredList";
 
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
@@ -14,8 +15,8 @@ export default function OrgsPage() {
     github.getOrganizations().then(setOrgs).catch(console.error);
   }, [github]);
 
-  const filteredOrgs = orgs.filter((org) =>
-    org.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrgs = useFilteredList(orgs, searchTerm, (org, term) =>
+    org.name.toLowerCase().includes(term.toLowerCase())
   );
 
   console.log("orgs:", orgs);
