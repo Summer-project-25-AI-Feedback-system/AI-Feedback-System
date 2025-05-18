@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
 import type { AssignmentInfo } from "../../../../server/shared/AssignmentInfo";
+import GetCSVFileButton from "./GetCSVFileButton";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -25,6 +26,7 @@ export default function AssignmentsPage() {
         <div className="flex justify-between items-center">
           <BasicHeading heading={`Assignments in ${orgName}`} />
           <div className="flex space-x-4">
+            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>

@@ -5,7 +5,7 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import BasicButton from "../../components/BasicButton";
-import Subtext from "./Subtext";
+import Subtext from "../repoPage/Subtext";
 
 // delete mock data once data from backend is retrieved
 const mockStudentSubmissions: Record<string, StudentSubmissionInfo[]> = {

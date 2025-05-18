@@ -1,5 +1,5 @@
 interface SubtextProps {
-  text: string;
+  text: string | undefined;
 }
 
 export default function Subtext({ text }: SubtextProps) {
