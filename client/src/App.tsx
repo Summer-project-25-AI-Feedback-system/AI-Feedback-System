@@ -23,11 +23,11 @@ function App() {
                 element={<AssignmentsPage />}
               />
               <Route
-                path="/orgs/:orgName/assignments/:assignmentName"
+                path="/orgs/:orgName/assignments/:assignmentName/repos"
                 element={<ReposPage />}
               />
               <Route
-                path="/orgs/:orgName/assignments/:assignmentName/:repoId"
+                path="/orgs/:orgName/assignments/:assignmentName/repos/:repoId"
                 element={<SpecificRepositoryPage />}
               />
               <Route

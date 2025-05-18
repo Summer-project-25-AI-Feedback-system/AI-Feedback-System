@@ -38,7 +38,7 @@ export async function handleGetAssignments(
   }
 }
 
-export async function handleGetRepos(
+export async function handleGetStudentReposForAssignment(
   req: Request,
   res: Response
 ): Promise<void> {

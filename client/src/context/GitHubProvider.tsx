@@ -33,7 +33,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     assignmentName = ""
   ): Promise<RepoInfo[]> => {
     const res = await axios.get(
-      `${baseUrl}/api/github/orgs/${orgName}/assignments/${assignmentName}`,
+      `${baseUrl}/api/github/orgs/${orgName}/assignments/${assignmentName}/repos`,
       { withCredentials: true }
     );
     return res.data;

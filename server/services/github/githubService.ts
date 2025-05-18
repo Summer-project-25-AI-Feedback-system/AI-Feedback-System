@@ -58,15 +58,25 @@ export async function getRepos(org: string, assignmentPrefix?: string) {
   const iterator = await buildSearchQuery(org, assignmentPrefix);
 
   for await (const { data: reposPage } of iterator) {
-    for (const repo of reposPage) {
-      if (
+    const relevantRepos = reposPage.filter(
+      (repo) =>
         !assignmentPrefix ||
         repo.name.toLowerCase().includes(assignmentPrefix.toLowerCase())
-      ) {
-        const details = await extractRepositoryDetails(org, repo);
-        repositories.push(details);
+    );
+
+    const detailPromises = relevantRepos.map((repo) =>
+      extractRepositoryDetails(org, repo)
+    );
+
+    const detailResults = await Promise.allSettled(detailPromises);
+
+    detailResults.forEach((result) => {
+      if (result.status === "fulfilled") {
+        repositories.push(result.value);
+      } else {
+        console.warn("Repo detail fetch failed:", result.reason);
       }
-    }
+    });
   }
   console.log(`Found ${repositories.length} matching repositories.`);
   return repositories;

@@ -71,7 +71,7 @@ export default function BasicList(props: BasicListProps) {
               navigate(
                 `/orgs/${props.orgName}/assignments/${encodeURIComponent(
                   assignment.name
-                )}`
+                )}/repos`
               )
             }
           />
