@@ -21,64 +21,65 @@ export default function BasicList(props: BasicListProps) {
     <div className="flex flex-col">
       <ListHeader type={props.type} />
 
-      {props.items.map((item, index) => {
-        const key = `${props.type}-${index}`;
+      {Array.isArray(props.items) &&
+        props.items.map((item, index) => {
+          const key = `${props.type}-${index}`;
 
-        switch (props.type) {
-          case "org":
-            return (
-              <ListItem
-                key={key}
-                type="org"
-                data={item as OrgInfo}
-                onClick={() =>
-                  navigate(`/orgs/${(item as OrgInfo).name}/assignments`)
-                }
-              />
-            );
+          switch (props.type) {
+            case "org":
+              return (
+                <ListItem
+                  key={key}
+                  type="org"
+                  data={item as OrgInfo}
+                  onClick={() =>
+                    navigate(`/orgs/${(item as OrgInfo).name}/assignments`)
+                  }
+                />
+              );
 
-          case "assignment":
-            return (
-              <ListItem
-                key={key}
-                type="assignment"
-                data={item as AssignmentInfo}
-                onClick={() =>
-                  navigate(
-                    `/orgs/${props.orgName}/assignments/${encodeURIComponent(
-                      (item as AssignmentInfo).name
-                    )}/repos`
-                  )
-                }
-              />
-            );
+            case "assignment":
+              return (
+                <ListItem
+                  key={key}
+                  type="assignment"
+                  data={item as AssignmentInfo}
+                  onClick={() =>
+                    navigate(
+                      `/orgs/${props.orgName}/assignments/${encodeURIComponent(
+                        (item as AssignmentInfo).name
+                      )}/repos`
+                    )
+                  }
+                />
+              );
 
-          case "repo":
-            return (
-              <ListItem
-                key={key}
-                type="repo"
-                data={item as RepoInfo}
-                onClick={() =>
-                  navigate(
-                    `/orgs/${props.orgName}/assignments/${
-                      props.assignmentName
-                    }/${(item as RepoInfo).id}`
-                  )
-                }
-              />
-            );
+            case "repo":
+              return (
+                <ListItem
+                  key={key}
+                  type="repo"
+                  data={item as RepoInfo}
+                  onClick={() =>
+                    navigate(
+                      `/orgs/${props.orgName}/assignments/${encodeURIComponent(
+                        props.assignmentName
+                      )}/repos/${(item as RepoInfo).id}`
+                    )
+                  }
+                />
+              );
 
-          case "submission":
-            return (
-              <ListItem
-                key={key}
-                type="submission"
-                data={item as StudentSubmissionInfo}
-              />
-            );
-        }
-      })}
+            case "submission":
+              return (
+                <ListItem
+                  key={key}
+                  type="submission"
+                  data={item as StudentSubmissionInfo}
+                />
+              );
+          }
+        })}
     </div>
   );
 }

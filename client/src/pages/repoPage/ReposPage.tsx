@@ -23,10 +23,7 @@ export default function ReposPage() {
     if (orgName) {
       github
         .getRepos(orgName, assignmentName)
-        .then((data) => {
-          console.log("repos data from backend:", data);
-          setRepos(data);
-        })
+        .then(setRepos)
         .catch(console.error);
     }
   }, [orgName, assignmentName, github]);
@@ -36,7 +33,7 @@ export default function ReposPage() {
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <BasicHeading heading={`Assignments in ${assignmentName}`} />
+          <BasicHeading heading={`Repositories in ${assignmentName}`} />
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
