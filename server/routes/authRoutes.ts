@@ -8,16 +8,16 @@ import {
 } from "../controllers/authController";
 import { upsertUser } from "../services/UserService"; 
 
+import { isAuthenticated } from "../middlewares/isAuthenticated";
+
 dotenv.config();
 const router = Router();
 
-// GitHub login route (start GitHub OAuth flow)
 router.get(
   "/login",
   passport.authenticate("github", { scope: ["user:email"] })
 );
 
-// GitHub callback route (handle GitHub OAuth response)
 router.get(
   "/callback",
   passport.authenticate("github", { failureRedirect: "/login" }),
@@ -44,8 +44,7 @@ router.get(
     }
   }
 );
-
-router.get("/me", getCurrentUser);
-router.get("/logout", logout);
+router.get("/getCurrentUser", isAuthenticated, getCurrentUser);
+router.get("/logout", isAuthenticated, logout);
 
 export default router;

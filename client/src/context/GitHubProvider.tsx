@@ -1,24 +1,26 @@
 import { useMemo } from "react";
 import axios from "axios";
 import GitHubContext from "./GitHubContext";
-import type { GitHubContextType, Repo } from "../types/GitHubInfo";
-import type { AssignmentInfo } from "../../../server/shared/AssignmentInfo";
+import type { GitHubContextType } from "./types";
+import type {
+  AssignmentInfo,
+  OrgInfo,
+  RepoInfo,
+} from "@shared/githubInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
-  const getOrganizations = async () => {
+  const getOrganizations = async (): Promise<OrgInfo[]> => {
     const res = await axios.get(`${baseUrl}/api/github/orgs`, {
       withCredentials: true,
     });
     return res.data;
   };
 
-  const getAssignments = async (
-    orgLogin: string
-  ): Promise<AssignmentInfo[]> => {
+  const getAssignments = async (orgName: string): Promise<AssignmentInfo[]> => {
     const res = await axios.get(
-      `${baseUrl}/api/github/orgs/${orgLogin}/assignments`,
+      `${baseUrl}/api/github/orgs/${orgName}/assignments`,
       {
         withCredentials: true,
       }
@@ -26,21 +28,30 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
-  const getStudentRepos = async (
-    org: string,
-    assignmentPrefix = ""
-  ): Promise<Repo[]> => {
-    const res = await axios.get(`${baseUrl}/api/github/student-repos`, {
-      withCredentials: true,
-      params: { org, assignmentPrefix },
-    });
+  const getRepos = async (
+    orgName: string,
+    assignmentName = ""
+  ): Promise<RepoInfo[]> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/orgs/${orgName}/assignments/${assignmentName}/repos`,
+      { withCredentials: true }
+    );
     return res.data;
+  };
+
+  const getAllOrganizationData = async (org: string) => {
+  const res = await axios.get(`${baseUrl}/api/github/org-report`, {
+    withCredentials: true,
+    params: { org },
+  });
+  return res.data; 
   };
 
   const contextValue: GitHubContextType = useMemo(
     () => ({
       getOrganizations,
-      getStudentRepos,
+      getRepos,
+      getAllOrganizationData,
       getAssignments,
     }),
     []

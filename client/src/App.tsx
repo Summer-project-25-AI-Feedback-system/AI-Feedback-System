@@ -4,7 +4,7 @@ import LoginPage from "./pages/loginPage/LoginPage";
 import OrgsPage from "./pages/orgPage/OrgsPage";
 import AssignmentsPage from "./pages/assignmentPage/AssignmentsPage";
 import { UserProvider } from "./context/UserProvider";
-import SpecificRepositoryPage from "./pages/specificRepositoryPage/SpecificRepositoryPage";
+import RepoDetailPage from "./pages/repoDetailPage/RepoDetailPage";
 import { GitHubProvider } from "./context/GitHubProvider";
 import ReposPage from "./pages/repoPage/ReposPage";
 import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
@@ -23,13 +23,15 @@ function App() {
                 element={<AssignmentsPage />}
               />
               <Route
-                path="/orgs/:orgName/assignments/:assignmentName"
+                path="/orgs/:orgName/assignments/:assignmentName/repos"
                 element={<ReposPage />}
               />
-              <Route path="/repos" element={<SpecificRepositoryPage />} />
               <Route
-                // path="/submission/:id"
-                path="/orgs/:orgName/assignments/:assignmentName/:id"
+                path="/orgs/:orgName/assignments/:assignmentName/repos/:repoId"
+                element={<RepoDetailPage />}
+              />
+              <Route
+                path="/orgs/:orgName/assignments/:assignmentName/submission"
                 element={<SpecificUserSubmissionScreen />}
               />
             </Route>

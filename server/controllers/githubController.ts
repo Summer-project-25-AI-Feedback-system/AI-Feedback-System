@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
+import { extractAssignmentName } from "../utils/githubUtils";
 import {
-  getAssignmentRepositories,
+  getRepos,
   getAssignments,
   getOrganizations,
   getFileContents,
@@ -19,15 +20,18 @@ export async function handleGetOrganizations(
   }
 }
 
-export async function handleGetAssignments(req: Request, res: Response) {
-  const orgLogin = req.params.orgLogin;
+export async function handleGetAssignments(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const org = req.params.orgName;
 
-  if (!orgLogin) {
+  if (!org) {
     res.status(400).json({ error: "Organization login not provided" });
     return;
   }
   try {
-    const assignmentInfos = await getAssignments(orgLogin);
+    const assignmentInfos = await getAssignments(org);
     res.json(assignmentInfos);
   } catch (error: any) {
     console.error("Error fetching assignments:", error.message);
@@ -35,20 +39,20 @@ export async function handleGetAssignments(req: Request, res: Response) {
   }
 }
 
-export async function handleGetStudentRepos(
+export async function handleGetStudentReposForAssignment(
   req: Request,
   res: Response
 ): Promise<void> {
-  const org = req.query.org as string;
-  const assignmentPrefix = req.query.assignmentPrefix as string | undefined;
+  const org = req.params.orgName;
+  const assignmentPrefix = req.params.assignmentName;
 
   if (!org) {
-    res.status(400).json({ error: "Organization not specified" });
+    res.status(400).json({ error: "Missing organization or assignment name" });
     return;
   }
 
   try {
-    const repos = await getAssignmentRepositories(org, assignmentPrefix);
+    const repos = await getRepos(org, assignmentPrefix);
     res.json(repos);
   } catch (error) {
     console.error("Failed to fetch student repos:", error);
@@ -123,5 +127,43 @@ export async function handleRepoFilesWithTree(
   } catch (error) {
     console.error("Failed to fetch tree and contents:", error);
     res.status(500).json({ error: "Failed to fetch files" });
+  }
+}
+
+export async function handleGetAllOrganizationData(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const org = req.query.org as string;
+  if (!org) {
+    res.status(400).json({ error: "Missing organization parameter" });
+    return;
+  }
+  try {
+    const repos = await getRepos(org); 
+    const assignmentSet = new Set<string>();
+    const studentMap = new Map<string, Record<string, null>>(); 
+    for (const repo of repos) {
+      const assignment = extractAssignmentName(repo.name); 
+      assignmentSet.add(assignment);
+      const student = repo.collaborators?.[0]?.login || "Unknown Student";
+      // TODO: get grade here later from the db (as given by the AI)
+      if (!studentMap.has(student)) {
+        studentMap.set(student, {});
+      }
+      studentMap.get(student)![assignment] = null;
+    }
+    const responseData = {
+      org,
+      assignments: Array.from(assignmentSet),
+      submissions: Array.from(studentMap.entries()).map(([student, grades]) => ({
+        student,
+        grades, // all values null for now
+      })),
+    };
+    res.json(responseData);
+  } catch (error) {
+    console.error("Failed to get all data:", error);
+    res.status(500).json({ error: "Failed to generate all data" });
   }
 }

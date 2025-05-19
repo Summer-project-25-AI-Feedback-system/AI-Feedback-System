@@ -1,68 +1,95 @@
-import type { RepoInfo } from "../../types/RepoInfo";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type { AssignmentInfo } from "../../types/GitHubInfo";
+import type {
+  AssignmentInfo,
+  OrgInfo,
+  RepoInfo,
+} from "@shared/githubInterfaces";
 
 type ListItemProps =
-  | {
-      assignmentInfo: AssignmentInfo;
-      onClick?: () => void;
-      repoInfo?: never;
-      specificRepoInfo?: never;
-    }
-  | {
-      repoInfo: RepoInfo;
-      onClick?: () => void;
-      assignmentName?: never;
-      specificRepoInfo?: never;
-    }
-  | {
-      specificRepoInfo: StudentSubmissionInfo;
-      onClick?: () => void;
-      assignmentName?: never;
-      repoInfo?: never;
-    };
+  | { type: "org"; data: OrgInfo; onClick?: () => void }
+  | { type: "assignment"; data: AssignmentInfo; onClick?: () => void }
+  | { type: "repo"; data: RepoInfo; onClick?: () => void }
+  | { type: "submission"; data: StudentSubmissionInfo; onClick?: () => void };
 
 export default function ListItem(props: ListItemProps) {
-  return (
-    <div
-      onClick={"onClick" in props ? props.onClick : undefined}
-      className="grid grid-cols-[40px_1fr_1fr_1fr_auto] h-[56px] w-full items-center border-b border-l border-r border-[#D9D9D9] text-xs sm:text-sm px-4 gap-4 hover:bg-gray-100 cursor-pointer"
-    >
-      {"assignmentInfo" in props && (
-        <>
-          <div className="w-6 h-6" />
-          <p className="text-center">{props.assignmentInfo.name}</p>
-          <p className="text-center">{props.assignmentInfo.submissionCount}</p>
-          <p className="text-center">{props.assignmentInfo.lastUpdated}</p>
-        </>
-      )}
+  const commonClass =
+    "h-[56px] px-4 gap-2 items-center text-sm hover:bg-gray-100 cursor-pointer border rounded border-[#D9D9D9] overflow-y-auto max-h-[calc(100vh-240px)]";
 
-      {"repoInfo" in props && (
+  let content;
+  let className = "";
+
+  switch (props.type) {
+    case "org": {
+      const org = props.data;
+      className = `grid grid-cols-[40px_1fr_1fr] ${commonClass}`;
+      content = (
         <>
           <img
-            src={props.repoInfo?.studentAvatar}
-            alt="repo"
+            src={org.avatarUrl}
+            alt={org.name}
             className="w-6 h-6 rounded-full"
           />
-          <p className="text-center">{props.repoInfo?.name}</p>
-          <p className="text-center">{props.repoInfo?.amountOfStudents}</p>
-          <p className="text-center">{props.repoInfo?.timeOfLastUpdate}</p>
+          <p className="text-left">{org.name}</p>
+          <p className="text-left">{org.description || "No description"}</p>
         </>
-      )}
-      {"specificRepoInfo" in props && (
+      );
+      break;
+    }
+
+    case "assignment": {
+      const assignment = props.data;
+      className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
+      content = (
+        <>
+          <div className="w-6 h-6" />
+          <p className="text-center">{assignment.name}</p>
+          <p className="text-center">{assignment.submissionCount}</p>
+          <p className="text-center">{assignment.lastUpdated}</p>
+        </>
+      );
+      break;
+    }
+
+    case "repo": {
+      const repo = props.data;
+      const avatar = repo.collaborators[0]?.avatarUrl || "";
+      const students = repo.collaborators.length;
+      className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
+      content = (
+        <>
+          <img src={avatar} alt="repo" className="w-6 h-6 rounded-full" />
+          <p className="text-left">{repo.name}</p>
+          <p className="text-center">{students}</p>
+          <p className="text-left">
+            {new Date(repo.updatedAt).toLocaleString()}
+          </p>
+        </>
+      );
+      break;
+    }
+
+    case "submission": {
+      const submission = props.data;
+      className = `grid grid-cols-[40px_1fr_1fr_1fr_auto] ${commonClass} text-xs sm:text-sm`;
+      content = (
         <>
           <img
-            src={props.specificRepoInfo?.studentProfilePicture}
+            src={submission.studentProfilePicture}
             alt="student"
             className="w-6 h-6 rounded-full"
           />
-          <p className="text-center">{props.specificRepoInfo?.studentName}</p>
-          <p className="text-center">
-            {props.specificRepoInfo?.submissionStatus}
-          </p>
-          <p className="text-center">{props.specificRepoInfo?.currentGrade}</p>
+          <p className="text-center">{submission.studentName}</p>
+          <p className="text-center">{submission.submissionStatus}</p>
+          <p className="text-center">{submission.currentGrade}</p>
         </>
-      )}
+      );
+      break;
+    }
+  }
+
+  return (
+    <div className={className} onClick={props.onClick}>
+      {content}
     </div>
   );
 }

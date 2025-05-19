@@ -1,56 +1,54 @@
 import { octokit } from "./octokitClient";
+import { OrgInfo, AssignmentInfo } from "@shared/githubInterfaces";
 
-import { AssignmentInfo } from "../../shared/AssignmentInfo";
-
-export async function getOrganizations() {
+export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
-  return response.data.map((org) => ({
-    login: org.login,
-    description: org.description,
-    avatarUrl: org.avatar_url,
-  }));
+  return response.data.map(
+    (org): OrgInfo => ({
+      name: org.login,
+      description: org.description,
+      avatarUrl: org.avatar_url,
+    })
+  );
 }
 
-export async function getAssignments(
-  orgLogin: string
-): Promise<AssignmentInfo[]> {
+export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   const repos = await octokit.rest.repos.listForOrg({
-    org: orgLogin,
+    org: org,
     type: "all",
     per_page: 100,
   });
 
   const assignmentMap = new Map<string, AssignmentInfo>();
 
-  for (const repo of repos.data) {
+  repos.data.forEach((repo) => {
     const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
-    const existing = assignmentMap.get(baseName);
     const updatedAt = repo.updated_at ?? undefined;
 
-    if (!existing) {
+    const assignment = assignmentMap.get(baseName);
+
+    if (!assignment) {
       assignmentMap.set(baseName, {
         name: baseName,
         submissionCount: 1,
         lastUpdated: updatedAt,
       });
     } else {
-      existing.submissionCount += 1;
+      assignment.submissionCount++;
       if (
         updatedAt &&
-        new Date(updatedAt) > new Date(existing.lastUpdated ?? 0)
+        (!assignment.lastUpdated ||
+          new Date(updatedAt) > new Date(assignment.lastUpdated))
       ) {
-        existing.lastUpdated = updatedAt;
+        assignment.lastUpdated = updatedAt;
       }
     }
-  }
+  });
 
   return Array.from(assignmentMap.values());
 }
 
-export async function getAssignmentRepositories(
-  org: string,
-  assignmentPrefix?: string
-) {
+export async function getRepos(org: string, assignmentPrefix?: string) {
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
@@ -60,15 +58,25 @@ export async function getAssignmentRepositories(
   const iterator = await buildSearchQuery(org, assignmentPrefix);
 
   for await (const { data: reposPage } of iterator) {
-    for (const repo of reposPage) {
-      if (
+    const relevantRepos = reposPage.filter(
+      (repo) =>
         !assignmentPrefix ||
         repo.name.toLowerCase().includes(assignmentPrefix.toLowerCase())
-      ) {
-        const details = await extractRepositoryDetails(org, repo);
-        repositories.push(details);
+    );
+
+    const detailPromises = relevantRepos.map((repo) =>
+      extractRepositoryDetails(org, repo)
+    );
+
+    const detailResults = await Promise.allSettled(detailPromises);
+
+    detailResults.forEach((result) => {
+      if (result.status === "fulfilled") {
+        repositories.push(result.value);
+      } else {
+        console.warn("Repo detail fetch failed:", result.reason);
       }
-    }
+    });
   }
   console.log(`Found ${repositories.length} matching repositories.`);
   return repositories;

@@ -2,7 +2,8 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
-import type { UserContextType, User } from "../types/UserInfo";
+import type { UserContextType } from "./types";
+import type { User } from "@shared/githubInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -10,16 +11,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const refreshUser = async () => {
-    return axios
-      .get(`${baseUrl}/api/auth/me`, { withCredentials: true })
-      .then((res) => {
-        setUser(res.data.user || null);
-      })
-      .catch(() => setUser(null));
+    try {
+      const res = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
+        withCredentials: true,
+      });
+      setUser(res.data.user || null);
+    } catch {
+      setUser(null);
+    }
   };
 
   const login = () => {
-    window.location.href = `${baseUrl}/api/auth/login`;
+    return `${baseUrl}/api/auth/login`;
   };
 
   const logout = async () => {
@@ -34,7 +37,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const contextValue: UserContextType = useMemo(
     () => ({
       user,
-      loggedIn: !!user,
+      isLogin: !!user,
       refreshUser,
       logout,
       login,

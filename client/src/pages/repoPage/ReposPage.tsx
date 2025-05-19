@@ -1,37 +1,33 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import FilterButton from "../../components/FilterButton";
-import BasicSearchBar from "../assignmentPage/BasicSearchBar";
-import type { RepoInfo } from "../../types/RepoInfo";
+import BasicSearchBar from "../../components/BasicSearchBar";
+import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { Repo } from "../../types/GitHubInfo";
 import { useParams } from "react-router-dom";
-
-const mapToRepoInfo = (repo: Repo): RepoInfo => ({
-  id: repo.id,
-  name: repo.name,
-  studentAvatar: repo.collaborators?.[0]?.avatarUrl ?? "",
-  amountOfStudents: String(repo.collaborators?.length ?? 0),
-  timeOfLastUpdate: new Date(repo.updatedAt).toLocaleString(),
-});
+import { useFilteredList } from "../../hooks/useFilteredList";
+import BackButton from "../../components/BackButton";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const { assignmentName } = useParams<{ assignmentName: string }>();
   const github = useGitHub();
   const [repos, setRepos] = useState<RepoInfo[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const filteredRepos = useFilteredList(repos ?? [], searchTerm, (repo, term) =>
+    repo.name.toLowerCase().includes(term.toLowerCase())
+  );
 
   useEffect(() => {
     if (orgName) {
       github
-        .getStudentRepos(orgName, assignmentName)
-        .then((data) => {
-          console.log("data", data);
-          const mapped = data.map(mapToRepoInfo);
-          setRepos(mapped);
-        })
-        .catch(console.error);
+        .getRepos(orgName, assignmentName)
+        .then(setRepos)
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
   }, [orgName, assignmentName, github]);
 
@@ -39,15 +35,24 @@ export default function ReposPage() {
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
-        <div className="flex justify-between items-center">
-          <BasicHeading heading={`Repositories in ${assignmentName}`} />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
+            <BackButton to={`/orgs/${orgName}/assignments`} />
+            <BasicHeading heading={`Repositories in ${assignmentName}`} />
+          </div>
+          <div className="flex space-x-4">
+            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
-        <BasicSearchBar />
       </div>
-      <BasicList repoList={repos} orgName={orgName!} />
+      <BasicList
+        type="repo"
+        items={filteredRepos}
+        orgName={orgName!}
+        assignmentName={assignmentName!}
+        isLoading={loading}
+      />
     </div>
   );
 }
