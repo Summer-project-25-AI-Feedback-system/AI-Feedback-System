@@ -4,6 +4,7 @@ import { useGitHub } from "../../context/useGitHub";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import GetCSVFileButton from "../assignmentPage/GetCSVFileButton";
+import AverageGradeChart from "./AverageGradeChart";
 
 type OrgReport = {
   org: string;
@@ -12,6 +13,38 @@ type OrgReport = {
     student: string;
     grades: Record<string, number | string | null>; 
   }[];
+};
+
+// delete this later
+const mockOrgData = {
+  org: "Mock University",
+  assignments: ["Assignment 1", "Assignment 2", "Assignment 3"],
+  submissions: [
+    {
+      student: "alice",
+      grades: {
+        "Assignment 1": 80,
+        "Assignment 2": 90,
+        "Assignment 3": 75,
+      },
+    },
+    {
+      student: "bob",
+      grades: {
+        "Assignment 1": 70,
+        "Assignment 2": null, // missing submission
+        "Assignment 3": 85,
+      },
+    },
+    {
+      student: "charlie",
+      grades: {
+        "Assignment 1": 90,
+        "Assignment 2": 95,
+        "Assignment 3": 80,
+      },
+    },
+  ],
 };
 
 export default function AnalyticsPage() {
@@ -43,7 +76,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
-            <BackButton to={`/orgs`}/>
+            <BackButton to={`/orgs/${orgName}/assignments`}/>
             <BasicHeading heading={`Analytics for ${orgName}`} /> 
           </div>
           <div className="flex flex-col md:flex-row gap-2">
@@ -51,8 +84,12 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
-      {/* show page analytics // tested and all data fetching works */}
-      
+      {/* show page analytics */}
+      {orgData && (
+        <div className="mt-8">
+            <AverageGradeChart orgData={mockOrgData} />
+        </div>
+      )}
     </div>
   );
 }
