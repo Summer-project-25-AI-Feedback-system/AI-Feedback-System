@@ -8,6 +8,7 @@ import RepoDetailPage from "./pages/repoDetailPage/RepoDetailPage";
 import { GitHubProvider } from "./context/GitHubProvider";
 import ReposPage from "./pages/repoPage/ReposPage";
 import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
+import AnalyticsPage from './pages/analyticsPage/AnalyticsPage';
 
 function App() {
   return (
@@ -34,7 +35,11 @@ function App() {
                 path="/orgs/:orgName/assignments/:assignmentName/submission"
                 element={<SpecificUserSubmissionScreen />}
               />
-            </Route>
+              </Route>
+              <Route 
+                path="/orgs/:orgName/analytics"
+                element={<AnalyticsPage />}
+              />
           </Routes>
         </Router>
       </UserProvider>
