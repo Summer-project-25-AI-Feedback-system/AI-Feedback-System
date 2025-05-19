@@ -51,12 +51,14 @@ export default function AssignmentsPage() {
             <BasicHeading heading={`Assignments in ${orgName}`} />
           </div>
           <div className="flex space-x-4">
-            <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
-            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
+            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
-        <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
+        <div className="flex flex-col space-y-2">
+          <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
+          <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
+        </div>
       </div>
       <BasicList
         type="assignment"

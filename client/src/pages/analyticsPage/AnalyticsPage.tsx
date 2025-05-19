@@ -5,6 +5,7 @@ import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import GetCSVFileButton from "../assignmentPage/GetCSVFileButton";
 import AverageGradeChart from "./AverageGradeChart";
+import TabNavigation from "./TabNavigation";
 
 type OrgReport = {
   org: string;
@@ -32,7 +33,7 @@ const mockOrgData = {
       student: "bob",
       grades: {
         "Assignment 1": 70,
-        "Assignment 2": null, // missing submission
+        "Assignment 2": null, 
         "Assignment 3": 85,
       },
     },
@@ -52,6 +53,8 @@ export default function AnalyticsPage() {
   const github = useGitHub();
   const [orgData, setOrgData] = useState<OrgReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const tabs = ["Average Grades", "Common Issues"];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
 
  useEffect(() => {
     const fetchOrgData = async () => {
@@ -87,7 +90,15 @@ export default function AnalyticsPage() {
       {/* show page analytics */}
       {orgData && (
         <div className="mt-8">
+          <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+          {activeTab === "Average Grades" && (
             <AverageGradeChart orgData={mockOrgData} />
+          )}
+          {activeTab === "Common Issues" && (
+            <div className="text-gray-700">
+              <p>Common issues will be displayed here.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
