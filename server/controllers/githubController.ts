@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { extractAssignmentName } from "../utils/githubUtils";
 import {
   getAssignmentRepositories,
   getAssignments,
@@ -130,20 +131,34 @@ export async function handleGetAllOrganizationData(
   req: Request,
   res: Response
 ): Promise<void> {
+  const org = req.query.org as string;
+  if (!org) {
+    res.status(400).json({ error: "Missing organization parameter" });
+    return;
+  }
   try {
-    const org = req.query.org as string;
-    if (!org) {
-        res.status(400).json({ error: "Missing organization parameter" });
-        return;
-    }
     const repos = await getAssignmentRepositories(org); 
-    // TODO: later also get the student submissions from services
-    const allData = {
+    const assignmentSet = new Set<string>();
+    const studentMap = new Map<string, Record<string, null>>(); 
+    for (const repo of repos) {
+      const assignment = extractAssignmentName(repo.name); 
+      assignmentSet.add(assignment);
+      const student = repo.collaborators?.[0]?.login || "Unknown Student";
+      // TODO: get grade here later from the db (as given by the AI)
+      if (!studentMap.has(student)) {
+        studentMap.set(student, {});
+      }
+      studentMap.get(student)![assignment] = null;
+    }
+    const responseData = {
       org,
-      repos, 
-      students: [], // TODO: add later
+      assignments: Array.from(assignmentSet),
+      submissions: Array.from(studentMap.entries()).map(([student, grades]) => ({
+        student,
+        grades, // all values null for now
+      })),
     };
-    res.json(allData);
+    res.json(responseData);
   } catch (error) {
     console.error("Failed to get all data:", error);
     res.status(500).json({ error: "Failed to generate all data" });

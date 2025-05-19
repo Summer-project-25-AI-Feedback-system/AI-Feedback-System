@@ -27,19 +27,48 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
 
 type OrgReport = {
   org: string;
-  repos: { name: string }[]; 
-  students: any[]; // TODO: change later
+  assignments: string[];
+  submissions: {
+    student: string;
+    grades: Record<string, number | string | null>; 
+  }[];
 };
 
 export function generateCSVFromOrg(orgData: OrgReport) {
   // get all assignments under the organization
-  const assignmentNames = orgData.repos.map((repo) => repo.name);
-  const headerRow = ["Name", ...assignmentNames];
+  const assignmentNames = orgData.assignments;
+  const headerRow = ["Username", ...assignmentNames, "Grade Average"]; // change so that these are in different columns, not in the same column separated by a ","
+
   const csvLines = [
     ["Overview of Student Grades and Submissions"], // title row
     headerRow, // header row
-    // TODO: get students later
   ];
-  const csvContent = csvLines.map((row) => row.join(",")).join("\n");
+
+  for (const submission of orgData.submissions) {
+    const { student, grades } = submission;
+    const row: (string | number)[] = [student];
+
+    let sum = 0;
+    let count = 0;
+
+    for (const assignment of assignmentNames) {
+      const grade = grades[assignment];
+      if (typeof grade === "number") {
+        row.push(grade);
+        sum += grade;
+        count++;
+      } else if (grade === "Error") {
+        row.push("Error");
+      } else {
+        row.push("N/A");
+      }
+    }
+
+    const average = count > 0 ? (sum / count).toFixed(2) : "N/A";
+    row.push(average);
+    csvLines.push(row.map(String));
+  } 
+
+  const csvContent = csvLines.map((row) => row.join(";")).join("\n");
   downloadCSV(csvContent, `${orgData.org}_assignments_overview.csv`);
 } 
