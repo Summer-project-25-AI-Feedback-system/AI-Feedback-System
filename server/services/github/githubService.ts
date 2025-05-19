@@ -49,7 +49,7 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   return Array.from(assignmentMap.values());
 }
 
-export async function getRepos(
+export async function getStudentReposForAssignment(
   org: string,
   assignmentPrefix?: string
 ): Promise<RepoInfo[]> {
