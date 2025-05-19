@@ -39,10 +39,19 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
+  const getAllOrganizationData = async (org: string) => {
+  const res = await axios.get(`${baseUrl}/api/github/org-report`, {
+    withCredentials: true,
+    params: { org },
+  });
+  return res.data; 
+  };
+
   const contextValue: GitHubContextType = useMemo(
     () => ({
       getOrganizations,
       getRepos,
+      getAllOrganizationData,
       getAssignments,
     }),
     []

@@ -9,6 +9,7 @@ export interface GitHubContextType {
   getOrganizations: () => Promise<OrgInfo[]>;
   getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
   getRepos: (org: string, assignmentPrefix?: string) => Promise<RepoInfo[]>;
+  getAllOrganizationData: (org: string) => Promise<any>;
 }
 
 export interface UserContextType {

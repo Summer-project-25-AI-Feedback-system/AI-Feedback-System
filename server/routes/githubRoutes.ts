@@ -6,6 +6,7 @@ import {
   // handleGetFileContents,
   // handleGetRepoTree,
   handleRepoFilesWithTree,
+  handleGetAllOrganizationData
 } from "../controllers/githubController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
@@ -22,5 +23,6 @@ router.get(
 // router.post("/repo-files", handleGetFileContents);
 // router.get("/repo-tree", handleGetRepoTree);
 // router.get("/repo-tree-and-files", handleRepoFilesWithTree);
+router.get("/org-report", handleGetAllOrganizationData);
 
 export default router;

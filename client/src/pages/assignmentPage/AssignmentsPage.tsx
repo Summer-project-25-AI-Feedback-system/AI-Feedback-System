@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import type { AssignmentInfo } from "@shared/githubInterfaces";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
+import GetCSVFileButton from "./GetCSVFileButton";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -42,10 +43,11 @@ export default function AssignmentsPage() {
             <BasicHeading heading={`Assignments in ${orgName}`} />
           </div>
           <div className="flex space-x-4">
-            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
+            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
+        <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
       <BasicList
         type="assignment"
