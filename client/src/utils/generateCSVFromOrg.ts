@@ -1,5 +1,3 @@
-// in here below, get the organization as a prop and make the CSV report of its assignments and submissions
-
 /* 
 FORMAT OF CSV DOCUMENT:
 
@@ -37,7 +35,7 @@ type OrgReport = {
 export function generateCSVFromOrg(orgData: OrgReport) {
   // get all assignments under the organization
   const assignmentNames = orgData.assignments;
-  const headerRow = ["Username", ...assignmentNames, "Grade Average"]; // change so that these are in different columns, not in the same column separated by a ","
+  const headerRow = ["Username", ...assignmentNames, "Grade Average"]; 
 
   const csvLines = [
     ["Overview of Student Grades and Submissions"], // title row
