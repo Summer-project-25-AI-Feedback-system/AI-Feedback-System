@@ -4,7 +4,7 @@ import { useGitHub } from "../../context/useGitHub";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import GetCSVFileButton from "../assignmentPage/GetCSVFileButton";
-import AverageGradeChart from "./AverageGradeChart";
+import AveragePointsChart from "./AveragePointsChart";
 import TabNavigation from "./TabNavigation";
 
 type OrgReport = {
@@ -34,7 +34,7 @@ const mockOrgData = {
       grades: {
         "Assignment 1": 70,
         "Assignment 2": null, 
-        "Assignment 3": 85,
+        "Assignment 3": 50,
       },
     },
     {
@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
   const github = useGitHub();
   const [orgData, setOrgData] = useState<OrgReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const tabs = ["Average Grades", "Common Issues"];
+  const tabs = ["Average Points", "Common Issues"];
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
  useEffect(() => {
@@ -91,8 +91,8 @@ export default function AnalyticsPage() {
       {orgData && (
         <div className="mt-8">
           <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-          {activeTab === "Average Grades" && (
-            <AverageGradeChart orgData={mockOrgData} />
+          {activeTab === "Average Points" && (
+            <AveragePointsChart orgData={mockOrgData} />
           )}
           {activeTab === "Common Issues" && (
             <div className="text-gray-700">

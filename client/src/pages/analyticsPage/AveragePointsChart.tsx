@@ -24,7 +24,7 @@ type AverageGradeChartProps = {
   orgData: OrgReport;
 };
 
-export default function AverageGradeChart({ orgData }: AverageGradeChartProps) {
+export default function AveragePointsChart({ orgData }: AverageGradeChartProps) {
   const labels = orgData.assignments;
 
   const averages = orgData.assignments.map((assignment) => {
@@ -44,7 +44,7 @@ export default function AverageGradeChart({ orgData }: AverageGradeChartProps) {
     labels,
     datasets: [
       {
-        label: 'Average Grade',
+        label: 'Average Points',
         data: averages,
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderRadius: 4,
@@ -60,7 +60,7 @@ export default function AverageGradeChart({ orgData }: AverageGradeChartProps) {
       },
       title: {
         display: true,
-        text: 'Average Grade per Assignment',
+        text: 'Average Points per Assignment',
       },
     },
     scales: {
