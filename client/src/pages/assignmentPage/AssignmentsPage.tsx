@@ -35,7 +35,7 @@ export default function AssignmentsPage() {
 
   console.log("assignments:", assignments);
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12">
+    <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
@@ -43,11 +43,15 @@ export default function AssignmentsPage() {
             <BasicHeading heading={`Assignments in ${orgName}`} />
           </div>
           <div className="flex space-x-4">
-            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
+            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
+
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
-        <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+          <GetCSVFileButton text="Get CSV Report" orgLogin={orgName} />
+        </div>
       </div>
       <BasicList
         type="assignment"
