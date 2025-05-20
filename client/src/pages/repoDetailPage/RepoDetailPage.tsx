@@ -1,140 +1,99 @@
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import type { RepoInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
-import BasicSearchBar from "../../components/BasicSearchBar";
+import { BasicInfoCard } from "./BasicInfoCard";
+import { Spinner } from "./Spinner";
+import { useGitHub } from "../../context/useGitHub";
 import BasicButton from "../../components/BasicButton";
-import Subtext from "./Subtext";
-import { useFilteredList } from "../../hooks/useFilteredList";
-import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-
-// Mocked data until backend is connected
-const mockStudentSubmissions: Record<string, StudentSubmissionInfo[]> = {
-  "1": [
-    {
-      id: "1",
-      studentProfilePicture: "https://example.com/profile1.jpg",
-      studentName: "Alice Johnson",
-      submissionStatus: "Analyzed",
-      currentGrade: "4",
-      submissionTime: "2 hours ago",
-    },
-    {
-      id: "2",
-      studentProfilePicture: "https://example.com/profile2.jpg",
-      studentName: "Bob Smith",
-      submissionStatus: "Missing",
-      currentGrade: "N/A",
-      submissionTime: "N/A",
-    },
-  ],
-};
 
 export default function RepoDetailPage() {
-  const { orgName, assignmentName, id } = useParams<{
-    orgName: string;
-    assignmentName: string;
-    id: string;
-  }>();
+  const location = useLocation();
+  const repoFromState = location.state as RepoInfo | undefined;
+  const { orgName, assignmentName, repoName } = useParams();
+  const github = useGitHub();
 
-  const [repoName, setRepoName] = useState("Repository Name");
-  const [submissions, setSubmissions] = useState<StudentSubmissionInfo[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [repo, setRepo] = useState<RepoInfo | null>(repoFromState ?? null);
   const [loading, setLoading] = useState(true);
-  const [lastRunTime, setLastRunTime] = useState("");
-
-  const filteredSubmissions = useFilteredList(
-    submissions,
-    searchTerm,
-    (submission, term) =>
-      submission.studentName.toLowerCase().includes(term.toLowerCase())
-  );
 
   useEffect(() => {
-    if (id) {
-      // Mock fetch
-      const fetchedSubmissions = mockStudentSubmissions[id] ?? [];
-      setSubmissions(fetchedSubmissions);
+    if (!repoFromState && github && orgName && assignmentName && repoName) {
+      setLoading(true);
+      github
+        .getRepos(orgName, assignmentName)
+        .then((repos) => {
+          const found = repos.find((r) => r.name === repoName);
+          setRepo(found || null);
+        })
+        .finally(() => setLoading(false));
+    } else {
       setLoading(false);
-
-      // Mock last analysis run
-      const now = new Date();
-      setLastRunTime(
-        `${now.getHours()}:${now
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")} ${now.getDate()}.${
-          now.getMonth() + 1
-        }.${now.getFullYear()}`
-      );
     }
-  }, [id]);
+  }, [orgName, assignmentName, repoName, github, repoFromState]);
 
-  const gradedCount = submissions.filter(
-    (s) => s.submissionStatus.toLowerCase() === "analyzed"
-  ).length;
-
+  if (loading) return <Spinner />;
+  if (!repo)
+    return <div className="p-4 text-red-600">Repository not found.</div>;
   const handleClick = (action: string) => {
     console.log(`Clicked ${action}`);
   };
 
+  console.log("repo", repo);
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12">
+    <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
             <BackButton
               to={`/orgs/${orgName}/assignments/${assignmentName}/repos`}
             />
-            <BasicHeading heading={repoName} />
-          </div>
-          <div className="flex flex-col md:flex-row gap-2">
-            <BasicButton
-              onClick={() => handleClick("Re-run")}
-              text="Re-run Analysis"
-            />
-            <BasicButton
-              onClick={() => handleClick("Analyze Selected")}
-              text="Analyze Selected"
-            />
+            <BasicHeading heading={repo.name} />
           </div>
         </div>
-
-        <div>
-          <Subtext
-            text={`${gradedCount}/${submissions.length} submissions graded.`}
-          />
-          <Subtext text={`Last analysis run ${lastRunTime}.`} />
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex space-x-4">
-            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            <FilterButton
-              buttonText="Filter"
-              items={["Analyzed", "Error", "Missing"]}
-            />
-          </div>
-          <div className="flex space-x-4">
+        <div className="flex space-x-4 md:justify-between">
+          <BasicInfoCard title="Repository Information">
+            <ul className="space-y-1 text-sm">
+              <li>
+                <strong>ID:</strong> {repo.collaborators[0].name}
+              </li>
+              <li>
+                <strong>Created:</strong>{" "}
+                {new Date(repo.createdAt).toLocaleString()}
+              </li>
+              <li>
+                <strong>Updated:</strong>{" "}
+                {new Date(repo.updatedAt).toLocaleString()}
+              </li>
+              <li>
+                <strong>URL:</strong>{" "}
+                <a
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  {repo?.url}
+                </a>
+              </li>
+            </ul>
+          </BasicInfoCard>
+          <div className="flex-col space-y-4">
             <BasicButton
-              onClick={() => handleClick("CSV")}
-              text="Get CSV Report"
+              onClick={() => handleClick("Download Feedback PDF")}
+              text="Download Feedback PDF"
             />
             <BasicButton
-              onClick={() => handleClick("Analytics")}
-              text="See Analytics Page"
+              onClick={() => handleClick("Edit Grade")}
+              text="Edit Grade"
+            />
+            <BasicButton
+              onClick={() => handleClick("Edit Feedback")}
+              text="Edit Feedback"
             />
           </div>
         </div>
       </div>
-
-      <BasicList
-        type="submission"
-        items={filteredSubmissions}
-        isLoading={loading}
-      />
     </div>
   );
 }

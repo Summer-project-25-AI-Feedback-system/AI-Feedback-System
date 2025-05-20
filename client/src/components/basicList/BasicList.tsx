@@ -83,7 +83,8 @@ export default function BasicList(props: BasicListProps) {
                     navigate(
                       `/orgs/${props.orgName}/assignments/${encodeURIComponent(
                         props.assignmentName
-                      )}/repos/${(item as RepoInfo).id}`
+                      )}/repos/${(item as RepoInfo).id}`,
+                      { state: item }
                     )
                   }
                 />
