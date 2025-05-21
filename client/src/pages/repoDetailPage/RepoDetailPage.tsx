@@ -17,6 +17,12 @@ export default function RepoDetailPage() {
   const [repo, setRepo] = useState<RepoInfo | null>(repoFromState ?? null);
   const [loading, setLoading] = useState(true);
 
+  const [aiFeedback, setAiFeedback] = useState<string>(
+    "Dummy info - This student demonstrates a solid understanding of the assignment objectives but should improve code readability and documentation."
+  );
+
+  const [isEditing, setIsEditing] = useState(false);
+
   useEffect(() => {
     if (!repoFromState && github && orgName && assignmentName && repoName) {
       setLoading(true);
@@ -35,11 +41,17 @@ export default function RepoDetailPage() {
   if (loading) return <Spinner />;
   if (!repo)
     return <div className="p-4 text-red-600">Repository not found.</div>;
+
   const handleClick = (action: string) => {
-    console.log(`Clicked ${action}`);
+    if (action === "Edit Feedback") {
+      setIsEditing((prev) => !prev);
+    } else {
+      console.log(`Clicked ${action}`);
+    }
   };
 
-  console.log("repo", repo);
+  console.log("repo:", repo);
+
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
@@ -89,9 +101,23 @@ export default function RepoDetailPage() {
             />
             <BasicButton
               onClick={() => handleClick("Edit Feedback")}
-              text="Edit Feedback"
+              text={isEditing ? "Save Feedback" : "Edit Feedback"}
             />
           </div>
+        </div>
+
+        {/* Feedback Section */}
+        <div className="flex flex-col space-y-2 p-4">
+          <h2 className="text-lg font-semibold">AI Feedback</h2>
+          {isEditing ? (
+            <textarea
+              value={aiFeedback}
+              onChange={(e) => setAiFeedback(e.target.value)}
+              className="w-full p-2 border rounded resize-y min-h-[100px]"
+            />
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">{aiFeedback}</p>
+          )}
         </div>
       </div>
     </div>
