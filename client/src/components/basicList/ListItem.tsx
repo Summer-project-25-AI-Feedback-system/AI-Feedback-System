@@ -53,7 +53,7 @@ export default function ListItem(props: ListItemProps) {
     case "repo": {
       const repo = props.data;
       const avatar = repo.collaborators[0]?.avatarUrl || "";
-      const students = repo.collaborators.length;
+      const students = repo.collaborators[0].name;
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
         <>

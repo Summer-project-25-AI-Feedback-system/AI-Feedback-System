@@ -15,7 +15,7 @@ export default function ListHeader({ type }: ListHeaderProps) {
 
   if (type === "assignment") {
     return (
-      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium">
+      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium border rounded border-b border-l border-r border-[#D9D9D9]">
         <div />
         <p className="text-center">Assignment name</p>
         <p className="text-center">Students</p>
@@ -26,7 +26,7 @@ export default function ListHeader({ type }: ListHeaderProps) {
 
   if (type === "repo") {
     return (
-      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium">
+      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium border rounded border-b border-l border-r border-[#D9D9D9]">
         <div />
         <p className="text-left">Repository name</p>
         <p className="text-center">Students</p>
@@ -37,7 +37,7 @@ export default function ListHeader({ type }: ListHeaderProps) {
 
   if (type === "submission") {
     return (
-      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium">
+      <div className="grid grid-cols-[40px_1fr_1fr_1fr] h-[40px] bg-[#EADDFF] px-4 gap-2 items-center text-sm font-medium border rounded border-b border-l border-r border-[#D9D9D9]">
         <div />
         <p className="text-center">Student</p>
         <p className="text-center">Submission status</p>

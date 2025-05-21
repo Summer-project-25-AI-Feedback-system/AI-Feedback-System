@@ -1,5 +1,6 @@
+import { promises } from "dns";
 import { octokit } from "./octokitClient";
-import { OrgInfo, AssignmentInfo } from "@shared/githubInterfaces";
+import { OrgInfo, AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
@@ -48,7 +49,10 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   return Array.from(assignmentMap.values());
 }
 
-export async function getRepos(org: string, assignmentPrefix?: string) {
+export async function getStudentReposForAssignment(
+  org: string,
+  assignmentPrefix?: string
+): Promise<RepoInfo[]> {
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
@@ -80,6 +84,62 @@ export async function getRepos(org: string, assignmentPrefix?: string) {
   }
   console.log(`Found ${repositories.length} matching repositories.`);
   return repositories;
+}
+
+async function buildSearchQuery(org: string, assignmentPrefix?: string) {
+  const query =
+    `fork:true org:${org}` +
+    (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
+
+  return octokit.paginate.iterator(octokit.rest.search.repos, {
+    q: query,
+    per_page: 100,
+  });
+}
+
+async function extractRepositoryDetails(org: string, repo: any) {
+  const lastCommit = await octokit.rest.repos.getCommit({
+    owner: org,
+    repo: repo.name,
+    ref: repo.default_branch,
+  });
+
+  return {
+    id: repo.node_id,
+    name: repo.name,
+    owner: repo.owner?.login || "unknown",
+    avatarUrl: repo.owner?.avatar_url ?? null,
+    url: repo.html_url,
+    description: repo.description,
+    defaultBranch: repo.default_branch,
+    createdAt: repo.created_at,
+    updatedAt: repo.updated_at,
+    lastPush: repo.pushed_at,
+    lastCommitMessage: lastCommit.data.commit.message,
+    lastCommitDate: lastCommit.data.commit.committer?.date,
+    collaborators: await getRepoCollaborators(org, repo.name),
+  };
+}
+
+async function getRepoCollaborators(org: string, repo: string) {
+  try {
+    const response = await octokit.rest.repos.listCollaborators({
+      owner: org,
+      repo,
+      affiliation: "direct",
+    });
+
+    return response.data.map((user) => ({
+      id: user.id,
+      name: user.login,
+      avatarUrl: user.avatar_url,
+      htmlUrl: user.html_url,
+      permissions: user.permissions,
+    }));
+  } catch (error: any) {
+    console.error(`Error fetching collaborators for ${repo}:`, error.message);
+    return [];
+  }
 }
 
 export async function getFileContents(
@@ -149,60 +209,4 @@ export async function getRepositoryFileTree(owner: string, repo: string) {
   return treeData.tree
     .filter((item) => item.type === "blob") // Only files
     .map((item) => item.path);
-}
-
-export async function buildSearchQuery(org: string, assignmentPrefix?: string) {
-  const query =
-    `fork:true org:${org}` +
-    (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
-
-  return octokit.paginate.iterator(octokit.rest.search.repos, {
-    q: query,
-    per_page: 100,
-  });
-}
-
-export async function extractRepositoryDetails(org: string, repo: any) {
-  const lastCommit = await octokit.rest.repos.getCommit({
-    owner: org,
-    repo: repo.name,
-    ref: repo.default_branch,
-  });
-
-  return {
-    id: repo.node_id,
-    name: repo.name,
-    owner: repo.owner?.login || "unknown",
-    avatarUrl: repo.owner?.avatar_url ?? null,
-    url: repo.html_url,
-    description: repo.description,
-    defaultBranch: repo.default_branch,
-    createdAt: repo.created_at,
-    updatedAt: repo.updated_at,
-    lastPush: repo.pushed_at,
-    lastCommitMessage: lastCommit.data.commit.message,
-    lastCommitDate: lastCommit.data.commit.committer?.date,
-    collaborators: await getRepoCollaborators(org, repo.name),
-  };
-}
-
-async function getRepoCollaborators(org: string, repo: string) {
-  try {
-    const response = await octokit.rest.repos.listCollaborators({
-      owner: org,
-      repo,
-      affiliation: "direct",
-    });
-
-    return response.data.map((user) => ({
-      login: user.login,
-      id: user.id,
-      avatarUrl: user.avatar_url,
-      htmlUrl: user.html_url,
-      permissions: user.permissions,
-    }));
-  } catch (error: any) {
-    console.error(`Error fetching collaborators for ${repo}:`, error.message);
-    return [];
-  }
 }

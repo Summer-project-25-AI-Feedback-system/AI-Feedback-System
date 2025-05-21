@@ -8,6 +8,7 @@ import { useGitHub } from "../../context/useGitHub";
 import { useParams } from "react-router-dom";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
+import BasicButton from "../../components/BasicButton";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -31,9 +32,13 @@ export default function ReposPage() {
     }
   }, [orgName, assignmentName, github]);
 
+  const handleClick = (action: string) => {
+    console.log(`Clicked ${action}`);
+  };
+
   console.log("repos", repos);
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12">
+    <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
@@ -45,7 +50,18 @@ export default function ReposPage() {
             <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+          <BasicButton
+            onClick={() => handleClick("Run Analysis")}
+            text="Run Analysis"
+          />
+          <BasicButton
+            onClick={() => handleClick("Run Analysis")}
+            text="View Summary"
+          />
+        </div>
       </div>
+
       <BasicList
         type="repo"
         items={filteredRepos}
