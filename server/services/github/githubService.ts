@@ -31,11 +31,11 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
     if (!assignment) {
       assignmentMap.set(baseName, {
         name: baseName,
-        numberOfStudent: 1,
+        amountOfStudents: 1,
         updatedAt: updatedAt ?? "",
       });
     } else {
-      assignment.numberOfStudent++;
+      assignment.amountOfStudents++;
       if (
         updatedAt &&
         (!assignment.updatedAt ||

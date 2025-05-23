@@ -9,6 +9,8 @@ import { useParams } from "react-router-dom";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
 import BasicButton from "../../components/BasicButton";
+import { sortData } from "../../utils/sortingUtils";
+import type { SortOption } from "../../utils/sortingUtils";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -17,17 +19,13 @@ export default function ReposPage() {
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<"Newest" | "Oldest">("Newest");
+  const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
 
   const filteredRepos = useFilteredList(repos ?? [], searchTerm, (repo, term) =>
     repo.name.toLowerCase().includes(term.toLowerCase())
   );
 
-  const sortedRepos = [...filteredRepos].sort((a, b) => {
-    const dateA = new Date(a.updatedAt).getTime();
-    const dateB = new Date(b.updatedAt).getTime();
-    return sortOrder === "Newest" ? dateB - dateA : dateA - dateB;
-  });
+  const sortedRepos = sortData(filteredRepos, sortOrder);
 
   useEffect(() => {
     if (orgName) {
@@ -56,10 +54,8 @@ export default function ReposPage() {
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
             <SortingButton
               buttonText="Sort By"
-              items={["Newest", "Oldest"]}
-              onSelect={(selected) =>
-                setSortOrder(selected as "Newest" | "Oldest")
-              }
+              items={["Newest", "Oldest", "A–Z", "Z–A"]}
+              onSelect={(selected) => setSortOrder(selected as SortOption)}
             />
           </div>
         </div>

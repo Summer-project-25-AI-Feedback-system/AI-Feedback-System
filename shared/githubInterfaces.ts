@@ -6,7 +6,7 @@ export interface OrgInfo {
 
 export interface AssignmentInfo {
   name: string;
-  numberOfStudent: number;
+  amountOfStudents: number;
   updatedAt: string;
 }
 

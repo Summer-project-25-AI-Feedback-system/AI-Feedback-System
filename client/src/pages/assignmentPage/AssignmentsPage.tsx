@@ -1,6 +1,6 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/SortingButton";
+import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
@@ -9,6 +9,8 @@ import type { AssignmentInfo } from "@shared/githubInterfaces";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
 import GetCSVFileButton from "./GetCSVFileButton";
+import { sortData } from "../../utils/sortingUtils";
+import type { SortOption } from "../../utils/sortingUtils";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -16,18 +18,15 @@ export default function AssignmentsPage() {
   const github = useGitHub();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<"Newest" | "Oldest">("Newest");
+  const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
 
   const filteredAssignments = useFilteredList(
     assignments,
     searchTerm,
     (a, term) => a.name.toLowerCase().includes(term.toLowerCase())
   );
-  const sortedAssignments = [...filteredAssignments].sort((a, b) => {
-    const dateA = new Date(a.updatedAt).getTime();
-    const dateB = new Date(b.updatedAt).getTime();
-    return sortOrder === "Newest" ? dateB - dateA : dateA - dateB;
-  });
+
+  const sortedAssignments = sortData(filteredAssignments, sortOrder);
 
   useEffect(() => {
     if (orgName) {
@@ -51,12 +50,10 @@ export default function AssignmentsPage() {
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
 
-            <FilterButton
+            <SortingButton
               buttonText="Sort By"
-              items={["Newest", "Oldest"]}
-              onSelect={(selected) =>
-                setSortOrder(selected as "Newest" | "Oldest")
-              }
+              items={["Newest", "Oldest", "A–Z", "Z–A", "Amount of Students"]}
+              onSelect={(selected) => setSortOrder(selected as SortOption)}
             />
           </div>
         </div>

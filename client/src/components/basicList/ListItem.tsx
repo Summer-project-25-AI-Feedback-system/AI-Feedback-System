@@ -39,14 +39,14 @@ export default function ListItem(props: ListItemProps) {
     case "assignment": {
       const assignment = props.data;
       const assignmentName = assignment.name;
-      const numberOfStudent = assignment.numberOfStudent;
+      const amountOfStudents = assignment.amountOfStudents;
       const updatedAt = new Date(assignment.updatedAt).toLocaleString();
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
         <>
           <div className="w-6 h-6 rounded-full" />
           <p className="text-left">{assignmentName}</p>
-          <p className="text-center">{numberOfStudent}</p>
+          <p className="text-center">{amountOfStudents}</p>
           <p className="text-left">{updatedAt}</p>
         </>
       );
