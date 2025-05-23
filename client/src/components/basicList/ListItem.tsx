@@ -38,13 +38,16 @@ export default function ListItem(props: ListItemProps) {
 
     case "assignment": {
       const assignment = props.data;
+      const assignmentName = assignment.name;
+      const numberOfStudent = assignment.numberOfStudent;
+      const updatedAt = new Date(assignment.updatedAt).toLocaleString();
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
         <>
-          <div className="w-6 h-6" />
-          <p className="text-center">{assignment.name}</p>
-          <p className="text-center">{assignment.submissionCount}</p>
-          <p className="text-center">{assignment.lastUpdated}</p>
+          <div className="w-6 h-6 rounded-full" />
+          <p className="text-left">{assignmentName}</p>
+          <p className="text-center">{numberOfStudent}</p>
+          <p className="text-left">{updatedAt}</p>
         </>
       );
       break;
@@ -54,15 +57,14 @@ export default function ListItem(props: ListItemProps) {
       const repo = props.data;
       const avatar = repo.collaborators[0]?.avatarUrl || "";
       const students = repo.collaborators[0].name;
+      const updatedAt = new Date(repo.updatedAt).toLocaleString();
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
         <>
           <img src={avatar} alt="repo" className="w-6 h-6 rounded-full" />
           <p className="text-left">{repo.name}</p>
           <p className="text-center">{students}</p>
-          <p className="text-left">
-            {new Date(repo.updatedAt).toLocaleString()}
-          </p>
+          <p className="text-left">{updatedAt}</p>
         </>
       );
       break;

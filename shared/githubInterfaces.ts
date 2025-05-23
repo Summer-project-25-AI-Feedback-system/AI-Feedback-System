@@ -6,8 +6,8 @@ export interface OrgInfo {
 
 export interface AssignmentInfo {
   name: string;
-  submissionCount: number;
-  lastUpdated?: string;
+  numberOfStudent: number;
+  updatedAt: string;
 }
 
 export interface RepoInfo {

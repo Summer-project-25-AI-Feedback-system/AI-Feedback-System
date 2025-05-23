@@ -1,6 +1,6 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
+import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
@@ -17,10 +17,17 @@ export default function ReposPage() {
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"Newest" | "Oldest">("Newest");
 
   const filteredRepos = useFilteredList(repos ?? [], searchTerm, (repo, term) =>
     repo.name.toLowerCase().includes(term.toLowerCase())
   );
+
+  const sortedRepos = [...filteredRepos].sort((a, b) => {
+    const dateA = new Date(a.updatedAt).getTime();
+    const dateB = new Date(b.updatedAt).getTime();
+    return sortOrder === "Newest" ? dateB - dateA : dateA - dateB;
+  });
 
   useEffect(() => {
     if (orgName) {
@@ -47,7 +54,13 @@ export default function ReposPage() {
           </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
+            <SortingButton
+              buttonText="Sort By"
+              items={["Newest", "Oldest"]}
+              onSelect={(selected) =>
+                setSortOrder(selected as "Newest" | "Oldest")
+              }
+            />
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
@@ -64,7 +77,7 @@ export default function ReposPage() {
 
       <BasicList
         type="repo"
-        items={filteredRepos}
+        items={sortedRepos}
         orgName={orgName!}
         assignmentName={assignmentName!}
         isLoading={loading}

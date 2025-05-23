@@ -1,6 +1,6 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
+import FilterButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
@@ -16,12 +16,18 @@ export default function AssignmentsPage() {
   const github = useGitHub();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"Newest" | "Oldest">("Newest");
 
   const filteredAssignments = useFilteredList(
     assignments,
     searchTerm,
     (a, term) => a.name.toLowerCase().includes(term.toLowerCase())
   );
+  const sortedAssignments = [...filteredAssignments].sort((a, b) => {
+    const dateA = new Date(a.updatedAt).getTime();
+    const dateB = new Date(b.updatedAt).getTime();
+    return sortOrder === "Newest" ? dateB - dateA : dateA - dateB;
+  });
 
   useEffect(() => {
     if (orgName) {
@@ -45,7 +51,13 @@ export default function AssignmentsPage() {
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
 
-            <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
+            <FilterButton
+              buttonText="Sort By"
+              items={["Newest", "Oldest"]}
+              onSelect={(selected) =>
+                setSortOrder(selected as "Newest" | "Oldest")
+              }
+            />
           </div>
         </div>
 
@@ -55,7 +67,7 @@ export default function AssignmentsPage() {
       </div>
       <BasicList
         type="assignment"
-        items={filteredAssignments}
+        items={sortedAssignments}
         orgName={orgName!}
         isLoading={loading}
       />
