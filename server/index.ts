@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import githubRoutes from "./routes/githubRoutes";
 import submitRoute from"./routes/submitRoute";
+import uploadCsvRoute from "./routes/uploadCsvRoute";
+
 dotenv.config();
 
 const app = express();
@@ -47,7 +49,9 @@ app.get("/api/message", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/github", githubRoutes);
-app.use("/api", submitRoute);
+app.use("/submit", submitRoute);
+app.use("/api", uploadCsvRoute);
+
 // Error handling
 app.use(
   (

@@ -210,3 +210,12 @@ export async function getRepositoryFileTree(owner: string, repo: string) {
     .filter((item) => item.type === "blob") // Only files
     .map((item) => item.path);
 }
+export async function getRepos(org: string): Promise<any[]> {
+  const repos = await octokit.rest.repos.listForOrg({
+    org,
+    type: "all",
+    per_page: 100,
+  });
+
+  return repos.data;
+}
