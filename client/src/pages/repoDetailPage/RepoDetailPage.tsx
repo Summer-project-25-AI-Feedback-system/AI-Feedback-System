@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import { BasicInfoCard } from "./BasicInfoCard";
+import RepoInfoCard from "./RepoInfoCard";
 import { Spinner } from "./Spinner";
 import { useGitHub } from "../../context/useGitHub";
-import BasicButton from "../../components/BasicButton";
+import FeedbackCard from "./FeedbackCard";
+import { generateSummaryFeedback } from "../../utils/feedbackUtils";
+import FeedbackActions from "./FeedbackActions";
 
 import type { AssignmentFeedback } from "@shared/aiInterfaces";
 
@@ -20,27 +22,36 @@ export default function RepoDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [feedbackData, setFeedbackData] = useState<AssignmentFeedback>({
-    studentName: "Jane Doe",
-    repoName: "jane-assignment-1",
-    assignmentTitle: "React Todo App",
-    feedback: "The code structure is clean and follows best practices...",
-    grade: "4",
-    fileName: "App.jsx",
-    date: "2025-05-20T15:23:00Z",
-    rubricScores: [
-      {
-        criterion: "Code Quality",
-        score: 4,
-        comment: "Well-structured with minor issues.",
-      },
-      {
-        criterion: "Functionality",
-        score: 5,
-        comment: "All features are implemented.",
-      },
-      { criterion: "UI/UX", score: 3, comment: "UI is basic, but functional." },
-    ],
+  const [feedbackData, setFeedbackData] = useState<AssignmentFeedback>(() => {
+    const initial = {
+      repoName: "week-2-assignment-tangerinekey380",
+      assignmentTitle: "React Todo App",
+      grade: "4",
+      date: "2025-05-20T15:23:00Z",
+      feedbackByFile: [
+        {
+          fileName: "App.tsx",
+          issues: [
+            { id: 1, line: 5, text: "It would be better to use justify-end." },
+            { id: 2, line: 34, text: "I couldn't find the import component." },
+          ],
+        },
+        {
+          fileName: "Home.tsx",
+          issues: [
+            {
+              id: 1,
+              line: 5,
+              text: "I couldn't find any useContent component in the App.tsx - compulsory requirement.",
+            },
+          ],
+        },
+      ],
+    };
+    return {
+      ...initial,
+      feedback: generateSummaryFeedback(initial.feedbackByFile),
+    };
   });
 
   const handleClick = (action: string) => {
@@ -51,13 +62,6 @@ export default function RepoDetailPage() {
     }
   };
 
-  const handleRubricScoreChange = (index: number, newScore: number) => {
-    setFeedbackData((prev) => {
-      const updatedRubric = [...(prev.rubricScores ?? [])];
-      updatedRubric[index] = { ...updatedRubric[index], score: newScore };
-      return { ...prev, rubricScores: updatedRubric };
-    });
-  };
   const handleFeedbackTextChange = (newText: string) => {
     setFeedbackData((prev) => ({ ...prev, feedback: newText }));
   };
@@ -95,117 +99,23 @@ export default function RepoDetailPage() {
           </div>
         </div>
         <div className="flex space-x-4 md:justify-between">
-          <BasicInfoCard title="Repository Information">
-            <ul className="space-y-1 text-sm">
-              <li>
-                <strong>ID:</strong> {repo.collaborators[0].name}
-              </li>
-              <li>
-                <strong>Created:</strong>{" "}
-                {new Date(repo.createdAt).toLocaleString()}
-              </li>
-              <li>
-                <strong>Updated:</strong>{" "}
-                {new Date(repo.updatedAt).toLocaleString()}
-              </li>
-              <li>
-                <strong>URL:</strong>{" "}
-                <a
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  {repo?.url}
-                </a>
-              </li>
-            </ul>
-          </BasicInfoCard>
+          <RepoInfoCard title="Repository Information" repo={repo} />
           <div className="flex-col space-y-4">
-            <BasicButton
-              onClick={() => handleClick("Download Feedback PDF")}
-              text="Download Feedback PDF"
-            />
-            <BasicButton
-              onClick={() => handleClick("Edit Grade")}
-              text="Edit Grade"
-            />
-            <BasicButton
-              onClick={() => handleClick("Edit Feedback")}
-              text={isEditing ? "Save Feedback" : "Edit Feedback"}
+            <FeedbackActions
+              isEditing={isEditing}
+              onEditToggle={() => setIsEditing((prev) => !prev)}
+              onDownload={() => handleClick("Download Feedback PDF")}
             />
           </div>
         </div>
-
-        {/* Feedback Section */}
-        <div className="flex flex-col space-y-2 p-4 border rounded-md">
-          <h2 className="text-lg font-semibold">AI Feedback</h2>
-          <p>
-            <strong>Student:</strong> {feedbackData.studentName}
-          </p>
-          <p>
-            <strong>File:</strong> {feedbackData.fileName}
-          </p>
-          <p>
-            <strong>Date:</strong>{" "}
-            {new Date(feedbackData.date).toLocaleString()}
-          </p>
-
-          <div className="mt-2">
-            <strong>Overall Feedback:</strong>
-            {isEditing ? (
-              <textarea
-                className="w-full p-2 border rounded mt-1 resize-y min-h-[100px]"
-                value={feedbackData.feedback}
-                onChange={(e) => handleFeedbackTextChange(e.target.value)}
-              />
-            ) : (
-              <p className="text-sm whitespace-pre-wrap mt-1">
-                {feedbackData.feedback}
-              </p>
-            )}
-          </div>
-
-          {feedbackData.rubricScores && (
-            <div className="mt-4">
-              <h3 className="font-medium">Rubric Scores:</h3>
-              <ul className="mt-2 space-y-2">
-                {feedbackData.rubricScores.map((rubric, index) => (
-                  <li key={index} className="flex flex-col">
-                    <div className="flex items-center space-x-4">
-                      <span className="w-40 font-medium">
-                        {rubric.criterion}:
-                      </span>
-                      {isEditing ? (
-                        <select
-                          className="border rounded px-2 py-1"
-                          value={rubric.score}
-                          onChange={(e) =>
-                            handleRubricScoreChange(
-                              index,
-                              Number(e.target.value)
-                            )
-                          }
-                        >
-                          {[1, 2, 3, 4, 5].map((val) => (
-                            <option key={val} value={val}>
-                              {val}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span>{rubric.score}</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 ml-1">
-                      {rubric.comment}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        <FeedbackCard
+          isEditing={isEditing}
+          feedbackData={feedbackData}
+          onFeedbackChange={handleFeedbackTextChange}
+          onGradeChange={(newGrade) =>
+            setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
+          }
+        />
       </div>
     </div>
   );
