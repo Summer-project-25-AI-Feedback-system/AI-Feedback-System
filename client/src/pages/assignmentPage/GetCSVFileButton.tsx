@@ -15,16 +15,16 @@ export default function GetCSVFileButton({ text, orgLogin }: GetCSVFileButtonPro
     try {
       const data = await github.getAllOrganizationData(orgLogin);
 
-      // 🔹 1. Ladataan CSV koneelle
+     
       generateCSVFromOrg(data);
 
-      // 🔹 2. Lähetetään sama data backendiin
-      const response = await fetch("http://localhost:5000/api/upload-org", {
+      
+      const response = await fetch("http://localhost:5000/api/csv-reports", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ rows: data }), // HUOM! rows-avain
+        body: JSON.stringify({ rows: data }), 
       });
 
       const result = await response.json();
