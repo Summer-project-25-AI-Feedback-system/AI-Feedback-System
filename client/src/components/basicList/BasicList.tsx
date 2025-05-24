@@ -7,32 +7,29 @@ import type {
   OrgInfo,
   RepoInfo,
 } from "@shared/githubInterfaces";
+import type { SortOption } from "src/utils/sortingUtils";
 
-type BasicListProps =
-  | { type: "org"; items: OrgInfo[]; isLoading: boolean }
-  | {
-      type: "assignment";
-      items: AssignmentInfo[];
-      orgName: string;
-      isLoading: boolean;
-    }
-  | {
-      type: "repo";
-      items: RepoInfo[];
-      orgName: string;
-      assignmentName: string;
-      isLoading: boolean;
-    }
-  | { type: "submission"; items: StudentSubmissionInfo[]; isLoading: boolean };
+interface BasicListProps {
+  type: "org" | "assignment" | "repo" | "submission";
+  items: OrgInfo[] | AssignmentInfo[] | RepoInfo[] | StudentSubmissionInfo[];
+  isLoading: boolean;
+  orgName?: string;
+  assignmentName?: string;
+  sortOrder?: SortOption;
+  onSortChange?: (option: SortOption) => void;
+}
 
 export default function BasicList(props: BasicListProps) {
   const navigate = useNavigate();
-
   const isEmpty = Array.isArray(props.items) && props.items.length === 0;
 
   return (
     <div className="flex flex-col">
-      <ListHeader type={props.type} />
+      <ListHeader
+        type={props.type}
+        sortOrder={props.sortOrder}
+        onSortChange={props.onSortChange}
+      />
 
       {props.isLoading && <div className="text-gray-500 p-4">Loading...</div>}
 
@@ -82,7 +79,7 @@ export default function BasicList(props: BasicListProps) {
                   onClick={() =>
                     navigate(
                       `/orgs/${props.orgName}/assignments/${encodeURIComponent(
-                        props.assignmentName
+                        props.assignmentName!
                       )}/repos/${(item as RepoInfo).id}`,
                       { state: item }
                     )

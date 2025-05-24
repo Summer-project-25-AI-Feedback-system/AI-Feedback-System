@@ -1,6 +1,6 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import SortingButton from "../../components/SortingButton";
+// import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
@@ -50,11 +50,11 @@ export default function AssignmentsPage() {
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
 
-            <SortingButton
+            {/* <SortingButton
               buttonText="Sort By"
               items={["Newest", "Oldest", "A–Z", "Z–A", "Amount of Students"]}
               onSelect={(selected) => setSortOrder(selected as SortOption)}
-            />
+            /> */}
           </div>
         </div>
 
@@ -67,6 +67,8 @@ export default function AssignmentsPage() {
         items={sortedAssignments}
         orgName={orgName!}
         isLoading={loading}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
       />
     </div>
   );
