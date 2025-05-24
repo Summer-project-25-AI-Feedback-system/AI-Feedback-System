@@ -1,4 +1,5 @@
 import { BiSearch } from "react-icons/bi";
+import { RxCross1 } from "react-icons/rx";
 
 interface BasicSearchBarProps {
   value: string;
@@ -18,7 +19,16 @@ export default function BasicSearchBar({
         onChange={(e) => onChange(e.target.value)}
         className="flex-grow bg-transparent outline-none text-gray-800 placeholder-gray-500"
       />
-      <BiSearch />
+      {value ? (
+        <button
+          onClick={() => onChange("")}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <RxCross1 size={18} />
+        </button>
+      ) : (
+        <BiSearch className="text-gray-500" size={20} />
+      )}
     </div>
   );
 }
