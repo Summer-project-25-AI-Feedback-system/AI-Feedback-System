@@ -1,6 +1,5 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-// import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import BackButton from "../../components/BackButton";
 import BasicButton from "../../components/BasicButton";
 import { sortData } from "../../utils/sortingUtils";
 import type { SortOption } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -52,11 +52,6 @@ export default function ReposPage() {
           </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            {/* <SortingButton
-              buttonText="Sort By"
-              items={["Newest", "Oldest", "A–Z", "Z–A"]}
-              onSelect={(selected) => setSortOrder(selected as SortOption)}
-            /> */}
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
@@ -71,15 +66,19 @@ export default function ReposPage() {
         </div>
       </div>
 
-      <BasicList
-        type="repo"
-        items={sortedRepos}
-        orgName={orgName!}
-        assignmentName={assignmentName!}
-        isLoading={loading}
-        sortOrder={sortOrder}
-        onSortChange={setSortOrder}
-      />
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="repo"
+          items={sortedRepos}
+          orgName={orgName!}
+          assignmentName={assignmentName!}
+          isLoading={loading}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }

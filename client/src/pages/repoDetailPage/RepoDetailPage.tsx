@@ -4,7 +4,7 @@ import type { RepoInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import RepoInfoCard from "./RepoInfoCard";
-import { Spinner } from "./Spinner";
+import Spinner from "../../components/Spinner";
 import { useGitHub } from "../../context/useGitHub";
 import FeedbackCard from "./FeedbackCard";
 import { generateSummaryFeedback } from "../../utils/feedbackUtils";
@@ -81,7 +81,6 @@ export default function RepoDetailPage() {
     }
   }, [orgName, assignmentName, repoName, github, repoFromState]);
 
-  if (loading) return <Spinner />;
   if (!repo)
     return <div className="p-4 text-red-600">Repository not found.</div>;
 
@@ -98,24 +97,30 @@ export default function RepoDetailPage() {
             <BasicHeading heading={repo.name} />
           </div>
         </div>
-        <div className="flex space-x-4 md:justify-between">
-          <RepoInfoCard title="Repository Information" repo={repo} />
-          <div className="flex-col space-y-4">
-            <FeedbackActions
+        {loading ? (
+          <Spinner />
+        ) : (
+          <>
+            <div className="flex space-x-4 md:justify-between">
+              <RepoInfoCard title="Repository Information" repo={repo} />
+              <div className="flex-col space-y-4">
+                <FeedbackActions
+                  isEditing={isEditing}
+                  onEditToggle={() => setIsEditing((prev) => !prev)}
+                  onDownload={() => handleClick("Download Feedback PDF")}
+                />
+              </div>
+            </div>
+            <FeedbackCard
               isEditing={isEditing}
-              onEditToggle={() => setIsEditing((prev) => !prev)}
-              onDownload={() => handleClick("Download Feedback PDF")}
+              feedbackData={feedbackData}
+              onFeedbackChange={handleFeedbackTextChange}
+              onGradeChange={(newGrade) =>
+                setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
+              }
             />
-          </div>
-        </div>
-        <FeedbackCard
-          isEditing={isEditing}
-          feedbackData={feedbackData}
-          onFeedbackChange={handleFeedbackTextChange}
-          onGradeChange={(newGrade) =>
-            setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
-          }
-        />
+          </>
+        )}
       </div>
     </div>
   );

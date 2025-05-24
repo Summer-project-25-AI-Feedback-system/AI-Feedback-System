@@ -11,6 +11,7 @@ import BackButton from "../../components/BackButton";
 import GetCSVFileButton from "./GetCSVFileButton";
 import { sortData } from "../../utils/sortingUtils";
 import type { SortOption } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -49,12 +50,6 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-
-            {/* <SortingButton
-              buttonText="Sort By"
-              items={["Newest", "Oldest", "A–Z", "Z–A", "Amount of Students"]}
-              onSelect={(selected) => setSortOrder(selected as SortOption)}
-            /> */}
           </div>
         </div>
 
@@ -62,14 +57,19 @@ export default function AssignmentsPage() {
           <GetCSVFileButton text="Get CSV Report" orgLogin={orgName} />
         </div>
       </div>
-      <BasicList
-        type="assignment"
-        items={sortedAssignments}
-        orgName={orgName!}
-        isLoading={loading}
-        sortOrder={sortOrder}
-        onSortChange={setSortOrder}
-      />
+
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="assignment"
+          items={sortedAssignments}
+          orgName={orgName!}
+          isLoading={loading}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }

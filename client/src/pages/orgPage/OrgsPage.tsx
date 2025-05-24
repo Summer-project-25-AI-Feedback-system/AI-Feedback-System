@@ -7,6 +7,7 @@ import BasicSearchBar from "../../components/BasicSearchBar";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import type { SortOption } from "../../utils/sortingUtils";
 import { sortData } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
@@ -35,13 +36,18 @@ export default function OrgsPage() {
         <BasicHeading heading="Your Organizations" />
         <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      <BasicList
-        type="org"
-        items={sortedOrgs}
-        isLoading={loading}
-        sortOrder={sortOrder}
-        onSortChange={setSortOrder}
-      />
+
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="org"
+          items={sortedOrgs}
+          isLoading={false}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }
