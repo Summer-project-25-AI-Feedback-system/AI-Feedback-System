@@ -1,6 +1,6 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import SortingButton from "../../components/SortingButton";
+// import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
@@ -52,11 +52,11 @@ export default function ReposPage() {
           </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            <SortingButton
+            {/* <SortingButton
               buttonText="Sort By"
               items={["Newest", "Oldest", "A–Z", "Z–A"]}
               onSelect={(selected) => setSortOrder(selected as SortOption)}
-            />
+            /> */}
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
@@ -77,6 +77,8 @@ export default function ReposPage() {
         orgName={orgName!}
         assignmentName={assignmentName!}
         isLoading={loading}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
       />
     </div>
   );
