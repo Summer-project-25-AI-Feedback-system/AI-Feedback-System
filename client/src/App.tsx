@@ -35,11 +35,11 @@ function App() {
                 path="/orgs/:orgName/assignments/:assignmentName/submission"
                 element={<SpecificUserSubmissionScreen />}
               />
-              </Route>
               <Route 
                 path="/orgs/:orgName/analytics"
                 element={<AnalyticsPage />}
               />
+              </Route>
           </Routes>
         </Router>
       </UserProvider>

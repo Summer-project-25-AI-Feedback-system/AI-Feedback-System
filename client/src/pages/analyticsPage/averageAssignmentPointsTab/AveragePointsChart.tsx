@@ -1,40 +1,27 @@
 import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Title,
-  Legend,
-} from 'chart.js';
+import type { OrgReport } from 'src/types/OrgReport';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend);
 
-type OrgReport = {
-  org: string;
-  assignments: string[];
-  submissions: {
-    student: string;
-    grades: Record<string, number | string | null>; 
-  }[];
-};
-
 type AverageGradeChartProps = {
   orgData: OrgReport;
+  maxPointsPerAssignment: { [assignmentName: string]: number };
 };
 
-export default function AveragePointsChart({ orgData }: AverageGradeChartProps) {
+export default function AveragePointsChart({ orgData, maxPointsPerAssignment }: AverageGradeChartProps) {
   const labels = orgData.assignments;
 
   const averages = orgData.assignments.map((assignment) => {
-    const grades = orgData.submissions.map((s) => {
+    const maxPoints = maxPointsPerAssignment[assignment];
+    if (!maxPoints || maxPoints === 0) return 0;
+    const percentages = orgData.submissions.map((s) => {
       const grade = s.grades[assignment];
-      return typeof grade === 'number' ? grade : null;
+      return typeof grade === 'number' ? (grade / maxPoints) * 100 : null;
     }).filter((g): g is number => g !== null);
 
-    const average = grades.length
-      ? grades.reduce((a, b) => a + b, 0) / grades.length
+    const average = percentages.length
+      ? percentages.reduce((a, b) => a + b, 0) / percentages.length
       : 0;
 
     return average.toFixed(2);
@@ -44,7 +31,7 @@ export default function AveragePointsChart({ orgData }: AverageGradeChartProps) 
     labels,
     datasets: [
       {
-        label: 'Average Points',
+        label: 'Average % of Points',
         data: averages,
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderRadius: 4,
@@ -60,13 +47,16 @@ export default function AveragePointsChart({ orgData }: AverageGradeChartProps) 
       },
       title: {
         display: true,
-        text: 'Average Points per Assignment',
+        text: 'Average Percentage of Points per Assignment',
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100, 
+        ticks: {
+          callback: (value: number | string ) => `${value}%`,
+        },
       },
     },
   };

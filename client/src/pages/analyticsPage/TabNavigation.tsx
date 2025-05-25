@@ -6,7 +6,7 @@ type TabNavigationProps = {
 
 export default function TabNavigation({ tabs, activeTab, setActiveTab }: TabNavigationProps) {
   return (
-    <div className="flex space-x-4 border-b mb-4">
+    <div className="flex justify-center border-b mb-8 w-fit mx-auto">
       {tabs.map((tab) => (
         <button
           key={tab}
