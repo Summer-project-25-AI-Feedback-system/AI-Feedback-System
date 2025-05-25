@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import UploadStudentRosterCSVButton from "./UploadStudentRosterCSVButton";
-import Subtext from "../../repoDetailPage/Subtext";
+import Subtext from "./Subtext";
 import StudentTable from "./StudentTable";
 import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 import type { OrgReport } from "src/types/OrgReport";
