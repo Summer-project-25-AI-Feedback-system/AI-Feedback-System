@@ -60,7 +60,7 @@ export default function ReposPage() {
             text="Run Analysis"
           />
           <BasicButton
-            onClick={() => handleClick("Run Analysis")}
+            onClick={() => handleClick("View Summary")}
             text="View Summary"
           />
         </div>
