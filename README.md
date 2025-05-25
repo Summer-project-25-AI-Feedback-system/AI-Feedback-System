@@ -22,7 +22,7 @@
 - [Start](#rocket-start)
 - [UI Diagram](#art-ui-diagram)
 - [API document](#page_with_curl-api-document)
-- [Key Libraries](#-key-libraries)
+- [Key Libraries](#package-key-libraries)
 - [Deployment](#gear-deployment)
 - [Video Demonstration](#video_camera-video-demonstration)
 - [Contacts](#email-contacts)
