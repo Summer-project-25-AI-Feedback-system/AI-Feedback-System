@@ -5,12 +5,16 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useFilteredList } from "../../hooks/useFilteredList";
+import type { SortOption } from "../../utils/sortingUtils";
+import { sortData } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const github = useGitHub();
+  const [sortOrder, setSortOrder] = useState<SortOption>("A–Z");
 
   useEffect(() => {
     github
@@ -23,7 +27,7 @@ export default function OrgsPage() {
   const filteredOrgs = useFilteredList(orgs, searchTerm, (org, term) =>
     org.name.toLowerCase().includes(term.toLowerCase())
   );
-
+  const sortedOrgs = sortData(filteredOrgs, sortOrder);
   console.log("orgs:", orgs);
 
   return (
@@ -32,7 +36,18 @@ export default function OrgsPage() {
         <BasicHeading heading="Your Organizations" />
         <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      <BasicList type="org" items={filteredOrgs} isLoading={loading} />
+
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="org"
+          items={sortedOrgs}
+          isLoading={false}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }

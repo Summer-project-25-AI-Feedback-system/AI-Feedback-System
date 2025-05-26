@@ -22,6 +22,7 @@
 - [Start](#rocket-start)
 - [UI Diagram](#art-ui-diagram)
 - [API document](#page_with_curl-api-document)
+- [Key Libraries](#package-key-libraries)
 - [Deployment](#gear-deployment)
 - [Video Demonstration](#video_camera-video-demonstration)
 - [Contacts](#email-contacts)
@@ -54,12 +55,18 @@ TBD
 
 TBD
 
+## :package: Key Libraries
+
+- [Chart.js](https://www.chartjs.org/) – Used to display analytics and data visualizations
+- [PapaParse](https://www.papaparse.com/) – Used to parse CSV files (e.g., uploading student rosters)
+
 ## :gear: Deployment
 
 TBD
 
 ## :email: Contacts
 
+- [Lassi Riekkola](https://github.com/LassiRiekkola) - Backend developer
 - [Helmi Griffiths](https://github.com/HelmiGr) - Full Stack developer
 - [Sam Chou](https://github.com/FuzzyKala) - Full Stack developer
 - [Ville Matilainen](https://github.com/vima20) - Full Stack developer

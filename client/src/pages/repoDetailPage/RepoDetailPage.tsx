@@ -1,140 +1,127 @@
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import type { RepoInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
-import BasicSearchBar from "../../components/BasicSearchBar";
-import BasicButton from "../../components/BasicButton";
-import Subtext from "./Subtext";
-import { useFilteredList } from "../../hooks/useFilteredList";
-import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
+import RepoInfoCard from "./RepoInfoCard";
+import Spinner from "../../components/Spinner";
+import { useGitHub } from "../../context/useGitHub";
+import FeedbackCard from "./FeedbackCard";
+import { generateSummaryFeedback } from "../../utils/feedbackUtils";
+import FeedbackActions from "./FeedbackActions";
 
-// Mocked data until backend is connected
-const mockStudentSubmissions: Record<string, StudentSubmissionInfo[]> = {
-  "1": [
-    {
-      id: "1",
-      studentProfilePicture: "https://example.com/profile1.jpg",
-      studentName: "Alice Johnson",
-      submissionStatus: "Analyzed",
-      currentGrade: "4",
-      submissionTime: "2 hours ago",
-    },
-    {
-      id: "2",
-      studentProfilePicture: "https://example.com/profile2.jpg",
-      studentName: "Bob Smith",
-      submissionStatus: "Missing",
-      currentGrade: "N/A",
-      submissionTime: "N/A",
-    },
-  ],
-};
+import type { AssignmentFeedback } from "@shared/aiInterfaces";
 
 export default function RepoDetailPage() {
-  const { orgName, assignmentName, id } = useParams<{
-    orgName: string;
-    assignmentName: string;
-    id: string;
-  }>();
+  const location = useLocation();
+  const repoFromState = location.state as RepoInfo | undefined;
+  const { orgName, assignmentName, repoName } = useParams();
+  const github = useGitHub();
 
-  const [repoName, setRepoName] = useState("Repository Name");
-  const [submissions, setSubmissions] = useState<StudentSubmissionInfo[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [repo, setRepo] = useState<RepoInfo | null>(repoFromState ?? null);
   const [loading, setLoading] = useState(true);
-  const [lastRunTime, setLastRunTime] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const filteredSubmissions = useFilteredList(
-    submissions,
-    searchTerm,
-    (submission, term) =>
-      submission.studentName.toLowerCase().includes(term.toLowerCase())
-  );
-
-  useEffect(() => {
-    if (id) {
-      // Mock fetch
-      const fetchedSubmissions = mockStudentSubmissions[id] ?? [];
-      setSubmissions(fetchedSubmissions);
-      setLoading(false);
-
-      // Mock last analysis run
-      const now = new Date();
-      setLastRunTime(
-        `${now.getHours()}:${now
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")} ${now.getDate()}.${
-          now.getMonth() + 1
-        }.${now.getFullYear()}`
-      );
-    }
-  }, [id]);
-
-  const gradedCount = submissions.filter(
-    (s) => s.submissionStatus.toLowerCase() === "analyzed"
-  ).length;
+  const [feedbackData, setFeedbackData] = useState<AssignmentFeedback>(() => {
+    const initial = {
+      repoName: "week-2-assignment-tangerinekey380",
+      assignmentTitle: "React Todo App",
+      grade: "4",
+      date: "2025-05-20T15:23:00Z",
+      feedbackByFile: [
+        {
+          fileName: "App.tsx",
+          issues: [
+            { id: 1, line: 5, text: "It would be better to use justify-end." },
+            { id: 2, line: 34, text: "I couldn't find the import component." },
+          ],
+        },
+        {
+          fileName: "Home.tsx",
+          issues: [
+            {
+              id: 1,
+              line: 5,
+              text: "I couldn't find any useContent component in the App.tsx - compulsory requirement.",
+            },
+          ],
+        },
+      ],
+    };
+    return {
+      ...initial,
+      feedback: generateSummaryFeedback(initial.feedbackByFile),
+    };
+  });
 
   const handleClick = (action: string) => {
-    console.log(`Clicked ${action}`);
+    if (action === "Edit Feedback") {
+      setIsEditing((prev) => !prev);
+    } else {
+      console.log(`Clicked ${action}`);
+    }
   };
 
+  const handleFeedbackTextChange = (newText: string) => {
+    setFeedbackData((prev) => ({ ...prev, feedback: newText }));
+  };
+
+  useEffect(() => {
+    if (!repoFromState && github && orgName && assignmentName && repoName) {
+      setLoading(true);
+      github
+        .getRepos(orgName, assignmentName)
+        .then((repos) => {
+          const found = repos.find((r) => r.name === repoName);
+          setRepo(found || null);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [orgName, assignmentName, repoName, github, repoFromState]);
+
+  if (!repo)
+    return <div className="p-4 text-red-600">Repository not found.</div>;
+
+  console.log("repo:", repo);
+
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12">
+    <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
             <BackButton
               to={`/orgs/${orgName}/assignments/${assignmentName}/repos`}
             />
-            <BasicHeading heading={repoName} />
-          </div>
-          <div className="flex flex-col md:flex-row gap-2">
-            <BasicButton
-              onClick={() => handleClick("Re-run")}
-              text="Re-run Analysis"
-            />
-            <BasicButton
-              onClick={() => handleClick("Analyze Selected")}
-              text="Analyze Selected"
-            />
+            <BasicHeading heading={repo.name} />
           </div>
         </div>
-
-        <div>
-          <Subtext
-            text={`${gradedCount}/${submissions.length} submissions graded.`}
-          />
-          <Subtext text={`Last analysis run ${lastRunTime}.`} />
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex space-x-4">
-            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            <FilterButton
-              buttonText="Filter"
-              items={["Analyzed", "Error", "Missing"]}
+        {loading ? (
+          <Spinner />
+        ) : (
+          <>
+            <div className="flex space-x-4 md:justify-between">
+              <RepoInfoCard title="Repository Information" repo={repo} />
+              <div className="flex-col space-y-4">
+                <FeedbackActions
+                  isEditing={isEditing}
+                  onEditToggle={() => setIsEditing((prev) => !prev)}
+                  onDownload={() => handleClick("Download Feedback PDF")}
+                />
+              </div>
+            </div>
+            <FeedbackCard
+              isEditing={isEditing}
+              feedbackData={feedbackData}
+              onFeedbackChange={handleFeedbackTextChange}
+              onGradeChange={(newGrade) =>
+                setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
+              }
             />
-          </div>
-          <div className="flex space-x-4">
-            <BasicButton
-              onClick={() => handleClick("CSV")}
-              text="Get CSV Report"
-            />
-            <BasicButton
-              onClick={() => handleClick("Analytics")}
-              text="See Analytics Page"
-            />
-          </div>
-        </div>
+          </>
+        )}
       </div>
-
-      <BasicList
-        type="submission"
-        items={filteredSubmissions}
-        isLoading={loading}
-      />
     </div>
   );
 }

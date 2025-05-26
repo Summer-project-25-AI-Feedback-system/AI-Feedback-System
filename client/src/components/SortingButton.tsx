@@ -4,11 +4,21 @@ import { BiSolidDownArrow } from "react-icons/bi";
 interface FilterButtonProps {
   buttonText: string;
   items: string[];
+  onSelect?: (value: string) => void;
 }
 
-export default function FilterButton({ buttonText, items }: FilterButtonProps) {
+export default function SortingButton({
+  buttonText,
+  items,
+  onSelect,
+}: FilterButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const toggleDropdown = () => setIsOpen((prev) => !prev);
+
+  const handleSelect = (item: string) => {
+    onSelect?.(item);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative inline-block">
@@ -29,9 +39,7 @@ export default function FilterButton({ buttonText, items }: FilterButtonProps) {
             <li
               key={index}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-[#1E1E1E]"
-              onClick={() => {
-                setIsOpen(false);
-              }}
+              onClick={() => handleSelect(item)}
             >
               {item}
             </li>

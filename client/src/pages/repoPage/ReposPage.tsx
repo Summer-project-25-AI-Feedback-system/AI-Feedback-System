@@ -1,6 +1,5 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
@@ -9,6 +8,9 @@ import { useParams } from "react-router-dom";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
 import BasicButton from "../../components/BasicButton";
+import { sortData } from "../../utils/sortingUtils";
+import type { SortOption } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function ReposPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -17,10 +19,13 @@ export default function ReposPage() {
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
 
   const filteredRepos = useFilteredList(repos ?? [], searchTerm, (repo, term) =>
     repo.name.toLowerCase().includes(term.toLowerCase())
   );
+
+  const sortedRepos = sortData(filteredRepos, sortOrder);
 
   useEffect(() => {
     if (orgName) {
@@ -47,7 +52,6 @@ export default function ReposPage() {
           </div>
           <div className="flex space-x-4">
             <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
-            <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
@@ -56,19 +60,25 @@ export default function ReposPage() {
             text="Run Analysis"
           />
           <BasicButton
-            onClick={() => handleClick("Run Analysis")}
+            onClick={() => handleClick("View Summary")}
             text="View Summary"
           />
         </div>
       </div>
 
-      <BasicList
-        type="repo"
-        items={filteredRepos}
-        orgName={orgName!}
-        assignmentName={assignmentName!}
-        isLoading={loading}
-      />
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="repo"
+          items={sortedRepos}
+          orgName={orgName!}
+          assignmentName={assignmentName!}
+          isLoading={loading}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }

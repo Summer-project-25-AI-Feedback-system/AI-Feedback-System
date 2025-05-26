@@ -141,13 +141,13 @@ export async function handleGetAllOrganizationData(
     return;
   }
   try {
-    const repos = await getRepos(org); 
+    const repos = await getStudentReposForAssignment(org);
     const assignmentSet = new Set<string>();
-    const studentMap = new Map<string, Record<string, null>>(); 
+    const studentMap = new Map<string, Record<string, null>>();
     for (const repo of repos) {
-      const assignment = extractAssignmentName(repo.name); 
+      const assignment = extractAssignmentName(repo.name);
       assignmentSet.add(assignment);
-      const student = repo.collaborators?.[0]?.login || "Unknown Student";
+      const student = repo.collaborators?.[0]?.name || "Unknown Student";
       // TODO: get grade here later from the db (as given by the AI)
       if (!studentMap.has(student)) {
         studentMap.set(student, {});
@@ -157,10 +157,12 @@ export async function handleGetAllOrganizationData(
     const responseData = {
       org,
       assignments: Array.from(assignmentSet),
-      submissions: Array.from(studentMap.entries()).map(([student, grades]) => ({
-        student,
-        grades, // all values null for now
-      })),
+      submissions: Array.from(studentMap.entries()).map(
+        ([student, grades]) => ({
+          student,
+          grades, // all values null for now
+        })
+      ),
     };
     res.json(responseData);
   } catch (error) {

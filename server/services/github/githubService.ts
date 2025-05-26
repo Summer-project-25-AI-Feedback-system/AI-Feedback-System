@@ -24,24 +24,24 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
 
   repos.data.forEach((repo) => {
     const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
-    const updatedAt = repo.updated_at ?? undefined;
+    const updatedAt = repo.updated_at;
 
     const assignment = assignmentMap.get(baseName);
 
     if (!assignment) {
       assignmentMap.set(baseName, {
         name: baseName,
-        submissionCount: 1,
-        lastUpdated: updatedAt,
+        amountOfStudents: 1,
+        updatedAt: updatedAt ?? "",
       });
     } else {
-      assignment.submissionCount++;
+      assignment.amountOfStudents++;
       if (
         updatedAt &&
-        (!assignment.lastUpdated ||
-          new Date(updatedAt) > new Date(assignment.lastUpdated))
+        (!assignment.updatedAt ||
+          new Date(updatedAt) > new Date(assignment.updatedAt))
       ) {
-        assignment.lastUpdated = updatedAt;
+        assignment.updatedAt = updatedAt;
       }
     }
   });
@@ -108,9 +108,9 @@ async function extractRepositoryDetails(org: string, repo: any) {
     id: repo.node_id,
     name: repo.name,
     owner: repo.owner?.login || "unknown",
-    avatarUrl: repo.owner?.avatar_url ?? null,
+    avatarUrl: repo.owner?.avatar_url ?? "",
     url: repo.html_url,
-    description: repo.description,
+    description: repo.description ?? undefined,
     defaultBranch: repo.default_branch,
     createdAt: repo.created_at,
     updatedAt: repo.updated_at,
@@ -134,7 +134,13 @@ async function getRepoCollaborators(org: string, repo: string) {
       name: user.login,
       avatarUrl: user.avatar_url,
       htmlUrl: user.html_url,
-      permissions: user.permissions,
+      permissions: {
+        admin: user.permissions?.admin ?? false,
+        maintain: user.permissions?.maintain ?? false,
+        push: user.permissions?.push ?? false,
+        triage: user.permissions?.triage ?? false,
+        pull: user.permissions?.pull ?? false,
+      },
     }));
   } catch (error: any) {
     console.error(`Error fetching collaborators for ${repo}:`, error.message);

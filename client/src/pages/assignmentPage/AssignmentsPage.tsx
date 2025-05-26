@@ -1,27 +1,41 @@
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
-import FilterButton from "../../components/FilterButton";
+// import SortingButton from "../../components/SortingButton";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import type { AssignmentInfo } from "@shared/githubInterfaces";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
 import GetCSVFileButton from "./GetCSVFileButton";
+import BasicButton from "../../components/BasicButton";
+import { sortData } from "../../utils/sortingUtils";
+import type { SortOption } from "../../utils/sortingUtils";
+import Spinner from "../../components/Spinner";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const github = useGitHub();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
 
   const filteredAssignments = useFilteredList(
     assignments,
     searchTerm,
     (a, term) => a.name.toLowerCase().includes(term.toLowerCase())
   );
+
+  const handleAnalyticsClick = () => {
+    if (orgName) {
+      navigate(`/orgs/${orgName}/analytics`);
+    }
+  };
+
+  const sortedAssignments = sortData(filteredAssignments, sortOrder);
 
   useEffect(() => {
     if (orgName) {
@@ -35,7 +49,7 @@ export default function AssignmentsPage() {
 
   console.log("assignments:", assignments);
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12">
+    <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex space-x-4">
@@ -43,18 +57,28 @@ export default function AssignmentsPage() {
             <BasicHeading heading={`Assignments in ${orgName}`} />
           </div>
           <div className="flex space-x-4">
-            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
-            <FilterButton buttonText="Sort By" items={["Recent", "Old"]} />
+            <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
           </div>
         </div>
-        <BasicSearchBar value={searchTerm} onChange={setSearchTerm} />
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+          <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
+          <GetCSVFileButton text="Get CSV Report" orgLogin={orgName} />
+        </div>
       </div>
-      <BasicList
-        type="assignment"
-        items={filteredAssignments}
-        orgName={orgName!}
-        isLoading={loading}
-      />
+
+      {loading ? (
+        <Spinner />
+      ) : (
+        <BasicList
+          type="assignment"
+          items={sortedAssignments}
+          orgName={orgName!}
+          isLoading={loading}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+      )}
     </div>
   );
 }

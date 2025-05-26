@@ -11,6 +11,8 @@ Willie Wonka      Error             N/A               5              1.66
 // maybe later something about students who have done nothing?
 */
 
+import type { OrgReport } from "src/types/OrgReport";
+
 function downloadCSV(csvContent: string, filename: string = "report.csv") {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -22,15 +24,6 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
   link.click();
   document.body.removeChild(link);
 }
-
-type OrgReport = {
-  org: string;
-  assignments: string[];
-  submissions: {
-    student: string;
-    grades: Record<string, number | string | null>; 
-  }[];
-};
 
 export function generateCSVFromOrg(orgData: OrgReport) {
   // get all assignments under the organization
