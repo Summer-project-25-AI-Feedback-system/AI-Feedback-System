@@ -1,14 +1,18 @@
 import { useParams, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { RepoInfo } from "@shared/githubInterfaces";
+import { useEffect, useState, useMemo } from "react";
+import type { RepoInfo, CommitInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import RepoInfoCard from "./RepoInfoCard";
-import Spinner from "../../components/Spinner";
 import { useGitHub } from "../../context/useGitHub";
-import FeedbackCard from "./FeedbackCard";
-import { generateSummaryFeedback } from "../../utils/feedbackUtils";
-import FeedbackActions from "./FeedbackActions";
+import Tabs from "../../components/Tabs";
+import CodeTab from "./CodeTab";
+import CommitsTab from "./CommitsTab";
+import MetadataTab from "./MetadataTab";
+import DiffTab from "./DiffTab";
+import FeedbackTab from "./FeedbackTab";
+import Spinner from "../../components/Spinner";
+
+import { getInitialFeedback } from "../../utils/feedbackUtils";
 
 import type { AssignmentFeedback } from "@shared/aiInterfaces";
 
@@ -22,37 +26,13 @@ export default function RepoDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [feedbackData, setFeedbackData] = useState<AssignmentFeedback>(() => {
-    const initial = {
-      repoName: "week-2-assignment-tangerinekey380",
-      assignmentTitle: "React Todo App",
-      grade: "4",
-      date: "2025-05-20T15:23:00Z",
-      feedbackByFile: [
-        {
-          fileName: "App.tsx",
-          issues: [
-            { id: 1, line: 5, text: "It would be better to use justify-end." },
-            { id: 2, line: 34, text: "I couldn't find the import component." },
-          ],
-        },
-        {
-          fileName: "Home.tsx",
-          issues: [
-            {
-              id: 1,
-              line: 5,
-              text: "I couldn't find any useContent component in the App.tsx - compulsory requirement.",
-            },
-          ],
-        },
-      ],
-    };
-    return {
-      ...initial,
-      feedback: generateSummaryFeedback(initial.feedbackByFile),
-    };
-  });
+  const [files, setFiles] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [commits, setCommits] = useState<CommitInfo[]>([]);
+
+  const [feedbackData, setFeedbackData] =
+    useState<AssignmentFeedback>(getInitialFeedback);
 
   const handleClick = (action: string) => {
     if (action === "Edit Feedback") {
@@ -81,10 +61,81 @@ export default function RepoDetailPage() {
     }
   }, [orgName, assignmentName, repoName, github, repoFromState]);
 
+  // Fetch initial data
+  useEffect(() => {
+    if (repo) {
+      // Load commits
+      github?.getCommits(repo.owner, repo.name).then(setCommits);
+
+      // Load file tree
+      github?.getRepoTree(repo.owner, repo.name).then(setFiles);
+    }
+  }, [repo, github]);
+
+  useEffect(() => {
+    if (!selectedFile || !repo) return;
+    github
+      ?.getFileContents(repo.owner, repo.name, selectedFile)
+      .then(setFileContent);
+  }, [selectedFile, repo, github]);
+
+  useEffect(() => {
+    console.log("repo:", repo);
+  }, [repo]);
+
+  const tabs = useMemo(
+    () => [
+      {
+        id: "code",
+        label: "Code",
+        content: (
+          <CodeTab
+            files={files}
+            selectedFile={selectedFile}
+            content={fileContent}
+            onSelectFile={setSelectedFile}
+          />
+        ),
+      },
+      {
+        id: "commits",
+        label: "Commits",
+        content: <CommitsTab commits={commits} />,
+      },
+      {
+        id: "diff",
+        label: "Diff",
+        content: repo ? <DiffTab repo={repo} /> : <div>No repo found</div>,
+      },
+      {
+        id: "metadata",
+        label: "Metadata",
+        content: repo ? <MetadataTab repo={repo} /> : <div>No repo found</div>,
+      },
+      {
+        id: "feedback",
+        label: "Feedback",
+        content: (
+          <FeedbackTab
+            isEditing={isEditing}
+            feedbackData={feedbackData}
+            onFeedbackChange={handleFeedbackTextChange}
+            onGradeChange={(newGrade) =>
+              setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
+            }
+            onToggleEdit={() => setIsEditing((prev) => !prev)}
+            onDownload={() => handleClick("Download Feedback PDF")}
+          />
+        ),
+      },
+    ],
+    [files, selectedFile, fileContent, commits, repo, feedbackData, isEditing]
+  );
+
+  if (loading) return <Spinner />;
+
   if (!repo)
     return <div className="p-4 text-red-600">Repository not found.</div>;
-
-  console.log("repo:", repo);
 
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
@@ -97,30 +148,7 @@ export default function RepoDetailPage() {
             <BasicHeading heading={repo.name} />
           </div>
         </div>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <>
-            <div className="flex space-x-4 md:justify-between">
-              <RepoInfoCard title="Repository Information" repo={repo} />
-              <div className="flex-col space-y-4">
-                <FeedbackActions
-                  isEditing={isEditing}
-                  onEditToggle={() => setIsEditing((prev) => !prev)}
-                  onDownload={() => handleClick("Download Feedback PDF")}
-                />
-              </div>
-            </div>
-            <FeedbackCard
-              isEditing={isEditing}
-              feedbackData={feedbackData}
-              onFeedbackChange={handleFeedbackTextChange}
-              onGradeChange={(newGrade) =>
-                setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
-              }
-            />
-          </>
-        )}
+        <Tabs tabs={tabs} />
       </div>
     </div>
   );

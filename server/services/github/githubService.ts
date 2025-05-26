@@ -1,6 +1,12 @@
 import { promises } from "dns";
 import { octokit } from "./octokitClient";
-import { OrgInfo, AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
+import {
+  OrgInfo,
+  AssignmentInfo,
+  RepoInfo,
+  CommitInfo,
+  CompareCommitsInfo,
+} from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
@@ -148,71 +154,172 @@ async function getRepoCollaborators(org: string, repo: string) {
   }
 }
 
-export async function getFileContents(
-  owner: string,
-  repo: string,
-  filePaths: string[]
-): Promise<Record<string, string | null>> {
-  const contents: Record<string, string | null> = {};
-  console.log(`\nFetching files from repository ${owner}/${repo}:`);
+// export async function getFileContents(
+//   owner: string,
+//   repo: string,
+//   filePaths: string[]
+// ): Promise<Record<string, string | null>> {
+//   const contents: Record<string, string | null> = {};
+//   console.log(`\nFetching files from repository ${owner}/${repo}:`);
 
-  for (const filePath of filePaths) {
-    try {
-      const response = await octokit.rest.repos.getContent({
-        owner,
-        repo,
-        path: filePath,
-      });
+//   for (const filePath of filePaths) {
+//     try {
+//       const response = await octokit.rest.repos.getContent({
+//         owner,
+//         repo,
+//         path: filePath,
+//       });
 
-      if (
-        response.data &&
-        !Array.isArray(response.data) &&
-        response.data.type === "file" &&
-        response.data.content
-      ) {
-        const content = Buffer.from(response.data.content, "base64").toString(
-          "utf-8"
-        );
-        contents[filePath] = content;
-        console.log(` - ${filePath}: Downloaded (${content.length} bytes)`);
-      } else {
-        console.log(
-          ` - ${filePath}: Path found, but it's not a file or content is missing.`
-        );
-        contents[filePath] = null;
-      }
-    } catch (error: any) {
-      if (error.status === 404) {
-        console.log(` - ${filePath}: Not found.`);
-      } else {
-        console.error(
-          ` - Error fetching file ${filePath} from ${owner}/${repo}: ${error.status} ${error.message}`
-        );
-      }
-      contents[filePath] = null;
-    }
-  }
+//       if (
+//         response.data &&
+//         !Array.isArray(response.data) &&
+//         response.data.type === "file" &&
+//         response.data.content
+//       ) {
+//         const content = Buffer.from(response.data.content, "base64").toString(
+//           "utf-8"
+//         );
+//         contents[filePath] = content;
+//         console.log(` - ${filePath}: Downloaded (${content.length} bytes)`);
+//       } else {
+//         console.log(
+//           ` - ${filePath}: Path found, but it's not a file or content is missing.`
+//         );
+//         contents[filePath] = null;
+//       }
+//     } catch (error: any) {
+//       if (error.status === 404) {
+//         console.log(` - ${filePath}: Not found.`);
+//       } else {
+//         console.error(
+//           ` - Error fetching file ${filePath} from ${owner}/${repo}: ${error.status} ${error.message}`
+//         );
+//       }
+//       contents[filePath] = null;
+//     }
+//   }
 
-  return contents;
-}
+//   return contents;
+// }
 
-export async function getRepositoryFileTree(owner: string, repo: string) {
-  const { data: refData } = await octokit.rest.git.getRef({
-    owner,
-    repo,
-    ref: "heads/main", // or use repo.default_branch if dynamic
+export async function getCommits(
+  orgName: string,
+  repoName: string
+): Promise<CommitInfo[]> {
+  const response = await octokit.rest.repos.listCommits({
+    owner: orgName,
+    repo: repoName,
+    per_page: 100,
   });
-  console.log();
+
+  return response.data.map((commit) => ({
+    sha: commit.sha,
+    html_url: commit.html_url,
+    commit: {
+      message: commit.commit.message,
+      author: {
+        name: commit.commit.author?.name ?? "",
+        email: commit.commit.author?.email ?? "",
+        date: commit.commit.author?.date ?? "",
+      },
+    },
+    author: commit.author
+      ? {
+          login: commit.author.login,
+          avatar_url: commit.author.avatar_url,
+          html_url: commit.author.html_url,
+        }
+      : null,
+  }));
+}
+export async function getRepoTree(
+  orgName: string,
+  repoName: string
+): Promise<string[]> {
+  const { data: refData } = await octokit.rest.git.getRef({
+    owner: orgName,
+    repo: repoName,
+    ref: "heads/main",
+  });
 
   const { data: treeData } = await octokit.rest.git.getTree({
-    owner,
-    repo,
+    owner: orgName,
+    repo: repoName,
     tree_sha: refData.object.sha,
     recursive: "true",
   });
-  console.log(treeData);
 
   return treeData.tree
-    .filter((item) => item.type === "blob") // Only files
-    .map((item) => item.path);
+    .filter((item) => item.type === "blob" && item.path)
+    .map((item) => item.path!);
+}
+
+export async function getFileContents(
+  orgName: string,
+  repoName: string,
+  path: string
+): Promise<string | null> {
+  try {
+    const response = await octokit.rest.repos.getContent({
+      owner: orgName,
+      repo: repoName,
+      path,
+    });
+
+    if ("content" in response.data) {
+      return Buffer.from(response.data.content, "base64").toString("utf-8");
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching file ${path}:`, error);
+    return null;
+  }
+}
+
+export async function compareCommits(
+  orgName: string,
+  repoName: string,
+  base: string,
+  head: string
+): Promise<CompareCommitsInfo> {
+  const response = await octokit.rest.repos.compareCommits({
+    owner: orgName,
+    repo: repoName,
+    base,
+    head,
+  });
+
+  return {
+    status: response.data.status ?? "",
+    ahead_by: response.data.ahead_by ?? 0,
+    behind_by: response.data.behind_by ?? 0,
+    total_commits: response.data.total_commits ?? 0,
+    commits: response.data.commits.map((commit) => ({
+      sha: commit.sha,
+      html_url: commit.html_url,
+      commit: {
+        message: commit.commit.message,
+        author: {
+          name: commit.commit.author?.name ?? "",
+          email: commit.commit.author?.email ?? "",
+          date: commit.commit.author?.date ?? "",
+        },
+      },
+      author: commit.author
+        ? {
+            login: commit.author.login,
+            avatar_url: commit.author.avatar_url,
+            html_url: commit.author.html_url,
+          }
+        : null,
+    })),
+    files:
+      response.data.files?.map((file) => ({
+        filename: file.filename,
+        status: file.status,
+        additions: file.additions,
+        deletions: file.deletions,
+        changes: file.changes,
+      })) ?? [],
+  };
 }
