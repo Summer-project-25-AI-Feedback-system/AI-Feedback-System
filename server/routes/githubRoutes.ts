@@ -3,10 +3,11 @@ import {
   handleGetOrganizations,
   handleGetAssignments,
   handleGetStudentReposForAssignment,
-  // handleGetFileContents,
-  // handleGetRepoTree,
-  handleRepoFilesWithTree,
-  handleGetAllOrganizationData
+  handleGetFileContents,
+  handleGetRepoTree,
+  handleGetAllOrganizationData,
+  handleGetCommits,
+  handleCompareCommits,
 } from "../controllers/githubController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
@@ -20,9 +21,16 @@ router.get(
   "/orgs/:orgName/assignments/:assignmentName/repos",
   handleGetStudentReposForAssignment
 );
-// router.post("/repo-files", handleGetFileContents);
-// router.get("/repo-tree", handleGetRepoTree);
-// router.get("/repo-tree-and-files", handleRepoFilesWithTree);
-router.get("/org-report", handleGetAllOrganizationData);
 
+// Repository routes
+router.get("/repos/:orgName/:repoName/commits", handleGetCommits);
+router.get("/repos/:orgName/:repoName/tree", handleGetRepoTree);
+router.get("/repos/:orgName/:repoName/contents/:path", handleGetFileContents);
+router.get(
+  "/repos/:orgName/:repoName/compare/:base...:head",
+  handleCompareCommits
+);
+
+// Reporting route
+router.get("/org-report", handleGetAllOrganizationData);
 export default router;
