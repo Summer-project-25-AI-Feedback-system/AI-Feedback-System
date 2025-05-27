@@ -4,6 +4,7 @@ import { Parser } from "json2csv";
 import dotenv from "dotenv";
 
 
+
 dotenv.config({ path: "../.env" }); 
 
 const router = Router();
@@ -22,7 +23,11 @@ router.post("/csv-reports", async (req: Request, res: Response): Promise<void> =
   console.log("Body:", req.body); 
 
   try {
-    const { rows } = req.body;
+    const { rows, username } = req.body;
+    
+    console.log("Backend sai username:", username);
+
+    const actualUsername = username || "unknownuser";
 
     if (!rows || !Array.isArray(rows.submissions)) {
       res.status(400).json({ error: "Invalid input data" });
@@ -32,10 +37,16 @@ router.post("/csv-reports", async (req: Request, res: Response): Promise<void> =
     
     const parser = new Parser();
     const csv = parser.parse(rows.submissions);
-
+    const orgName = rows.org || "unknownorg";
     
-    const fileName = `report_${Date.now()}.csv`;
-    const csvBuffer = new Uint8Array(Buffer.from(csv)); 
+   
+   const repoName =
+  Array.isArray(rows.assignments) && rows.assignments.length > 0
+    ? rows.assignments[0]
+    : "unknownrepo";
+
+      const fileName = `${actualUsername}_${orgName}_${repoName}.csv`;
+      const csvBuffer = new Uint8Array(Buffer.from(csv)); 
 
     const { error } = await supabase.storage
       .from("csv-reports")
