@@ -6,6 +6,8 @@ import type {
   AssignmentInfo,
   OrgInfo,
   RepoInfo,
+  CommitInfo,
+  CompareCommitsInfo,
 } from "@shared/githubInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -40,11 +42,58 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const getAllOrganizationData = async (org: string) => {
-  const res = await axios.get(`${baseUrl}/api/github/org-report`, {
-    withCredentials: true,
-    params: { org },
-  });
-  return res.data; 
+    const res = await axios.get(`${baseUrl}/api/github/org-report`, {
+      withCredentials: true,
+      params: { org },
+    });
+    return res.data;
+  };
+
+  const getCommits = async (
+    orgName: string,
+    repoName: string
+  ): Promise<CommitInfo[]> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/commits`,
+      { withCredentials: true }
+    );
+    return res.data;
+  };
+
+  const getRepoTree = async (
+    orgName: string,
+    repoName: string
+  ): Promise<string[]> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/tree`,
+      { withCredentials: true }
+    );
+    return res.data;
+  };
+
+  const getFileContents = async (
+    orgName: string,
+    repoName: string,
+    path: string
+  ): Promise<string | null> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/contents/${path}`,
+      { withCredentials: true }
+    );
+    return res.data.content;
+  };
+
+  const compareCommits = async (
+    orgName: string,
+    repoName: string,
+    base: string,
+    head: string
+  ): Promise<CompareCommitsInfo> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/compare/${base}...${head}`,
+      { withCredentials: true }
+    );
+    return res.data;
   };
 
   const contextValue: GitHubContextType = useMemo(
@@ -53,6 +102,10 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
       getRepos,
       getAllOrganizationData,
       getAssignments,
+      getCommits,
+      getRepoTree,
+      getFileContents,
+      compareCommits,
     }),
     []
   );

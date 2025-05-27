@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { extractAssignmentName } from "../utils/githubUtils";
 import {
-  getRepos,
-  getStudentReposForAssignment,
-  getAssignments,
   getOrganizations,
+  getAssignments,
+  getStudentReposForAssignment,
+  getCommits,
+  getRepoTree,
   getFileContents,
-  getRepositoryFileTree,
+  compareCommits,
 } from "../services/github/githubService";
 
 export async function handleGetOrganizations(
@@ -17,6 +18,7 @@ export async function handleGetOrganizations(
     const orgs = await getOrganizations();
     res.json(orgs);
   } catch (error) {
+    console.error("Failed to fetch organizations:", error);
     res.status(500).json({ error: "Failed to fetch organizations" });
   }
 }
@@ -25,17 +27,18 @@ export async function handleGetAssignments(
   req: Request,
   res: Response
 ): Promise<void> {
-  const org = req.params.orgName;
+  const orgName = req.params.orgName;
 
-  if (!org) {
+  if (!orgName) {
     res.status(400).json({ error: "Organization login not provided" });
     return;
   }
+
   try {
-    const assignmentInfos = await getAssignments(org);
-    res.json(assignmentInfos);
+    const assignments = await getAssignments(orgName);
+    res.json(assignments);
   } catch (error: any) {
-    console.error("Error fetching assignments:", error.message);
+    console.error("Failed to fetch assignments:", error);
     res.status(500).json({ error: "Failed to fetch assignments" });
   }
 }
@@ -44,16 +47,16 @@ export async function handleGetStudentReposForAssignment(
   req: Request,
   res: Response
 ): Promise<void> {
-  const org = req.params.orgName;
-  const assignmentPrefix = req.params.assignmentName;
+  const orgName = req.params.orgName;
+  const assignmentName = req.params.assignmentName;
 
-  if (!org) {
+  if (!orgName) {
     res.status(400).json({ error: "Missing organization or assignment name" });
     return;
   }
 
   try {
-    const repos = await getStudentReposForAssignment(org, assignmentPrefix);
+    const repos = await getStudentReposForAssignment(orgName, assignmentName);
     res.json(repos);
   } catch (error) {
     console.error("Failed to fetch student repos:", error);
@@ -61,73 +64,94 @@ export async function handleGetStudentReposForAssignment(
   }
 }
 
-// export async function handleGetFileContents(
-//   req: Request,
-//   res: Response
-// ): Promise<void> {
-//   const { owner, repo, files } = req.body;
-
-//   if (!owner || !repo || !Array.isArray(files)) {
-//     res
-//       .status(400)
-//       .json({ error: "Missing required parameters: owner, repo, files[]" });
-//     return;
-//   }
-
-//   try {
-//     const contents = await getFileContents(owner, repo, files);
-//     res.json(contents);
-//   } catch (error) {
-//     console.error("Failed to fetch file contents:", error);
-//     res.status(500).json({ error: "Failed to fetch file contents" });
-//   }
-// }
-
-// export async function handleGetRepoTree(
-//   req: Request,
-//   res: Response
-// ): Promise<void> {
-//   const { owner, repo } = req.query;
-
-//   if (!owner || !repo) {
-//     res.status(400).json({ error: "Missing required parameters" });
-//     return;
-//   }
-
-//   try {
-//     const tree = await getRepositoryFileTree(owner as string, repo as string);
-//     res.json(tree);
-//   } catch (error) {
-//     console.error("Failed to fetch repo tree:", error);
-//     res.status(500).json({ error: "Failed to fetch repository tree" });
-//   }
-// }
-
-export async function handleRepoFilesWithTree(
+export async function handleGetCommits(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { owner, repo } = req.query;
+  const { orgName, repoName } = req.params;
 
-  if (!owner || !repo) {
-    res.status(400).json({ error: "Missing required parameters: owner, repo" });
+  try {
+    const commits = await getCommits(orgName, repoName);
+    res.json(commits);
+  } catch (error) {
+    console.error("Failed to fetch commits:", error);
+    res.status(500).json({ error: "Failed to fetch commits" });
+  }
+}
+
+export async function handleGetRepoTree(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const orgName = req.params.orgName;
+  const repoName = req.params.repoName;
+
+  if (!orgName || !repoName) {
+    res
+      .status(400)
+      .json({ error: "Organization and repository names are required" });
     return;
   }
 
   try {
-    const tree = await getRepositoryFileTree(owner as string, repo as string);
-    const filteredTree = tree.filter(
-      (path): path is string => path !== undefined
-    );
-    const contents = await getFileContents(
-      owner as string,
-      repo as string,
-      filteredTree
-    );
+    const tree = await getRepoTree(orgName as string, repoName as string);
+    res.json(tree);
+  } catch (error) {
+    console.error("Failed to fetch repository tree:", error);
+    res.status(500).json({ error: "Failed to fetch repository tree" });
+  }
+}
+
+export async function handleGetFileContents(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const orgName = req.params.orgName;
+  const repoName = req.params.repoName;
+  const path = req.params.path;
+
+  if (!orgName || !repoName || !path) {
+    res.status(400).json({
+      error: "Organization, repository and path are required",
+    });
+    return;
+  }
+
+  try {
+    const contents = await getFileContents(orgName, repoName, path);
+    if (contents === null) {
+      res.status(404).json({ error: "File not found" });
+      return;
+    }
     res.json(contents);
   } catch (error) {
-    console.error("Failed to fetch tree and contents:", error);
-    res.status(500).json({ error: "Failed to fetch files" });
+    console.error("Failed to fetch file contents:", error);
+    res.status(500).json({ error: "Failed to fetch file contents" });
+  }
+}
+
+export async function handleCompareCommits(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const orgName = req.params.orgName;
+  const repoName = req.params.repoName;
+  const base = req.params.base;
+  const head = req.params.head;
+
+  if (!orgName || !repoName || !base || !head) {
+    res.status(400).json({
+      error: "Organization, repository, base and head commits are required",
+    });
+    return;
+  }
+
+  try {
+    const comparison = await compareCommits(orgName, repoName, base, head);
+    res.json(comparison);
+  } catch (error) {
+    console.error("Failed to compare commits:", error);
+    res.status(500).json({ error: "Failed to compare commits" });
   }
 }
 
