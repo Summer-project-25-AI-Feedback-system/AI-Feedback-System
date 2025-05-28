@@ -15,6 +15,6 @@
       "@shared/*": ["../shared/*"]
     }
   },
-  "include": ["./"], // Include all files in this folder
+  "include": ["./", "Aievalution.ts"], // Include all files in this folder
   "exclude": ["node_modules", "dist"] // Avoid compiling node_modules and output
 }
