@@ -1,6 +1,11 @@
 import { supabase } from "../utils/supabase";
 
-export async function upsertUser(githubId: string, username: string, email: string, githubUrl: string) {
+export async function upsertUser(
+  githubId: string,
+  username: string,
+  email: string,
+  githubUrl: string
+) {
   try {
     const result = await supabase
       .from("users")
@@ -16,7 +21,7 @@ export async function upsertUser(githubId: string, username: string, email: stri
       .select()
       .single();
 
-    console.log("Supabase upsert result:", result);
+    // console.log("Supabase upsert result:", result);
 
     if (result.error) {
       console.error("Supabase error:", result.error);
@@ -29,4 +34,3 @@ export async function upsertUser(githubId: string, username: string, email: stri
     throw err;
   }
 }
-
