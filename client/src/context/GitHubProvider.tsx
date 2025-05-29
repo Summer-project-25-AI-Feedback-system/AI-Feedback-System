@@ -77,8 +77,11 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     path: string
   ): Promise<string | null> => {
     const res = await axios.get(
-      `${baseUrl}/api/github/repos/${orgName}/${repoName}/contents/${path}`,
-      { withCredentials: true }
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/contents`,
+      {
+        withCredentials: true,
+        params: { path },
+      }
     );
     return res.data;
   };

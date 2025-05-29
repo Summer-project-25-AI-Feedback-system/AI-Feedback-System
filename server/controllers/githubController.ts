@@ -83,8 +83,7 @@ export async function handleGetRepoTree(
   req: Request,
   res: Response
 ): Promise<void> {
-  const orgName = req.params.orgName;
-  const repoName = req.params.repoName;
+  const { orgName, repoName } = req.params;
 
   if (!orgName || !repoName) {
     res
@@ -106,8 +105,8 @@ export async function handleGetFileContents(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { orgName, repoName, path } = req.params;
-  console.log(path);
+  const { orgName, repoName } = req.params;
+  const path = req.query.path as string;
 
   if (!orgName || !repoName || !path) {
     res.status(400).json({

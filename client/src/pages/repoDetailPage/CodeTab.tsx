@@ -1,4 +1,7 @@
 import Spinner from "../../components/Spinner";
+import FileTree from "./FileTree";
+import type { FileNode } from "./FileTree";
+import { parseFileTree } from "../../utils/parseFileTree";
 
 interface CodeTabProps {
   files: string[];
@@ -16,31 +19,27 @@ export default function CodeTab({
   onSelectFile,
 }: CodeTabProps) {
   if (!files.length) return <Spinner />;
+  const fileTree: FileNode[] = parseFileTree(files);
 
   return (
     <div className="flex">
       <div className="w-1/3 border-r p-4">
         <h3 className="font-semibold mb-2">Files</h3>
-        <div className="space-y-1">
-          {files.map((file) => (
-            <div
-              key={file}
-              onClick={() => onSelectFile(file)}
-              className={`p-2 cursor-pointer rounded hover:bg-gray-100 ${
-                selectedFile === file ? "bg-blue-50" : ""
-              }`}
-            >
-              {file}
-            </div>
-          ))}
+        <div className="bg-gray-100 rounded overflow-auto max-h-96">
+          <FileTree
+            nodes={fileTree}
+            selectedPath={selectedFile}
+            onSelect={onSelectFile}
+          />
         </div>
       </div>
       <div className="w-2/3 p-4">
+        <h3 className="font-semibold mb-2">Code</h3>
         {selectedFile ? (
           loading ? (
             <Spinner />
           ) : content ? (
-            <pre className="bg-gray-50 p-4 rounded overflow-auto max-h-96">
+            <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96">
               <code>{content}</code>
             </pre>
           ) : (

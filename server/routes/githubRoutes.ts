@@ -25,7 +25,7 @@ router.get(
 // Repository routes
 router.get("/repos/:orgName/:repoName/commits", handleGetCommits);
 router.get("/repos/:orgName/:repoName/tree", handleGetRepoTree);
-router.get("/repos/:orgName/:repoName/contents/:path", handleGetFileContents);
+router.get("/repos/:orgName/:repoName/contents", handleGetFileContents);
 router.get(
   "/repos/:orgName/:repoName/compare/:base/:head",
   handleCompareCommits
