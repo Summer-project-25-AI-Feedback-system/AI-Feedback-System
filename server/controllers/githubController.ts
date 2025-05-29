@@ -106,9 +106,8 @@ export async function handleGetFileContents(
   req: Request,
   res: Response
 ): Promise<void> {
-  const orgName = req.params.orgName;
-  const repoName = req.params.repoName;
-  const path = req.params.path;
+  const { orgName, repoName, path } = req.params;
+  console.log(path);
 
   if (!orgName || !repoName || !path) {
     res.status(400).json({

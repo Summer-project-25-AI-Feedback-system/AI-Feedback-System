@@ -80,7 +80,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
       `${baseUrl}/api/github/repos/${orgName}/${repoName}/contents/${path}`,
       { withCredentials: true }
     );
-    return res.data.content;
+    return res.data;
   };
 
   const compareCommits = async (
@@ -90,7 +90,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     head: string
   ): Promise<CompareCommitsInfo> => {
     const res = await axios.get(
-      `${baseUrl}/api/github/repos/${orgName}/${repoName}/compare/${base}...${head}`,
+      `${baseUrl}/api/github/repos/${orgName}/${repoName}/compare/${base}/${head}`,
       { withCredentials: true }
     );
     return res.data;

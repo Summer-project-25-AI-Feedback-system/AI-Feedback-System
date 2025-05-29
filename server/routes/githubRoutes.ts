@@ -27,10 +27,11 @@ router.get("/repos/:orgName/:repoName/commits", handleGetCommits);
 router.get("/repos/:orgName/:repoName/tree", handleGetRepoTree);
 router.get("/repos/:orgName/:repoName/contents/:path", handleGetFileContents);
 router.get(
-  "/repos/:orgName/:repoName/compare/:base...:head",
+  "/repos/:orgName/:repoName/compare/:base/:head",
   handleCompareCommits
 );
 
 // Reporting route
 router.get("/org-report", handleGetAllOrganizationData);
+
 export default router;

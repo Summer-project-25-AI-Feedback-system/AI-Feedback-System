@@ -4,6 +4,7 @@ interface CodeTabProps {
   files: string[];
   selectedFile: string | null;
   content: string | null;
+  loading?: boolean;
   onSelectFile: (file: string) => void;
 }
 
@@ -11,6 +12,7 @@ export default function CodeTab({
   files,
   selectedFile,
   content,
+  loading = false,
   onSelectFile,
 }: CodeTabProps) {
   if (!files.length) return <Spinner />;
@@ -35,12 +37,14 @@ export default function CodeTab({
       </div>
       <div className="w-2/3 p-4">
         {selectedFile ? (
-          content ? (
+          loading ? (
+            <Spinner />
+          ) : content ? (
             <pre className="bg-gray-50 p-4 rounded overflow-auto max-h-96">
               <code>{content}</code>
             </pre>
           ) : (
-            <Spinner />
+            <div className="text-red-500">Failed to load file content</div>
           )
         ) : (
           <div className="text-gray-500">Select a file to view</div>

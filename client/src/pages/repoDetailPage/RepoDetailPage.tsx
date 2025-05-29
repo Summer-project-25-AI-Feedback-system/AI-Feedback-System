@@ -29,6 +29,7 @@ export default function RepoDetailPage() {
   const [files, setFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
+  const [fileLoading, setFileLoading] = useState(false);
   const [commits, setCommits] = useState<CommitInfo[]>([]);
 
   const [feedbackData, setFeedbackData] =
@@ -73,10 +74,23 @@ export default function RepoDetailPage() {
   }, [repo, github]);
 
   useEffect(() => {
-    if (!selectedFile || !repo) return;
+    if (!selectedFile || !repo || !github) return;
+
+    setFileLoading(true);
+    setFileContent(null);
+
     github
-      ?.getFileContents(repo.owner, repo.name, selectedFile)
-      .then(setFileContent);
+      .getFileContents(repo.owner, repo.name, selectedFile)
+      .then((content) => {
+        setFileContent(content);
+      })
+      .catch((error) => {
+        console.error("Error fetching file content:", error);
+        setFileContent("Error loading file content");
+      })
+      .finally(() => {
+        setFileLoading(false);
+      });
   }, [selectedFile, repo, github]);
 
   useEffect(() => {
@@ -93,6 +107,7 @@ export default function RepoDetailPage() {
             files={files}
             selectedFile={selectedFile}
             content={fileContent}
+            loading={fileLoading}
             onSelectFile={setSelectedFile}
           />
         ),
@@ -129,7 +144,16 @@ export default function RepoDetailPage() {
         ),
       },
     ],
-    [files, selectedFile, fileContent, commits, repo, feedbackData, isEditing]
+    [
+      files,
+      selectedFile,
+      fileContent,
+      fileLoading,
+      commits,
+      repo,
+      isEditing,
+      feedbackData,
+    ]
   );
 
   if (loading) return <Spinner />;
