@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { AssignmentFeedback } from "@shared/aiInterfaces";
 import FileFeedbackSection from "./FileFeedbackSection";
+import { TbTriangleFilled } from "react-icons/tb";
 
 interface FeedbackCardProps {
   isEditing: boolean;
@@ -78,10 +79,10 @@ export default function FeedbackCard({
         >
           <span
             className={`transform transition-transform duration-200 ${
-              expanded ? "rotate-90" : ""
+              expanded ? "rotate-180" : "rotate-90"
             }`}
           >
-            ▶
+            <TbTriangleFilled />
           </span>
           <span>Issues ({totalIssues})</span>
         </button>

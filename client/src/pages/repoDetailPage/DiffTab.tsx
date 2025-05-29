@@ -46,7 +46,7 @@ export default function DiffTab({ repo }: DiffTabProps) {
   return (
     <div className="p-4">
       {diff ? (
-        <pre className="bg-gray-50 p-4 rounded overflow-auto max-h-96">
+        <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96">
           {diff.map((file: FileDiff) => (
             <div key={file.filename} className="mb-4">
               <div className="font-mono text-sm">

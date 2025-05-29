@@ -9,20 +9,20 @@ export default function MetadataTab({ repo }: MetadataTabProps) {
   if (!repo) return <Spinner />;
   return (
     <div className="grid grid-cols-2 gap-4 p-4">
-      <div>
+      <div className="bg-gray-100 rounded p-2">
         <h3 className="font-semibold mb-2">Repository Info</h3>
         <dl className="space-y-2">
           <div>
             <dt className="text-gray-600">Created</dt>
-            <dd>{new Date(repo.createdAt).toLocaleDateString()}</dd>
+            <dd>{new Date(repo.createdAt).toLocaleString()}</dd>
           </div>
           <div>
             <dt className="text-gray-600">Last Updated</dt>
-            <dd>{new Date(repo.updatedAt).toLocaleDateString()}</dd>
+            <dd>{new Date(repo.updatedAt).toLocaleString()}</dd>
           </div>
         </dl>
       </div>
-      <div>
+      <div className="bg-gray-100 rounded p-2">
         <h3 className="font-semibold mb-2">Collaborators</h3>
         <div className="space-y-2">
           {repo.collaborators.map((collaborator) => (

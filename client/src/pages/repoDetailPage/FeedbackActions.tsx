@@ -12,7 +12,7 @@ export default function FeedbackActions({
   onDownload,
 }: Props) {
   return (
-    <div className="flex-col space-y-4">
+    <div className="flex justify-end space-x-2">
       <BasicButton onClick={onDownload} text="Download Feedback PDF" />
       <BasicButton
         onClick={onEditToggle}
