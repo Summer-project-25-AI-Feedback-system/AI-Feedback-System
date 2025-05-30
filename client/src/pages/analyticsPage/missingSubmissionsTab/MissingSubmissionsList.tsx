@@ -34,13 +34,13 @@ export default function MissingSubmissionsList({ orgData }: MissingSubmissionsLi
     <div>
       {roster.length === 0 ? (
         <div className="flex flex-col gap-y-6 items-center">
-            <Subtext text="GitHub API doesn't support fetching student rosters at this time. Please upload a roster to see missing submissions. Rosters can be downloaded in GitHub classroom under the students section."/>
+            <Subtext text={`Note: GitHub’s API does not currently support fetching student rosters. To view missing submissions, please upload a roster manually. This tool expects student identifiers within a roster to match the beginning of students' email addresses. You can download your class roster from GitHub Classroom under the "Students" section.`} />
             <UploadStudentRosterCSVButton text="Upload Student Roster CSV" onUpload={setRoster}/>
         </div>
       ) : (
         <div className="flex flex-col gap-y-2">
           <div className="flex justify-between items-center">
-            <Subtext text="List of Student Submissions"/>
+            <Subtext text="Student Submissions"/>
             <UploadStudentRosterCSVButton text="Update Student Roster CSV" onUpload={setRoster}/>
           </div>
           {roster.length > 0 && (

@@ -13,7 +13,7 @@ export default function StudentTable({ roster, orgData }: StudentTableProps) {
   const assignmentNames = orgData.assignments;
 
   const studentsInRoster = roster.map((student) => {
-    const submission = submissionMap.get(student.identifier);
+    const submission = submissionMap.get(student.github_username);
     const grades = assignmentNames.map((assignment) => {
       const value = submission?.grades?.[assignment];
       if (value === null || value === undefined) return "N/A";
@@ -38,16 +38,18 @@ export default function StudentTable({ roster, orgData }: StudentTableProps) {
   );
 
   return (
-    <table className="table-auto border border-black bg-white w-full text-sm text-left mt-4">
+    <table className="table-auto border rounded bg-white w-full text-sm text-left mt-4">
       <thead>
         <tr>
-          <th className="border border-black px-4 py-2 bg-gray-100">Identifier</th>
+          <th className="border px-4 py-2 font-medium">Name</th>
+          <th className="border px-4 py-2 font-medium">GitHub Username</th>
+          <th className="border px-4 py-2 font-medium">Roster Identifier</th>
           {assignmentNames.map((assignment) => (
-            <th key={assignment} className="border border-black px-4 py-2 bg-gray-100">
+            <th key={assignment} className="border px-4 py-2 font-medium">
               {assignment}
             </th>
           ))}
-          <th className="border border-black px-4 py-2 bg-gray-100">Total Points</th>
+          <th className="border px-4 py-2 font-medium">Total Points</th>
         </tr>
       </thead>
       <tbody>
@@ -58,13 +60,15 @@ export default function StudentTable({ roster, orgData }: StudentTableProps) {
                 : student.submissionCount < assignmentNames.length ? "bg-yellow-100" 
                 : "bg-green-100"
               }>
-            <td className="border border-black px-4 py-2">{student.identifier}</td>
+            <td className="border px-4 py-2">{student.name?.trim() || "—"}</td>
+            <td className="border px-4 py-2">{student.github_username?.trim() || "—"}</td>
+            <td className="border px-4 py-2">{student.identifier}</td>
             {student.grades.map((grade, idx) => (
-              <td key={idx} className="border border-black px-4 py-2 text-center">
+              <td key={idx} className="border px-4 py-2 text-center">
                 {grade}
               </td>
             ))}
-            <td className="border border-black px-4 py-2 text-center">{student.totalPoints}</td>
+            <td className="border px-4 py-2 text-center">{student.totalPoints}</td>
           </tr>
         ))}
     </tbody>

@@ -9,6 +9,7 @@ import AveragePointsChart from "./averageAssignmentPointsTab/AveragePointsChart"
 import TabNavigation from "./TabNavigation";
 import MissingSubmissionsList from "./missingSubmissionsTab/MissingSubmissionsList";
 import CommonIssuesChart from "./commonIssuesTab/CommonIssuesChart";
+import Spinner from "../../components/Spinner";
 
 // delete this later
 const mockOrgData = {
@@ -16,10 +17,10 @@ const mockOrgData = {
   assignments: ["Assignment 1", "Assignment 2", "Assignment 3"],
   submissions: [
     {
-      student: "alice",
+      student: "astronautie",
       grades: {
-        "Assignment 1": null,
-        "Assignment 2": null,
+        "Assignment 1": 20,
+        "Assignment 2": 10,
         "Assignment 3": null,
       },
     },
@@ -89,8 +90,6 @@ export default function AnalyticsPage() {
     fetchOrgData();
   }, [orgName, github]);
   
-  if (loading) return <div className="p-4">Loading...</div>;
-  if (!orgData) return <div className="p-4">No organization data found.</div>;
 
   return (
     <div className="flex flex-col space-y-20 p-4 md:p-12"> 
@@ -105,20 +104,26 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
-      {orgData && (
         <div className="m-8">
-          <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-          {activeTab === "Average Assignment Points" && (
-            <AveragePointsChart orgData={mockOrgData} maxPointsPerAssignment={maxPointsPerAssignment} /> 
-          )}
-          {activeTab === "Common Issues" && (
-            <CommonIssuesChart issues={mockCommonIssues}/>
-          )}
-          {activeTab === "Missing Submissions" && (
-            <MissingSubmissionsList orgData={mockOrgData}/>
+          {loading ? (
+            <Spinner />
+          ) : !orgData ? (
+            <div className="p-4">No organization data found.</div>
+          ) : (
+            <>
+              <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+              {activeTab === "Average Assignment Points" && (
+                <AveragePointsChart orgData={mockOrgData} maxPointsPerAssignment={maxPointsPerAssignment} />
+              )}
+              {activeTab === "Common Issues" && (
+                <CommonIssuesChart issues={mockCommonIssues} />
+              )}
+              {activeTab === "Missing Submissions" && (
+                <MissingSubmissionsList orgData={mockOrgData} />
+              )}
+            </>
           )}
         </div>
-      )}
     </div>
   );
 }
