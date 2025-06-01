@@ -32,13 +32,25 @@ export default function MainLayout() {
     }
   };
 
+  const fullWidthRoutes = [
+    /^\/orgs\/[^/]+\/assignments/,
+  ];
+
+  const isFullWidthLayout = fullWidthRoutes.some((regex) =>
+    regex.test(location.pathname)
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header loggedIn={!!isLogin} onClick={handleHeaderButtonClick} />
-      <main className="flex-1 flex justify-center items-start">
-        <div className="w-full max-w-screen-xl">
+      <main className={isFullWidthLayout ? "" : "flex-1 flex justify-center items-start"}>
+        {isFullWidthLayout ? (
           <Outlet />
-        </div>
+        ) : (
+          <div className="w-full max-w-screen-xl">
+            <Outlet />
+          </div>
+        )}
       </main>
       <Footer />
     </div>

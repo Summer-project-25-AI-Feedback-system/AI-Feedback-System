@@ -1,9 +1,9 @@
 /* 
 FORMAT OF CSV DOCUMENT:
 
-Overview of Student Grades and Submissions
+Overview of Student Points and Submissions
 
-Name          Assignment 1      Assignment 2     Assignment 3     Grade Average 
+Name          Assignment 1      Assignment 2     Assignment 3     Total Points
 Alice Park        5                 N/A               2              2.33
 Micheal Devon     4                 3                 5               4
 Willie Wonka      Error             N/A               5              1.66
