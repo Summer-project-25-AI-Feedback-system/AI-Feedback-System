@@ -33,7 +33,7 @@ export default function MainLayout() {
   };
 
   const fullWidthRoutes = [
-    /^\/orgs\/[^/]+\/assignments/,
+    /^\/orgs\/[^/]+\/assignments$/,
   ];
 
   const isFullWidthLayout = fullWidthRoutes.some((regex) =>

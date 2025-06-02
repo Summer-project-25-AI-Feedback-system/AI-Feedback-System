@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { BiMenu, BiX } from 'react-icons/bi';
-import ProgressBar from './ProgressBar';
+import SidebarButton from './SidebarButton';
+import SidebarCard from './SidebarCard';
+import SidebarPagination from './SidebarPagination';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,52 +15,27 @@ export default function Sidebar() {
 
   return (
     <>
-      <button
-        className="md:hidden p-4"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle Sidebar"
-      >
-        {isOpen ? <BiX size={24} /> : <BiMenu size={24} />}
-      </button>
-
-      <div
+      <SidebarButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)}/>
+      <div 
         className={`fixed top-0 left-0 h-full w-64 bg-white p-4 md:pt-12 md:pl-12 transform transition-transform duration-300 z-40
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}
       >
         <h2 className="text-xl font-bold mb-4">Classroom Info</h2>
         <div className="text-sm">
           {currentAssignments.map((assignmentName) => (
-            <div key={assignmentName} className="border border-[#D9D9D9] rounded p-3 mb-2 space-y-2">
-              <h3 className="font-semibold text-gray-700">{assignmentName}</h3>
-              
-              <div className="flex flex-col gap-1">
-                <span>Assignments Accepted</span>
-                <ProgressBar progress={90} />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <span>Assignments Submitted</span>
-                <ProgressBar progress={10} />
-              </div>
-            </div>
+            <SidebarCard 
+              key={assignmentName}
+              name={assignmentName}
+              progressOfAcceptedAssignments={90}
+              progressOfSubmittedAssignments={10}
+            />
           ))}
         </div>
-        {/* numbers for pages here to show different assignments depending on what number is pressed*/}
-        <div className="mt-4 flex justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`px-3 py-1 rounded text-sm font-medium border ${
-                currentPage === index + 1
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black border-gray-300'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+        <SidebarPagination 
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {isOpen && (
