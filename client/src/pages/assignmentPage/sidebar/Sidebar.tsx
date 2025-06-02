@@ -21,16 +21,15 @@ export default function Sidebar() {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}
       >
         <h2 className="text-xl font-bold mb-4">Classroom Info</h2>
-        <div className="text-sm">
-          {currentAssignments.map((assignmentName) => (
-            <SidebarCard 
-              key={assignmentName}
-              name={assignmentName}
-              progressOfAcceptedAssignments={90}
-              progressOfSubmittedAssignments={10}
-            />
-          ))}
-        </div>
+        {currentAssignments.map((assignmentName) => (
+          <SidebarCard 
+            key={assignmentName}
+            name={assignmentName}
+            progressOfAcceptedAssignments={90}
+            progressOfSubmittedAssignments={10}
+            assignmentDeadline={new Date('2025-04-02T23:59:59Z')}
+          />
+        ))}
         <SidebarPagination 
           totalPages={totalPages}
           currentPage={currentPage}
