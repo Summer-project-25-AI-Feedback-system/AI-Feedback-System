@@ -1,0 +1,22 @@
+[
+  {
+    "organizationId": "org123",
+    "repoPath": "C:\\Users\\OMISTAJA\\AI-Feedback-System\\server",
+    "analysis": {
+      "timestamp": "6/5/2025, 1:17:20 PM",
+      "lastCommit": {
+        "hash": "a7daac167d1803898c6a6e008743e3ae38932aaa",
+        "time": "5/30/2025, 5:30:35 PM"
+      },
+      "repository": {
+        "totalCommits": 138,
+        "sizeInMB": 56.2,
+        "changes24h": 0
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  }
+]
