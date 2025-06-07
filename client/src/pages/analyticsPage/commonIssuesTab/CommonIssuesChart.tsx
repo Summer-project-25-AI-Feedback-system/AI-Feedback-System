@@ -1,14 +1,12 @@
+import type { SingleAssignmentFeedback } from 'src/types/AssignmentFeedback';
 import { Bar } from 'react-chartjs-2';
 
 type CommonIssuesChartProps = {
-  issues: {
-    student: string;
-    issues: string[];
-  }[];
+  assignment: SingleAssignmentFeedback;
 };
 
-export default function CommonIssuesChart({ issues }: CommonIssuesChartProps) {
-  const allIssues: string[] = issues.flatMap((entry) => entry.issues);
+export default function CommonIssuesChart({ assignment }: CommonIssuesChartProps) {
+  const allIssues: string[] = assignment.issues;
 
   const issueCounts = allIssues.reduce<Record<string, number>>((acc, issue) => {
     acc[issue] = (acc[issue] || 0) + 1;
@@ -50,5 +48,9 @@ export default function CommonIssuesChart({ issues }: CommonIssuesChartProps) {
     },
   };
 
-  return <Bar data={data} options={options} />;
+  return (
+    <div className="p-3">
+      <Bar data={data} options={options}/> 
+    </div>
+  );
 }

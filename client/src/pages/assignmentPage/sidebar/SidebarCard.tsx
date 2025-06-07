@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import ProgressBar from './ProgressBar';
 
 interface SidebarCardProps {
@@ -5,9 +6,11 @@ interface SidebarCardProps {
   progressOfAcceptedAssignments: number;
   progressOfSubmittedAssignments: number;
   assignmentDeadline: Date;
+  linkTo: string;
 }
 
-export default function SidebarCard({name, progressOfAcceptedAssignments, progressOfSubmittedAssignments, assignmentDeadline }: SidebarCardProps) {
+export default function SidebarCard({name, progressOfAcceptedAssignments, progressOfSubmittedAssignments, assignmentDeadline, linkTo }: SidebarCardProps) {
+  const navigate = useNavigate();
   const now = new Date();
   const hasDeadlinePassed = assignmentDeadline.getTime() < now.getTime();
 
@@ -31,7 +34,7 @@ export default function SidebarCard({name, progressOfAcceptedAssignments, progre
   };
 
   return (
-    <div className="border border-[#D9D9D9] rounded p-3 mb-2 space-y-2">
+    <div onClick={() => navigate(linkTo)} className="border border-[#D9D9D9] rounded p-3 mb-2 space-y-2 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors">
       <div>
         <h3 className="font-semibold text-gray-700">{name}</h3>
         <text className={`text-sm ${hasDeadlinePassed && progressOfSubmittedAssignments < 100? 'text-red-600 font-medium' : 'text-gray-600'}`}>{deadlineInfo()}</text>

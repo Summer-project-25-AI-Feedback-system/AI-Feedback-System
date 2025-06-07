@@ -1,51 +1,50 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
 import { useGitHub } from "../../context/useGitHub";
 import type { OrgReport } from "src/types/OrgReport";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import GetCSVFileButton from "../assignmentPage/GetCSVFileButton";
 import AveragePointsChart from "./averageAssignmentPointsTab/AveragePointsChart";
-import TabNavigation from "./TabNavigation";
-import MissingSubmissionsList from "./missingSubmissionsTab/MissingSubmissionsList";
-import CommonIssuesChart from "./commonIssuesTab/CommonIssuesChart";
+import MissingSubmissionsList from "./missingSubmissionsTab/MissingSubmissionsTab";
 import Spinner from "../../components/Spinner";
+import CommonIssuesTab from "./commonIssuesTab/CommonIssuesTab";
+import Tabs from "../../components/Tabs";
 
 // delete this later
 const mockOrgData = {
   org: "Mock University",
-  assignments: ["Assignment 1", "Assignment 2", "Assignment 3"],
+  assignments: ["intro-to-data", "java-assignment", "css-intro-assignment"],
   submissions: [
     {
       student: "astronautie",
       grades: {
-        "Assignment 1": 20,
-        "Assignment 2": 10,
-        "Assignment 3": null,
+        "intro-to-data": 20,
+        "java-assignment": 10,
+        "css-intro-assignment": null,
       },
     },
     {
       student: "FuzzyKala",
       grades: {
-        "Assignment 1": 18,
-        "Assignment 2": null, 
-        "Assignment 3": null,
+        "intro-to-data": 18,
+        "java-assignment": null, 
+        "css-intro-assignment": null,
       },
     },
     {
       student: "vima20",
       grades: {
-        "Assignment 1": 20,
-        "Assignment 2": 10,
-        "Assignment 3": 30,
+        "intro-to-data": 20,
+        "java-assignment": 10,
+        "css-intro-assignment": 30,
       },
     },
     {
       student: "nonRoster",
       grades: {
-        "Assignment 1": null,
-        "Assignment 2": 15,
-        "Assignment 3": 25,
+        "intro-to-data": null,
+        "java-assignment": 15,
+        "css-intro-assignment": 25,
       },
     },
   ],
@@ -53,18 +52,29 @@ const mockOrgData = {
 
 // TODO: get this from github with real values (preferably with the OrgData and not separately)
 const maxPointsPerAssignment = {
-  "Assignment 1": 20,
-  "Assignment 2": 15,
-  "Assignment 3": 30,
+  "intro-to-data": 20,
+  "java-assignment": 15,
+  "css-intro-assignment": 30,
 }
 
 // TODO: get the real issues from the database(?)
-const mockCommonIssues = [
-  { student: "alice", issues: ["Poor naming", "No comments"] },
-  { student: "FuzzyKala", issues: ["Repeated code", "No comments"] },
-  { student: "vima20", issues: ["No comments"] },
-  { student: "nonRoster", issues: ["Poor naming", "Repeated code"] },
-  { student: "astronautie", issues: ["Bad"] },
+const mockAssignmentData = [
+  {
+    assignmentName: "Assignment 1",
+    issues: ["Repeating code", "Another issue", "Another issue", "Poor Naming", "Poor Naming", "Poor Naming", "Poor Naming"],
+  },
+  {
+    assignmentName: "Assignment 2",
+    issues: ["Bad logic", "Poor Naming", "Poor Naming", "Poor Naming", "Repeating Code", "No imports", "No imports"],
+  },
+  {
+    assignmentName: "Assignment 3",
+    issues: ["Bad logic", "Poor naming", "Bad logic", "Poor naming", "Poor naming", "Repeating code"],
+  },
+  {
+    assignmentName: "Assignment 4",
+    issues: ["Bad logic", "Poor naming", "Poor naming"],
+  },
 ];
 
 export default function AnalyticsPage() {
@@ -72,10 +82,11 @@ export default function AnalyticsPage() {
   const github = useGitHub();
   const [orgData, setOrgData] = useState<OrgReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const tabs = ["Average Assignment Points", "Common Issues", "Missing Submissions"];
-  const [activeTab, setActiveTab] = useState(tabs[0]);
+  const [searchParams, setSearchParams] = useSearchParams();
 
- useEffect(() => {
+  const activeTab = searchParams.get("tab") || "average-points";
+
+  useEffect(() => {
     const fetchOrgData = async () => {
       if (!orgName) return;
       try {
@@ -89,41 +100,63 @@ export default function AnalyticsPage() {
     };
     fetchOrgData();
   }, [orgName, github]);
-  
+
+  function onTabChange(tabId: string) {
+    const assignment = searchParams.get("assignment");
+    const params = new URLSearchParams();
+    params.set("tab", tabId);
+    if (tabId === "missing-submissions" && assignment) {
+      params.set("assignment", assignment);
+    }
+    setSearchParams(params);
+  }
+
+  const tabs = useMemo(
+    () => [
+      {
+        id: "average-points",
+        label: "Average Assignment Points",
+        content: (
+          <AveragePointsChart
+            orgData={mockOrgData}
+            maxPointsPerAssignment={maxPointsPerAssignment}
+          />
+        ),
+      },
+      {
+        id: "common-issues",
+        label: "Common Issues",
+        content: (
+          <CommonIssuesTab assignmentFeedbacks={mockAssignmentData} />
+        ),
+      },
+      {
+        id: "missing-submissions",
+        label: "Missing Submissions",
+        content: <MissingSubmissionsList orgData={mockOrgData} />,
+      },
+    ],[]
+  );
 
   return (
-    <div className="flex flex-col space-y-20 p-4 md:p-12"> 
+    <div className="flex flex-col space-y-10 p-4 md:p-12"> 
       <div className="flex flex-col space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"> 
           <div className="flex space-x-4">
             <BackButton to={`/orgs/${orgName}/assignments`}/>
             <BasicHeading heading={`Analytics for ${orgName}`} /> 
           </div>
-          <div className="flex flex-col md:flex-row gap-2">
-            <GetCSVFileButton text="Get CSV Report" orgLogin={orgName}/>
-          </div>
         </div>
-      </div>
-        <div className="m-8">
+        <div>
           {loading ? (
             <Spinner />
           ) : !orgData ? (
             <div className="p-4">No organization data found.</div>
           ) : (
-            <>
-              <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-              {activeTab === "Average Assignment Points" && (
-                <AveragePointsChart orgData={mockOrgData} maxPointsPerAssignment={maxPointsPerAssignment} />
-              )}
-              {activeTab === "Common Issues" && (
-                <CommonIssuesChart issues={mockCommonIssues} />
-              )}
-              {activeTab === "Missing Submissions" && (
-                <MissingSubmissionsList orgData={mockOrgData} />
-              )}
-            </>
+            <Tabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
           )}
         </div>
+      </div>
     </div>
   );
 }

@@ -3,15 +3,15 @@ FORMAT OF CSV DOCUMENT:
 
 Overview of Student Points and Submissions
 
-Name          Assignment 1      Assignment 2     Assignment 3     Total Points
-Alice Park        5                 N/A               2              2.33
-Micheal Devon     4                 3                 5               4
-Willie Wonka      Error             N/A               5              1.66
+Name            GitHub Username     Roster Identifier     Assignment 1      Assignment 2     Assignment 3     Total Points
+Alice Park          alice                al3park              5                 N/A               2              2.33
+Micheal Devon       michael               19029               4                 3                 5               4
+Willie Wonka        willie                23234             Error               N/A               5              1.66
 
-// maybe later something about students who have done nothing?
 */
 
 import type { OrgReport } from "src/types/OrgReport";
+import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 
 function downloadCSV(csvContent: string, filename: string = "report.csv") {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -25,41 +25,42 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
   document.body.removeChild(link);
 }
 
-export function generateCSVFromOrg(orgData: OrgReport) {
-  // get all assignments under the organization
+export function generateCSVFromOrg(orgData: OrgReport, roster: StudentInStudentRoster[]) {
   const assignmentNames = orgData.assignments;
-  const headerRow = ["Username", ...assignmentNames, "Grade Average"]; 
-
-  const csvLines = [
-    ["Overview of Student Grades and Submissions"], // title row
+  const headerRow = ["Name", "GitHub Username", "Roster Identifier", ...assignmentNames, "Total Points"]; 
+  const submissionMap = new Map(
+    orgData.submissions.map((s) => [s.student, s.grades])
+  );
+  const csvLines: string[][] = [
+    ["Overview of Student Points and Submissions"], // title row
     headerRow, // header row
   ];
-
-  for (const submission of orgData.submissions) {
-    const { student, grades } = submission;
-    const row: (string | number)[] = [student];
-
-    let sum = 0;
+  for (const student of roster) {
+    if (!student.identifier) continue;
+    const scores = submissionMap.get(student.github_username) || {};
+    const row: (string | number)[] = [
+      student.name || "N/A",
+      student.github_username || "N/A",
+      student.identifier || "N/A",
+    ];
+    let total = 0;
     let count = 0;
-
     for (const assignment of assignmentNames) {
-      const grade = grades[assignment];
-      if (typeof grade === "number") {
-        row.push(grade);
-        sum += grade;
+      const points = scores[assignment];
+      if (typeof points === "number") {
+        row.push(points);
+        total += points;
         count++;
-      } else if (grade === "Error") {
+      } else if (points === "Error") {
         row.push("Error");
       } else {
         row.push("N/A");
       }
     }
-
-    const average = count > 0 ? (sum / count).toFixed(2) : "N/A";
-    row.push(average);
+    row.push(count > 0 ? total : "N/A");
     csvLines.push(row.map(String));
-  } 
+  }
 
-  const csvContent = csvLines.map((row) => row.join(";")).join("\n");
+  const csvContent = csvLines.map((row) => row.join(";")).join("\n"); 
   downloadCSV(csvContent, `${orgData.org}_assignments_overview.csv`);
 } 

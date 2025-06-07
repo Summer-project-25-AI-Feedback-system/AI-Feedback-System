@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import UploadStudentRosterCSVButton from "./UploadStudentRosterCSVButton";
 import Subtext from "./Subtext";
-import StudentTable from "./StudentTable";
 import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 import type { OrgReport } from "src/types/OrgReport";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
+import StudentTableWithTabs from "./studentTable/StudentTableWithTabs";
 
-type MissingSubmissionsListProps = {
+type MissingSubmissionsTabProps = {
   orgData: OrgReport;
 };
 
-// TODO: get already existing roster from db if it exists there once we have access to the db
-export default function MissingSubmissionsList({ orgData }: MissingSubmissionsListProps) {
+export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTabProps) {
   const [roster, setRoster] = useState<StudentInStudentRoster[]>([]);
   const { orgName } = useParams<{ orgName: string }>();
+  const [searchParams] = useSearchParams();
+  const selectedAssignment = searchParams.get("assignment") || "all";
   
   useEffect(() => {
     const fetchRoster = async () => {
@@ -28,23 +29,23 @@ export default function MissingSubmissionsList({ orgData }: MissingSubmissionsLi
     };
 
     fetchRoster();
-  }, [orgName]);
+  }, [orgName]); 
 
   return (
     <div>
       {roster.length === 0 ? (
         <div className="flex flex-col gap-y-6 items-center">
-            <Subtext text={`Note: GitHub’s API does not currently support fetching student rosters. To view missing submissions, please upload a roster manually. This tool expects student identifiers within a roster to match the beginning of students' email addresses. You can download your class roster from GitHub Classroom under the "Students" section.`} />
+            <Subtext text={`Note: GitHub’s API does not currently support fetching student rosters. To view missing submissions, please upload a roster manually. You can download your class roster from GitHub Classroom under the "Students" section.`} />
             <UploadStudentRosterCSVButton text="Upload Student Roster CSV" onUpload={setRoster}/>
         </div>
       ) : (
         <div className="flex flex-col gap-y-2">
           <div className="flex justify-between items-center">
-            <Subtext text="Student Submissions"/>
+            <Subtext text="Note: Student names and GitHub usernames are only visible once at least one assignment has been accepted."/>
             <UploadStudentRosterCSVButton text="Update Student Roster CSV" onUpload={setRoster}/>
           </div>
           {roster.length > 0 && (
-            <StudentTable roster={roster} orgData={orgData} />
+            <StudentTableWithTabs roster={roster} orgData={orgData} selectedTab={selectedAssignment} orgName={orgName}/>
           )}
         </div>
       )}

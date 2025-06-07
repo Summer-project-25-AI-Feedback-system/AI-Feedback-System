@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import SidebarButton from './SidebarButton';
 import SidebarCard from './SidebarCard';
 import SidebarPagination from './SidebarPagination';
@@ -6,6 +7,7 @@ import SidebarPagination from './SidebarPagination';
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const { orgName } = useParams<{ orgName: string }>();
 
   const assignments = ["Assignment 1", "Assignment 2", "Assignment 3", "Assignment 4", "Assignment 5", "Assignment 6"]
 
@@ -28,6 +30,7 @@ export default function Sidebar() {
             progressOfAcceptedAssignments={90}
             progressOfSubmittedAssignments={10}
             assignmentDeadline={new Date('2025-04-02T23:59:59Z')}
+            linkTo={`/orgs/${orgName}/analytics?tab=missing-submissions&assignment=${encodeURIComponent(assignmentName)}`}
           />
         ))}
         <SidebarPagination 
