@@ -13,10 +13,11 @@ RUN cd server && npm install
 COPY . .
 
 # 5. Build TypeScript
-RUN cd server && npm run build
+WORKDIR /app/server
+RUN npm run build
 
 # 6. Expose port
 EXPOSE 5000
 
 # 7. Start app
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/server/index.js"]
