@@ -406,9 +406,8 @@ async function hasBeenEvaluated(file: string): Promise<{
   needsUpdate: boolean;
   lastEvaluation: EvaluationRecord | null;
 }> {
-<<<<<<< HEAD
   const submissionId = path.basename(file, '.xml');
-  const markdownFile = path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md');
+  const markdownFile = path.join('output', 'ASSIGNMENT_EVALUATION.md');
   
   try {
     const xmlLastModified = await getLastModifiedTime(file);
@@ -423,47 +422,23 @@ async function hasBeenEvaluated(file: string): Promise<{
     const lastEvaluation = evaluations[evaluations.length - 1] || null;
     
     if (lastEvaluation?.evaluatedBy === 'AI') {
-=======
-  const feedbackFile = file.replace(".xml", ".feedback.txt");
-  const submissionId = path.basename(file, ".xml");
-
-  try {
-    await fs.access(feedbackFile);
-
-    const xmlLastModified = await getLastModifiedTime(file);
-    const feedbackLastModified = await getLastModifiedTime(feedbackFile);
-
-    const gitInfo = gitInfoMap.get("org123");
-    const lastCommitTime = gitInfo?.lastCommitTime || 0;
-
-    const needsUpdate =
-      xmlLastModified > feedbackLastModified ||
-      lastCommitTime > feedbackLastModified;
-
-    // Check evaluation history
-    const evaluations = evaluationHistory.get(submissionId) || [];
-    const lastEvaluation = evaluations[evaluations.length - 1] || null;
-
-    // If last evaluation was by AI, prevent automatic re-evaluation
-    if (lastEvaluation?.evaluatedBy === "AI") {
->>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
       return {
         evaluated: true,
         needsUpdate: false,
-        lastEvaluation,
+        lastEvaluation
       };
     }
-
+    
     return {
       evaluated: true,
       needsUpdate: needsUpdate,
-      lastEvaluation,
+      lastEvaluation
     };
   } catch {
     return {
       evaluated: false,
       needsUpdate: true,
-      lastEvaluation: null,
+      lastEvaluation: null
     };
   }
 }
@@ -569,7 +544,6 @@ ${truncatedContent}
   let retries = 3;
   while (retries > 0) {
     try {
-<<<<<<< HEAD
       console.log('Sending request to OpenAI API...');
       const response = await axios.post(endpoint, {
         model: 'gpt-3.5-turbo',
@@ -580,24 +554,8 @@ ${truncatedContent}
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
-=======
-      console.log("Sending request to OpenAI API...");
-      const response = await axios.post(
-        endpoint,
-        {
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 1000,
-          temperature: 0.1,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
->>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
         }
-      );
+      });
 
       if (response.data?.choices?.[0]?.message?.content) {
         console.log("Response received from OpenAI API");
@@ -655,7 +613,6 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: studentEmail,
-<<<<<<< HEAD
       subject: 'Assignment Evaluation',
       text: 'Your assignment evaluation is attached to this email.',
       attachments: [
@@ -664,16 +621,6 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
           path: feedbackPath
         }
       ]
-=======
-      subject: "Code Evaluation",
-      text: "Code evaluation is attached to this email.",
-      attachments: [
-        {
-          filename: "code_evaluation.txt",
-          path: feedbackPath,
-        },
-      ],
->>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -778,7 +725,6 @@ async function main() {
 
         const xml = await fs.readFile(file, "utf-8");
         console.log(`Evaluating file ${file}...`);
-<<<<<<< HEAD
         
         const feedback = await evaluateWithOpenAI(xml, 'org123', process.cwd());
         
@@ -807,18 +753,6 @@ async function main() {
         // Lähetä sähköposti
         const studentEmail = 'student@example.com';
         await sendEmailFeedback(path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md'), studentEmail);
-=======
-
-        const feedback = await evaluateWithOpenAI(xml, "org123", process.cwd());
-
-        const resultFile = file.replace(".xml", ".feedback.txt");
-        await fs.writeFile(resultFile, feedback, "utf-8");
-        console.log(`Feedback saved to file ${resultFile}`);
-
-        // Send email
-        const studentEmail = "student@example.com";
-        await sendEmailFeedback(resultFile, studentEmail);
->>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
         console.log(`Feedback sent via email to ${studentEmail}`);
       } catch (e) {
         console.log(`Error evaluating file ${file}: ${e.message}`);
