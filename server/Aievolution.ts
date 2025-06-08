@@ -575,7 +575,11 @@ ${truncatedContent}
       }
       throw new Error("Invalid response from OpenAI API");
     } catch (error) {
-      console.log(`Error calling OpenAI API: ${error.message}`);
+      if (error instanceof Error) {
+        console.log(`Error calling OpenAI API: ${error.message}`);
+      } else {
+        console.log("Error calling OpenAI API:", error);
+      }
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           throw new Error("Invalid OpenAI API key. Check .env file.");
@@ -637,7 +641,11 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
     console.log("Email sent successfully");
     return info;
   } catch (error) {
-    console.log(`Error sending email: ${error.message}`);
+    if (error instanceof Error) {
+      console.log(`Error sending email: ${error.message}`);
+    } else {
+      console.log(`Error sending email: ${String(error)}`);
+    }
     throw error;
   }
 }
@@ -747,7 +755,11 @@ async function main() {
         await sendEmailFeedback(resultFile, studentEmail);
         console.log(`Feedback sent via email to ${studentEmail}`);
       } catch (e) {
-        console.log(`Error evaluating file ${file}: ${e.message}`);
+        if (e instanceof Error) {
+          console.log(`Error evaluating file ${file}: ${e.message}`);
+        } else {
+          console.log(`Error evaluating file ${file}: ${String(e)}`);
+        }
       }
     }
   } catch (error: unknown) {
