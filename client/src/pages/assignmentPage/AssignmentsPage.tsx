@@ -12,6 +12,7 @@ import { sortData } from "../../utils/sortingUtils";
 import type { SortOption } from "../../utils/sortingUtils";
 import Sidebar from "./sidebar/Sidebar";
 import Spinner from "../../components/Spinner";
+import GetCSVFileButton from "../../components/GetCSVFileButton";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
@@ -64,6 +65,7 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
             <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
+            <GetCSVFileButton text={"Export CSV Report"} orgName={orgName}/>
           </div>
         </div>
         {loading ? (

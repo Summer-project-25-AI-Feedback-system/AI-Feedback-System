@@ -2,13 +2,14 @@ import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
 import { useGitHub } from "../context/useGitHub";
 import UserContext from "../context/UserContext"
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 
 
 interface GetCSVFileButtonProps {
   text: string;
   orgName: string | undefined;
-  roster: StudentInStudentRoster[];
+  roster?: StudentInStudentRoster[];
   assignmentFilter?: string[];
 }
 
@@ -54,11 +55,17 @@ const mockOrgData = {
 
 export default function GetCSVFileButton({ text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
   const github = useGitHub();
+  const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const username = user?.username || "unknownuser";
 
   const handleClick = async () => {
-   if (!orgName) return;
+    if (!orgName) return;
+    if (!roster || roster.length === 0) {
+      navigate(`/orgs/${orgName}/analytics?tab=missing-submissions`); 
+      alert("A roster is required to generate the CSV report. Please upload a roster first.");
+      return;
+    }
     try {
       // const data = await github.getAllOrganizationData(orgName);
       const data = mockOrgData

@@ -4,9 +4,9 @@ FORMAT OF CSV DOCUMENT:
 Overview of Student Points and Submissions
 
 Name            GitHub Username     Roster Identifier     Assignment 1      Assignment 2     Assignment 3     Total Points
-Alice Park          alice                al3park              5                 N/A               2              2.33
-Micheal Devon       michael               19029               4                 3                 5               4
-Willie Wonka        willie                23234             Error               N/A               5              1.66
+Alice Park          alice                al3park              5                 N/A               2               7
+Micheal Devon       michael               19029               4                 3                 5               12
+Willie Wonka        willie                23234             Error               N/A               5               5
 
 */
 
