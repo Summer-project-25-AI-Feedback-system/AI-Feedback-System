@@ -396,25 +396,21 @@ async function hasBeenEvaluated(file: string): Promise<{
   needsUpdate: boolean;
   lastEvaluation: EvaluationRecord | null;
 }> {
-  const feedbackFile = file.replace('.xml', '.feedback.txt');
   const submissionId = path.basename(file, '.xml');
+  const markdownFile = path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md');
   
   try {
-    await fs.access(feedbackFile);
-    
     const xmlLastModified = await getLastModifiedTime(file);
-    const feedbackLastModified = await getLastModifiedTime(feedbackFile);
+    const markdownLastModified = await getLastModifiedTime(markdownFile);
     
     const gitInfo = gitInfoMap.get('org123');
     const lastCommitTime = gitInfo?.lastCommitTime || 0;
     
-    const needsUpdate = xmlLastModified > feedbackLastModified || lastCommitTime > feedbackLastModified;
+    const needsUpdate = xmlLastModified > markdownLastModified || lastCommitTime > markdownLastModified;
     
-    // Check evaluation history
     const evaluations = evaluationHistory.get(submissionId) || [];
     const lastEvaluation = evaluations[evaluations.length - 1] || null;
     
-    // If last evaluation was by AI, prevent automatic re-evaluation
     if (lastEvaluation?.evaluatedBy === 'AI') {
       return {
         evaluated: true,
@@ -529,7 +525,7 @@ ${truncatedContent}
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 1000,
-        temperature: 0.1
+        temperature: 0.3
       }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -593,11 +589,11 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: studentEmail,
-      subject: 'Code Evaluation',
-      text: 'Code evaluation is attached to this email.',
+      subject: 'Assignment Evaluation',
+      text: 'Your assignment evaluation is attached to this email.',
       attachments: [
         {
-          filename: 'code_evaluation.txt',
+          filename: 'ASSIGNMENT_EVALUATION.md',
           path: feedbackPath
         }
       ]
@@ -702,13 +698,31 @@ async function main() {
         
         const feedback = await evaluateWithOpenAI(xml, 'org123', process.cwd());
         
-        const resultFile = file.replace('.xml', '.feedback.txt');
-        await fs.writeFile(resultFile, feedback, 'utf-8');
-        console.log(`Feedback saved to file ${resultFile}`);
+        // Jäsennä AI:n palaute
+        const parsedFeedback = await parseAIFeedback(feedback);
+        
+        // Lasketaan kokonaisarvosana
+        const overallRating = await calculateOverallRating(parsedFeedback.criteria);
+        
+        // Luo arviointitulokset
+        const evaluationResult: EvaluationResult = {
+          overallRating,
+          criteria: parsedFeedback.criteria,
+          summary: parsedFeedback.summary,
+          metadata: {
+            evaluationDate: new Date().toISOString(),
+            submissionId: path.basename(file, '.xml'),
+            repoName: path.basename(process.cwd()),
+            assignmentName: "Assignment"
+          }
+        };
 
-        // Send email
+        // Tallenna markdown-tiedosto
+        await saveEvaluationToMarkdown(evaluationResult, process.cwd());
+        
+        // Lähetä sähköposti
         const studentEmail = 'student@example.com';
-        await sendEmailFeedback(resultFile, studentEmail);
+        await sendEmailFeedback(path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md'), studentEmail);
         console.log(`Feedback sent via email to ${studentEmail}`);
       } catch (e) {
         console.log(`Error evaluating file ${file}: ${e.message}`);
@@ -719,5 +733,172 @@ async function main() {
   }
 }
 
-// Run main program
+// Kutsu main-funktiota
 main().catch(console.error);
+
+interface EvaluationCriteria {
+  name: string;
+  score: number;
+  maxScore: number;
+  comments: string[];
+}
+
+interface EvaluationResult {
+  overallRating: number;
+  criteria: EvaluationCriteria[];
+  summary: string;
+  metadata: {
+    evaluationDate: string;
+    submissionId: string;
+    repoName: string;
+    assignmentName: string;
+  };
+}
+
+async function calculateOverallRating(criteria: EvaluationCriteria[]): Promise<number> {
+  const totalScore = criteria.reduce((sum, criteria) => sum + criteria.score, 0);
+  const maxScore = criteria.reduce((sum, criteria) => sum + criteria.maxScore, 0);
+  // Muunnetaan 100-pistejärjestelmästä 5-pistejärjestelmään
+  return (totalScore / maxScore) * 5;
+}
+
+async function saveEvaluationToMarkdown(
+  evaluationResult: EvaluationResult,
+  repoPath: string
+): Promise<void> {
+  const evaluationPath = path.join('output', 'ASSIGNMENT_EVALUATION.md');
+  
+  const evaluationDate = new Date(evaluationResult.metadata.evaluationDate);
+  const formattedDate = evaluationDate.toLocaleDateString('fi-FI', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  // Lasketaan kokonaispisteet
+  const totalScore = evaluationResult.criteria.reduce((sum, criteria) => sum + criteria.score, 0);
+  const maxScore = evaluationResult.criteria.reduce((sum, criteria) => sum + criteria.maxScore, 0);
+  const overallRating = (totalScore / maxScore) * 5;
+  
+  const markdownContent = `# Assignment Evaluation
+
+## Summary
+
+${evaluationResult.summary}
+
+Total Score: ${overallRating.toFixed(1)}/5
+
+## Metadata
+- **Evaluation Date:** ${formattedDate}
+- **Evaluation ID:** ${evaluationResult.metadata.submissionId}
+- **Repository:** ${evaluationResult.metadata.repoName}
+- **Assignment:** ${evaluationResult.metadata.assignmentName}
+`;
+
+  try {
+    await fs.mkdir('output', { recursive: true });
+    await fs.writeFile(evaluationPath, markdownContent, 'utf-8');
+    console.log(`Evaluation saved to ${evaluationPath}`);
+  } catch (error) {
+    console.error('Error saving evaluation to markdown:', error);
+    throw error;
+  }
+}
+
+interface ParsedFeedback {
+  criteria: EvaluationCriteria[];
+  summary: string;
+}
+
+async function parseAIFeedback(feedback: string): Promise<ParsedFeedback> {
+  const criteria: EvaluationCriteria[] = [];
+  
+  // Syntax and Validity (0-10)
+  const syntaxMatch = feedback.match(/Syntax and Validity\s*\((\d+)\/(\d+)\)/);
+  if (syntaxMatch) {
+    criteria.push({
+      name: "Syntax and Validity",
+      score: parseInt(syntaxMatch[1]),
+      maxScore: parseInt(syntaxMatch[2]),
+      comments: extractComments(feedback, "Syntax and Validity")
+    });
+  }
+
+  // Structure and Organization (0-20)
+  const structureMatch = feedback.match(/Structure and Organization\s*\((\d+)\/(\d+)\)/);
+  if (structureMatch) {
+    criteria.push({
+      name: "Structure and Organization",
+      score: parseInt(structureMatch[1]),
+      maxScore: parseInt(structureMatch[2]),
+      comments: extractComments(feedback, "Structure and Organization")
+    });
+  }
+
+  // Clarity and Readability (0-20)
+  const clarityMatch = feedback.match(/Clarity and Readability\s*\((\d+)\/(\d+)\)/);
+  if (clarityMatch) {
+    criteria.push({
+      name: "Clarity and Readability",
+      score: parseInt(clarityMatch[1]),
+      maxScore: parseInt(clarityMatch[2]),
+      comments: extractComments(feedback, "Clarity and Readability")
+    });
+  }
+
+  // Language-specific features (0-20)
+  const languageMatch = feedback.match(/Language-specific features\s*\((\d+)\/(\d+)\)/);
+  if (languageMatch) {
+    criteria.push({
+      name: "Language-specific Features",
+      score: parseInt(languageMatch[1]),
+      maxScore: parseInt(languageMatch[2]),
+      comments: extractComments(feedback, "Language-specific features")
+    });
+  }
+
+  // Best practices (0-30)
+  const practicesMatch = feedback.match(/Best practices\s*\((\d+)\/(\d+)\)/);
+  if (practicesMatch) {
+    criteria.push({
+      name: "Best Practices",
+      score: parseInt(practicesMatch[1]),
+      maxScore: parseInt(practicesMatch[2]),
+      comments: extractComments(feedback, "Best practices")
+    });
+  }
+
+  // Poistetaan kaikki Overall Rating -rivit yhteenvedosta
+  const summary = feedback
+    .replace(/Overall Rating: \d+\/5\n/g, '')
+    .replace(/Overall Rating: \d+\/5/g, '')
+    .trim();
+
+  return {
+    criteria,
+    summary
+  };
+}
+
+function extractComments(feedback: string, criteriaName: string): string[] {
+  const comments: string[] = [];
+  const lines = feedback.split('\n');
+  let isInCriteria = false;
+
+  for (const line of lines) {
+    if (line.includes(criteriaName)) {
+      isInCriteria = true;
+      continue;
+    }
+    if (isInCriteria && line.trim().startsWith('-')) {
+      comments.push(line.trim().substring(1).trim());
+    }
+    if (isInCriteria && line.trim() === '') {
+      isInCriteria = false;
+    }
+  }
+
+  return comments;
+}
