@@ -5,8 +5,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import githubRoutes from "./routes/githubRoutes";
-import submitRoute from"./routes/submitRoute";
+import submitRoute from "./routes/submitRoute";
 import uploadCsvRoute from "./routes/uploadCsvRoute";
+import aiRoutes from "./routes/aiRoutes";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.get("/api/message", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/github", githubRoutes);
+app.use("/api/evaluation", aiRoutes);
 app.use("/submit", submitRoute);
 app.use("/api", uploadCsvRoute);
 
