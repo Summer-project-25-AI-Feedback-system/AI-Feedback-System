@@ -6,17 +6,17 @@ LABEL org.opencontainers.image.source="https://github.com/Summer-project-25-AI-F
 WORKDIR /app
 
 # 3. Copy package files and install deps
-COPY package*.json ./
-RUN npm install
+COPY server/package*.json ./server/
+RUN cd server && npm install
 
-# 4. Copy the rest of the server files
+# 4. Copy server code and shared interfaces
 COPY . .
 
 # 5. Build TypeScript
-RUN npm run build
+RUN cd server && npm run build
 
-# 6. Expose the port (match .env)
+# 6. Expose port
 EXPOSE 5000
 
-# 7. Start the server
+# 7. Start app
 CMD ["node", "dist/index.js"]
