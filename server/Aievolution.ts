@@ -1,9 +1,9 @@
-import * as fs from 'fs/promises';
-import axios from 'axios';
-import * as dotenv from 'dotenv';
-import * as nodemailer from 'nodemailer';
-import path from 'path';
-import { simpleGit, SimpleGit } from 'simple-git';
+import * as fs from "fs/promises";
+import axios from "axios";
+import * as dotenv from "dotenv";
+import * as nodemailer from "nodemailer";
+import path from "path";
+import { simpleGit, SimpleGit } from "simple-git";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,69 +20,73 @@ interface OpenAIResponse {
 // Create email transporter
 const createTransporter = () => {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    throw new Error('Gmail credentials missing from .env file');
+    throw new Error("Gmail credentials missing from .env file");
   }
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
   });
 };
 
 // Wait for specified time
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Get all XML files from output directory
 async function getXmlFiles(dir: string): Promise<string[]> {
   try {
     const files = await fs.readdir(dir);
-    return files.filter(f => f.endsWith('.xml')).map(f => `${dir}/${f}`);
+    return files.filter((f) => f.endsWith(".xml")).map((f) => `${dir}/${f}`);
   } catch (error) {
-    console.error('Error reading directory:', error);
+    console.error("Error reading directory:", error);
     return [];
   }
 }
 
 // Split large XML file into smaller chunks
-function splitXmlIntoChunks(xmlContent: string, maxChunkSize: number = 15000): string[] {
+function splitXmlIntoChunks(
+  xmlContent: string,
+  maxChunkSize: number = 15000
+): string[] {
   const chunks: string[] = [];
-  let currentChunk = '';
-  
+  let currentChunk = "";
+
   // Split XML line by line
-  const lines = xmlContent.split('\n');
-  
+  const lines = xmlContent.split("\n");
+
   for (const line of lines) {
     // If current chunk + new line is too large, save chunk and start new one
     if ((currentChunk + line).length > maxChunkSize) {
       if (currentChunk) {
         chunks.push(currentChunk);
-        currentChunk = '';
+        currentChunk = "";
       }
       // If single line is too long, split it into smaller parts
       if (line.length > maxChunkSize) {
-        const subChunks = line.match(new RegExp(`.{1,${maxChunkSize}}`, 'g')) || [];
+        const subChunks =
+          line.match(new RegExp(`.{1,${maxChunkSize}}`, "g")) || [];
         chunks.push(...subChunks);
       } else {
         currentChunk = line;
       }
     } else {
-      currentChunk += (currentChunk ? '\n' : '') + line;
+      currentChunk += (currentChunk ? "\n" : "") + line;
     }
   }
-  
+
   if (currentChunk) {
     chunks.push(currentChunk);
   }
-  
+
   return chunks;
 }
 
 // Get value from .env file
-const DAILY_CALL_LIMIT = parseInt(process.env.DAILY_CALL_LIMIT || '10');
-const WEEKLY_CALL_LIMIT = parseInt(process.env.WEEKLY_CALL_LIMIT || '50');
+const DAILY_CALL_LIMIT = parseInt(process.env.DAILY_CALL_LIMIT || "10");
+const WEEKLY_CALL_LIMIT = parseInt(process.env.WEEKLY_CALL_LIMIT || "50");
 
 // Counters
 let dailyCallCount = 0;
@@ -93,28 +97,27 @@ let lastWeeklyReset = new Date();
 async function checkRateLimits(repoPath: string): Promise<boolean> {
   try {
     const git: SimpleGit = simpleGit(repoPath);
-    
+
     // Get latest commit
-    const lastCommit = await git.revparse(['HEAD']);
-    
-    
+    const lastCommit = await git.revparse(["HEAD"]);
+
     const dailyCommits = await git.log(['--since="24 hours ago"']);
     const weeklyCommits = await git.log(['--since="7 days ago"']);
-    
+
     // Check daily limit
     if (dailyCommits.total >= DAILY_CALL_LIMIT) {
       console.log(`Daily AI call limit reached (${DAILY_CALL_LIMIT})`);
       return false;
     }
-    
+
     if (weeklyCommits.total >= WEEKLY_CALL_LIMIT) {
       console.log(`Weekly AI call limit reached (${WEEKLY_CALL_LIMIT})`);
       return false;
     }
-    
+
     return true;
   } catch (error) {
-    console.error('Error checking rate limits:', error);
+    console.error("Error checking rate limits:", error);
     return false;
   }
 }
@@ -141,30 +144,32 @@ const MAX_REPO_SIZE = 100000000; // 100MB
 // Add this function for token usage tracking
 async function trackTokenUsage(organizationId: string, tokens: number) {
   const now = Date.now();
-  const dayAgo = now - (24 * 60 * 60 * 1000);
-  
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+
   // Get organization's token usage
   let usage = tokenUsageMap.get(organizationId) || [];
-  
+
   // Remove old entries (older than 24h)
-  usage = usage.filter(u => u.timestamp > dayAgo);
-  
+  usage = usage.filter((u) => u.timestamp > dayAgo);
+
   // Add new entry
   usage.push({
     organizationId,
     tokens,
-    timestamp: now
+    timestamp: now,
   });
-  
+
   // Update usage
   tokenUsageMap.set(organizationId, usage);
-  
+
   // Calculate total daily usage
   const dailyUsage = usage.reduce((sum, u) => sum + u.tokens, 0);
-  
+
   // Check if limit is exceeded
   if (dailyUsage > MAX_TOKENS_PER_DAY) {
-    throw new Error(`Organization ${organizationId} token usage limit exceeded. Used: ${dailyUsage}, Limit: ${MAX_TOKENS_PER_DAY}`);
+    throw new Error(
+      `Organization ${organizationId} token usage limit exceeded. Used: ${dailyUsage}, Limit: ${MAX_TOKENS_PER_DAY}`
+    );
   }
 }
 
@@ -172,31 +177,33 @@ async function trackTokenUsage(organizationId: string, tokens: number) {
 async function checkRepoSize(organizationId: string, repoPath: string) {
   const now = Date.now();
   const lastChecked = repoSizeMap.get(organizationId)?.lastChecked || 0;
-  
+
   // Check size only once per hour
   if (now - lastChecked < 60 * 60 * 1000) {
     return;
   }
-  
+
   try {
     // Calculate repository size
     const size = await calculateRepoSize(repoPath);
-    
+
     // Update size
     repoSizeMap.set(organizationId, {
       organizationId,
       size,
-      lastChecked: now
+      lastChecked: now,
     });
-    
+
     // Check if limit is exceeded
     if (size > MAX_REPO_SIZE) {
-      console.warn(`Warning: Repository size exceeds recommended limit. Size: ${size}, Limit: ${MAX_REPO_SIZE}`);
+      console.warn(
+        `Warning: Repository size exceeds recommended limit. Size: ${size}, Limit: ${MAX_REPO_SIZE}`
+      );
       // Don't throw error, continue processing
       return;
     }
   } catch (error) {
-    console.error('Error checking repo size:', error);
+    console.error("Error checking repo size:", error);
     // Don't throw error, continue processing
   }
 }
@@ -204,14 +211,14 @@ async function checkRepoSize(organizationId: string, repoPath: string) {
 // Add this function to calculate repository size
 async function calculateRepoSize(repoPath: string): Promise<number> {
   let totalSize = 0;
-  
+
   async function calculateDirSize(dir: string) {
     const files = await fs.readdir(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stats = await fs.stat(filePath);
-      
+
       if (stats.isDirectory()) {
         await calculateDirSize(filePath);
       } else {
@@ -219,7 +226,7 @@ async function calculateRepoSize(repoPath: string): Promise<number> {
       }
     }
   }
-  
+
   await calculateDirSize(repoPath);
   return totalSize;
 }
@@ -248,31 +255,31 @@ interface GitHubStats {
 
 // Update function to save GitHub stats to JSON
 async function saveGitHubStats(stats: GitHubStats) {
-  const outputDir = 'output';
-  const statsFile = path.join(outputDir, 'github_stats.json');
-  
+  const outputDir = "output";
+  const statsFile = path.join(outputDir, "github_stats.json");
+
   try {
     // Create output directory if it doesn't exist
     await fs.mkdir(outputDir, { recursive: true });
-    
+
     // Read existing stats if file exists
     let allStats: GitHubStats[] = [];
     try {
-      const existingData = await fs.readFile(statsFile, 'utf-8');
+      const existingData = await fs.readFile(statsFile, "utf-8");
       allStats = JSON.parse(existingData);
     } catch (error) {
       // File doesn't exist or is invalid, start with empty array
       allStats = [];
     }
-    
+
     // Add new stats
     allStats.push(stats);
-    
+
     // Save updated stats
-    await fs.writeFile(statsFile, JSON.stringify(allStats, null, 2), 'utf-8');
+    await fs.writeFile(statsFile, JSON.stringify(allStats, null, 2), "utf-8");
     console.log(`GitHub stats saved to ${statsFile}`);
   } catch (error) {
-    console.error('Error saving GitHub stats:', error);
+    console.error("Error saving GitHub stats:", error);
   }
 }
 
@@ -294,7 +301,7 @@ const gitInfoMap = new Map<string, GitInfo>();
 async function checkGitRepo(organizationId: string, repoPath: string) {
   const now = Date.now();
   const lastChecked = gitInfoMap.get(organizationId)?.lastChecked || 0;
-  
+
   // Check only once per hour
   if (now - lastChecked < 60 * 60 * 1000) {
     console.log(`Git info was checked recently, using cached value`);
@@ -306,12 +313,14 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
     const git: SimpleGit = simpleGit(repoPath);
 
     // Get latest commit and its time
-    const lastCommit = await git.revparse(['HEAD']);
-    const lastCommitInfo = await git.show(['--format=%at', '-s', lastCommit]);
+    const lastCommit = await git.revparse(["HEAD"]);
+    const lastCommitInfo = await git.show(["--format=%at", "-s", lastCommit]);
     const lastCommitTime = parseInt(lastCommitInfo) * 1000; // Convert to milliseconds
-    
+
     console.log(`Last commit: ${lastCommit}`);
-    console.log(`Last commit time: ${new Date(lastCommitTime).toLocaleString()}`);
+    console.log(
+      `Last commit time: ${new Date(lastCommitTime).toLocaleString()}`
+    );
 
     // Get commit count
     const commitCount = (await git.log()).total;
@@ -331,7 +340,9 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
     const largeRepoSize = size > MAX_REPO_SIZE;
 
     if (highCommitCount) {
-      console.warn(`Warning: High number of commits in last 24h (${changes.total})`);
+      console.warn(
+        `Warning: High number of commits in last 24h (${changes.total})`
+      );
     }
 
     if (largeRepoSize) {
@@ -346,18 +357,18 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
         timestamp: new Date(now).toLocaleString(),
         lastCommit: {
           hash: lastCommit,
-          time: new Date(lastCommitTime).toLocaleString()
+          time: new Date(lastCommitTime).toLocaleString(),
         },
         repository: {
           totalCommits: commitCount,
           sizeInMB: parseFloat(sizeInMB.toFixed(2)),
-          changes24h: changes.total
+          changes24h: changes.total,
         },
         warnings: {
           highCommitCount,
-          largeRepoSize
-        }
-      }
+          largeRepoSize,
+        },
+      },
     };
 
     // Save stats to JSON
@@ -371,11 +382,10 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
       lastCommitTime,
       lastChecked: now,
       size,
-      commitCount
+      commitCount,
     });
-
   } catch (error) {
-    console.error('Error checking Git repository:', error);
+    console.error("Error checking Git repository:", error);
   }
 }
 
@@ -383,7 +393,7 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
 interface EvaluationRecord {
   submissionId: string;
   timestamp: number;
-  evaluatedBy: 'AI' | 'TEACHER';
+  evaluatedBy: "AI" | "TEACHER";
   teacherId?: string;
 }
 
@@ -391,11 +401,12 @@ interface EvaluationRecord {
 const evaluationHistory = new Map<string, EvaluationRecord[]>();
 
 // Modify hasBeenEvaluated function
-async function hasBeenEvaluated(file: string): Promise<{ 
-  evaluated: boolean; 
+async function hasBeenEvaluated(file: string): Promise<{
+  evaluated: boolean;
   needsUpdate: boolean;
   lastEvaluation: EvaluationRecord | null;
 }> {
+<<<<<<< HEAD
   const submissionId = path.basename(file, '.xml');
   const markdownFile = path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md');
   
@@ -412,86 +423,124 @@ async function hasBeenEvaluated(file: string): Promise<{
     const lastEvaluation = evaluations[evaluations.length - 1] || null;
     
     if (lastEvaluation?.evaluatedBy === 'AI') {
+=======
+  const feedbackFile = file.replace(".xml", ".feedback.txt");
+  const submissionId = path.basename(file, ".xml");
+
+  try {
+    await fs.access(feedbackFile);
+
+    const xmlLastModified = await getLastModifiedTime(file);
+    const feedbackLastModified = await getLastModifiedTime(feedbackFile);
+
+    const gitInfo = gitInfoMap.get("org123");
+    const lastCommitTime = gitInfo?.lastCommitTime || 0;
+
+    const needsUpdate =
+      xmlLastModified > feedbackLastModified ||
+      lastCommitTime > feedbackLastModified;
+
+    // Check evaluation history
+    const evaluations = evaluationHistory.get(submissionId) || [];
+    const lastEvaluation = evaluations[evaluations.length - 1] || null;
+
+    // If last evaluation was by AI, prevent automatic re-evaluation
+    if (lastEvaluation?.evaluatedBy === "AI") {
+>>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
       return {
         evaluated: true,
         needsUpdate: false,
-        lastEvaluation
+        lastEvaluation,
       };
     }
-    
+
     return {
       evaluated: true,
       needsUpdate: needsUpdate,
-      lastEvaluation
+      lastEvaluation,
     };
   } catch {
     return {
       evaluated: false,
       needsUpdate: true,
-      lastEvaluation: null
+      lastEvaluation: null,
     };
   }
 }
 
 // Add new function to record evaluations
-async function recordEvaluation(submissionId: string, evaluatedBy: 'AI' | 'TEACHER', teacherId?: string) {
+async function recordEvaluation(
+  submissionId: string,
+  evaluatedBy: "AI" | "TEACHER",
+  teacherId?: string
+) {
   const evaluations = evaluationHistory.get(submissionId) || [];
   evaluations.push({
     submissionId,
     timestamp: Date.now(),
     evaluatedBy,
-    teacherId
+    teacherId,
   });
   evaluationHistory.set(submissionId, evaluations);
 }
 
 // Modify evaluateWithOpenAI function
-async function evaluateWithOpenAI(xmlContent: string, organizationId: string, repoPath: string): Promise<string> {
-  const submissionId = path.basename(repoPath, '.xml');
-  
+export async function evaluateWithOpenAI(
+  xmlContent: string,
+  organizationId: string,
+  repoPath: string
+): Promise<string> {
+  const submissionId = path.basename(repoPath, ".xml");
+
   // Check evaluation history
   const evaluations = evaluationHistory.get(submissionId) || [];
   const lastEvaluation = evaluations[evaluations.length - 1];
-  
-  if (lastEvaluation?.evaluatedBy === 'AI') {
-    throw new Error('This submission has already been evaluated by AI. Please contact your teacher for re-evaluation.');
+
+  if (lastEvaluation?.evaluatedBy === "AI") {
+    throw new Error(
+      "This submission has already been evaluated by AI. Please contact your teacher for re-evaluation."
+    );
   }
-  
+
   // Check Git repository
   await checkGitRepo(organizationId, repoPath);
-  
+
   // Calculate token count
   const estimatedTokens = Math.ceil(xmlContent.length / 4);
   console.log(`Estimated token count: ${estimatedTokens}`);
-  
+
   // Track token usage
   await trackTokenUsage(organizationId, estimatedTokens);
-  
+
   // Check limits
   if (!(await checkRateLimits(repoPath))) {
-    throw new Error('AI call limit reached. Try again later.');
+    throw new Error("AI call limit reached. Try again later.");
   }
 
   // Increment counters
   dailyCallCount++;
   weeklyCallCount++;
-  console.log(`Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`);
+  console.log(
+    `Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`
+  );
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error('OpenAI API key not found in .env file');
+    throw new Error("OpenAI API key not found in .env file");
   }
 
-  const endpoint = 'https://api.openai.com/v1/chat/completions';
+  const endpoint = "https://api.openai.com/v1/chat/completions";
 
   // Leave room for prompt and response (about 1000 tokens)
   const maxContentTokens = 3000;
-  
+
   // Truncate content if it's too long
-  const truncatedContent = estimatedTokens > maxContentTokens 
-    ? xmlContent.substring(0, maxContentTokens * 4) + "\n... (content truncated)"
-    : xmlContent;
-    
+  const truncatedContent =
+    estimatedTokens > maxContentTokens
+      ? xmlContent.substring(0, maxContentTokens * 4) +
+        "\n... (content truncated)"
+      : xmlContent;
+
   const prompt = `
 You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
 
@@ -520,6 +569,7 @@ ${truncatedContent}
   let retries = 3;
   while (retries > 0) {
     try {
+<<<<<<< HEAD
       console.log('Sending request to OpenAI API...');
       const response = await axios.post(endpoint, {
         model: 'gpt-3.5-turbo',
@@ -530,24 +580,40 @@ ${truncatedContent}
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
+=======
+      console.log("Sending request to OpenAI API...");
+      const response = await axios.post(
+        endpoint,
+        {
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 1000,
+          temperature: 0.1,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+>>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
         }
-      });
+      );
 
       if (response.data?.choices?.[0]?.message?.content) {
-        console.log('Response received from OpenAI API');
+        console.log("Response received from OpenAI API");
         // Record evaluation
-        await recordEvaluation(submissionId, 'AI');
+        await recordEvaluation(submissionId, "AI");
         return response.data.choices[0].message.content;
       }
-      throw new Error('Invalid response from OpenAI API');
+      throw new Error("Invalid response from OpenAI API");
     } catch (error) {
       console.log(`Error calling OpenAI API: ${error.message}`);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          throw new Error('Invalid OpenAI API key. Check .env file.');
+          throw new Error("Invalid OpenAI API key. Check .env file.");
         }
         if (error.response?.status === 429) {
-          console.log('Rate limit reached, waiting 20 seconds...');
+          console.log("Rate limit reached, waiting 20 seconds...");
           await sleep(20000);
           retries--;
           continue;
@@ -559,36 +625,37 @@ ${truncatedContent}
     }
   }
 
-  throw new Error('Failed to get response from OpenAI API after all retries');
+  throw new Error("Failed to get response from OpenAI API after all retries");
 }
 
 // Modify email sending function for Gmail
 async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
   try {
-    console.log('Attempting to send email...');
-    
+    console.log("Attempting to send email...");
+
     if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      throw new Error('Gmail credentials missing from .env file');
+      throw new Error("Gmail credentials missing from .env file");
     }
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
+        pass: process.env.GMAIL_APP_PASSWORD,
       },
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     });
 
     // Check connection
     await transporter.verify();
-    console.log('Email connection verified');
+    console.log("Email connection verified");
 
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: studentEmail,
+<<<<<<< HEAD
       subject: 'Assignment Evaluation',
       text: 'Your assignment evaluation is attached to this email.',
       attachments: [
@@ -597,10 +664,20 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
           path: feedbackPath
         }
       ]
+=======
+      subject: "Code Evaluation",
+      text: "Code evaluation is attached to this email.",
+      attachments: [
+        {
+          filename: "code_evaluation.txt",
+          path: feedbackPath,
+        },
+      ],
+>>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully');
+    console.log("Email sent successfully");
     return info;
   } catch (error) {
     console.log(`Error sending email: ${error.message}`);
@@ -630,24 +707,26 @@ async function getTokenUsage(organizationId: string): Promise<{
   last24Hours: TokenUsage[];
 }> {
   const now = Date.now();
-  const dayAgo = now - (24 * 60 * 60 * 1000);
-  const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-  
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+
   const usage = tokenUsageMap.get(organizationId) || [];
-  
+
   return {
     dailyUsage: usage
-      .filter(u => u.timestamp > dayAgo)
+      .filter((u) => u.timestamp > dayAgo)
       .reduce((sum, u) => sum + u.tokens, 0),
     weeklyUsage: usage
-      .filter(u => u.timestamp > weekAgo)
+      .filter((u) => u.timestamp > weekAgo)
       .reduce((sum, u) => sum + u.tokens, 0),
-    last24Hours: usage.filter(u => u.timestamp > dayAgo)
+    last24Hours: usage.filter((u) => u.timestamp > dayAgo),
   };
 }
 
 // Add function to get Git info
-async function getGitInfo(organizationId: string): Promise<GitInfo | undefined> {
+async function getGitInfo(
+  organizationId: string
+): Promise<GitInfo | undefined> {
   return gitInfoMap.get(organizationId);
 }
 
@@ -657,23 +736,23 @@ async function handleError(error: unknown): Promise<never> {
     console.log(`Error: ${error.message}`);
     throw error;
   }
-  console.log('Unknown error occurred');
-  throw new Error('Unknown error occurred');
+  console.log("Unknown error occurred");
+  throw new Error("Unknown error occurred");
 }
 
 // Modify main function
 async function main() {
   try {
     // Check output directory
-    await fs.access('output').catch(async () => {
-      console.log('Creating output directory...');
-      await fs.mkdir('output', { recursive: true });
+    await fs.access("output").catch(async () => {
+      console.log("Creating output directory...");
+      await fs.mkdir("output", { recursive: true });
     });
 
-    const xmlFiles = await getXmlFiles('output');
-    
+    const xmlFiles = await getXmlFiles("output");
+
     if (xmlFiles.length === 0) {
-      console.log('No XML files found in output directory');
+      console.log("No XML files found in output directory");
       return;
     }
 
@@ -683,18 +762,23 @@ async function main() {
       try {
         // Check if file has been evaluated
         const evaluationStatus = await hasBeenEvaluated(file);
-        
+
         if (evaluationStatus.evaluated && !evaluationStatus.needsUpdate) {
-          console.log(`File ${file} has already been evaluated and is up to date. Skipping...`);
+          console.log(
+            `File ${file} has already been evaluated and is up to date. Skipping...`
+          );
           continue;
         }
 
         if (evaluationStatus.evaluated && evaluationStatus.needsUpdate) {
-          console.log(`File ${file} has been modified since last evaluation. Re-evaluating...`);
+          console.log(
+            `File ${file} has been modified since last evaluation. Re-evaluating...`
+          );
         }
 
-        const xml = await fs.readFile(file, 'utf-8');
+        const xml = await fs.readFile(file, "utf-8");
         console.log(`Evaluating file ${file}...`);
+<<<<<<< HEAD
         
         const feedback = await evaluateWithOpenAI(xml, 'org123', process.cwd());
         
@@ -723,6 +807,18 @@ async function main() {
         // Lähetä sähköposti
         const studentEmail = 'student@example.com';
         await sendEmailFeedback(path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md'), studentEmail);
+=======
+
+        const feedback = await evaluateWithOpenAI(xml, "org123", process.cwd());
+
+        const resultFile = file.replace(".xml", ".feedback.txt");
+        await fs.writeFile(resultFile, feedback, "utf-8");
+        console.log(`Feedback saved to file ${resultFile}`);
+
+        // Send email
+        const studentEmail = "student@example.com";
+        await sendEmailFeedback(resultFile, studentEmail);
+>>>>>>> 7f2139480520583909ebfc2fbadb2dd174332852
         console.log(`Feedback sent via email to ${studentEmail}`);
       } catch (e) {
         console.log(`Error evaluating file ${file}: ${e.message}`);
