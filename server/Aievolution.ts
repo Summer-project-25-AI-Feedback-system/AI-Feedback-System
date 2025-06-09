@@ -4,6 +4,8 @@ import * as dotenv from "dotenv";
 import * as nodemailer from "nodemailer";
 import path from "path";
 import { simpleGit, SimpleGit } from "simple-git";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -307,6 +309,14 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
     console.log(`Git info was checked recently, using cached value`);
     return;
   }
+
+  const absoluteRepoPath = resolve(repoPath); // ✅ Resolve to absolute path
+
+  if (!existsSync(absoluteRepoPath)) {
+    throw new Error(`Git repo path does not exist: ${absoluteRepoPath}`);
+  }
+
+  console.log(`[checkGitRepo] Using repoPath: ${absoluteRepoPath}`);
 
   try {
     console.log(`Analyzing Git repository for ${organizationId}...`);

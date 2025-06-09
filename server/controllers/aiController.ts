@@ -28,6 +28,8 @@ export async function handleRunAIEvolution(
 ): Promise<void> {
   const { xml: base64Xml, organizationId, repoPath } = req.body;
 
+  console.log("[Controller] Submitting repoPath to AIEvolution:", repoPath);
+
   if (!base64Xml || !organizationId || !repoPath) {
     res.status(400).json({ error: "Missing xml, organizationId, or repoPath" });
     return;
