@@ -3,12 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { Parser } from "json2csv";
 import dotenv from "dotenv";
 
-
-
 dotenv.config({ path: "../.env" }); 
-
 const router = Router();
-
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
   throw new Error("Supabase URL or Key is missing in environment variables.");
@@ -34,14 +30,12 @@ router.post("/csv-reports", async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    
     const parser = new Parser();
     const csv = parser.parse(rows.submissions);
     const orgName = rows.org || "unknownorg";
-    
    
-   const repoName =
-  Array.isArray(rows.assignments) && rows.assignments.length > 0
+    const repoName =
+    Array.isArray(rows.assignments) && rows.assignments.length > 0
     ? rows.assignments[0]
     : "unknownrepo";
 

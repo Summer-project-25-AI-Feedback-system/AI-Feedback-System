@@ -3,13 +3,14 @@ import ProgressBar from './ProgressBar';
 
 interface SidebarCardProps {
   name: string;
-  progressOfAcceptedAssignments: number;
-  progressOfSubmittedAssignments: number;
+  acceptedAssignments: number
+  submittedAssignments: number;
+  totalAssignments: number;
   assignmentDeadline: Date;
   linkTo: string;
 }
 
-export default function SidebarCard({name, progressOfAcceptedAssignments, progressOfSubmittedAssignments, assignmentDeadline, linkTo }: SidebarCardProps) {
+export default function SidebarCard({name, acceptedAssignments, submittedAssignments, totalAssignments, assignmentDeadline, linkTo }: SidebarCardProps) {
   const navigate = useNavigate();
   const now = new Date();
   const hasDeadlinePassed = assignmentDeadline.getTime() < now.getTime();
@@ -32,6 +33,14 @@ export default function SidebarCard({name, progressOfAcceptedAssignments, progre
       return `Deadline passed ${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`;
     }
   };
+
+  const progressOfAcceptedAssignments = totalAssignments > 0
+    ? Math.round((acceptedAssignments / totalAssignments) * 100)
+    : 0;
+  
+  const progressOfSubmittedAssignments = totalAssignments > 0
+    ? Math.round((submittedAssignments / totalAssignments) * 100)
+    : 0;
 
   return (
     <div onClick={() => navigate(linkTo)} className="border border-[#D9D9D9] rounded p-3 mb-2 space-y-2 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors">

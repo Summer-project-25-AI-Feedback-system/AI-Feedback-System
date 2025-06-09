@@ -82,7 +82,7 @@ export default function GetCSVFileButton({ text, orgName, roster, assignmentFilt
         })),
       } : data;
       generateCSVFromOrg(filteredData, roster); 
-      /* const response = await fetch("http://localhost:5000/api/csv-reports", {
+      const response = await fetch("http://localhost:5000/api/csv-reports", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +94,7 @@ export default function GetCSVFileButton({ text, orgName, roster, assignmentFilt
       if (!response.ok) {
         throw new Error(result.error || "Tallennus epäonnistui");
       }
-      console.log("✅ Data tallennettu Supabaseen"); */
+      console.log("✅ Data tallennettu Supabaseen"); 
     } catch (error) {
       console.error("🚫 Virhe tallennuksessa:", error);
     }

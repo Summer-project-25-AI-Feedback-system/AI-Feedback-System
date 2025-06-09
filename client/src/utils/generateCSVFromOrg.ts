@@ -61,6 +61,6 @@ export function generateCSVFromOrg(orgData: OrgReport, roster: StudentInStudentR
     csvLines.push(row.map(String));
   }
 
-  const csvContent = csvLines.map((row) => row.join(";")).join("\n"); 
+  const csvContent = csvLines.map((row) => row.join(";")).join("\n");
   downloadCSV(csvContent, `${orgData.org}_assignments_overview.csv`);
 } 

@@ -4,16 +4,41 @@ import SidebarButton from './SidebarButton';
 import SidebarCard from './SidebarCard';
 import SidebarPagination from './SidebarPagination';
 
-export default function Sidebar() {
+type RosterAndOrgDataAssignmentInfo = {
+  name: string;
+  submitted: number;
+  accepted: number;
+  total: number;
+  deadline: Date;
+};
+
+interface SidebarProps {
+  assignments: RosterAndOrgDataAssignmentInfo[];
+} 
+
+export default function Sidebar({ assignments } : SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const { orgName } = useParams<{ orgName: string }>();
 
-  const assignments = ["Assignment 1", "Assignment 2", "Assignment 3", "Assignment 4", "Assignment 5", "Assignment 6"]
+  const sortedAssignments = [...assignments].sort((a, b) => {
+    const now = new Date();
+    const getRank = (assignment: RosterAndOrgDataAssignmentInfo) => {
+      const isOverdue = assignment.deadline <= now;
+      const isComplete = assignment.submitted >= assignment.total;
+      if (isOverdue && !isComplete) return 0; // Highest priority 
+      if (!isOverdue && !isComplete) return 1; // Second priority
+      return 2; // Lowest priority (Completed)
+    };
+    const rankA = getRank(a);
+    const rankB = getRank(b);
+    if (rankA !== rankB) return rankA - rankB; 
+    return a.deadline.getTime() - b.deadline.getTime();
+  });
 
   const totalPages = Math.ceil(assignments.length / 3);
   const startIndex = (currentPage - 1) * 3;
-  const currentAssignments = assignments.slice(startIndex, startIndex + 3);
+  const currentAssignments = sortedAssignments.slice(startIndex, startIndex + 3);
 
   return (
     <>
@@ -23,14 +48,15 @@ export default function Sidebar() {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}
       >
         <h2 className="text-xl font-bold mb-4">Classroom Info</h2>
-        {currentAssignments.map((assignmentName) => (
+        {currentAssignments.map((assignment) => (
           <SidebarCard 
-            key={assignmentName}
-            name={assignmentName}
-            progressOfAcceptedAssignments={90}
-            progressOfSubmittedAssignments={10}
-            assignmentDeadline={new Date('2025-04-02T23:59:59Z')}
-            linkTo={`/orgs/${orgName}/analytics?tab=missing-submissions&assignment=${encodeURIComponent(assignmentName)}`}
+            key={assignment.name}
+            name={assignment.name}
+            acceptedAssignments={assignment.accepted}
+            submittedAssignments={assignment.submitted}
+            totalAssignments={assignment.total}
+            assignmentDeadline={assignment.deadline}
+            linkTo={`/orgs/${orgName}/analytics?tab=missing-submissions&assignment=${encodeURIComponent(assignment.name)}`}
           />
         ))}
         <SidebarPagination 
