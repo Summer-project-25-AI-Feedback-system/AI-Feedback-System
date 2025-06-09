@@ -4,6 +4,8 @@ import * as dotenv from "dotenv";
 import * as nodemailer from "nodemailer";
 import path from "path";
 import { simpleGit, SimpleGit } from "simple-git";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -308,6 +310,14 @@ async function checkGitRepo(organizationId: string, repoPath: string) {
     return;
   }
 
+  const absoluteRepoPath = resolve(repoPath); // ✅ Resolve to absolute path
+
+  if (!existsSync(absoluteRepoPath)) {
+    throw new Error(`Git repo path does not exist: ${absoluteRepoPath}`);
+  }
+
+  console.log(`[checkGitRepo] Using repoPath: ${absoluteRepoPath}`);
+
   try {
     console.log(`Analyzing Git repository for ${organizationId}...`);
     const git: SimpleGit = simpleGit(repoPath);
@@ -406,39 +416,41 @@ async function hasBeenEvaluated(file: string): Promise<{
   needsUpdate: boolean;
   lastEvaluation: EvaluationRecord | null;
 }> {
-  const submissionId = path.basename(file, '.xml');
-  const markdownFile = path.join('output', 'ASSIGNMENT_EVALUATION.md');
-  
+  const submissionId = path.basename(file, ".xml");
+  const markdownFile = path.join("output", "ASSIGNMENT_EVALUATION.md");
+
   try {
     const xmlLastModified = await getLastModifiedTime(file);
     const markdownLastModified = await getLastModifiedTime(markdownFile);
-    
-    const gitInfo = gitInfoMap.get('org123');
+
+    const gitInfo = gitInfoMap.get("org123");
     const lastCommitTime = gitInfo?.lastCommitTime || 0;
-    
-    const needsUpdate = xmlLastModified > markdownLastModified || lastCommitTime > markdownLastModified;
-    
+
+    const needsUpdate =
+      xmlLastModified > markdownLastModified ||
+      lastCommitTime > markdownLastModified;
+
     const evaluations = evaluationHistory.get(submissionId) || [];
     const lastEvaluation = evaluations[evaluations.length - 1] || null;
-    
-    if (lastEvaluation?.evaluatedBy === 'AI') {
+
+    if (lastEvaluation?.evaluatedBy === "AI") {
       return {
         evaluated: true,
         needsUpdate: false,
-        lastEvaluation
+        lastEvaluation,
       };
     }
-    
+
     return {
       evaluated: true,
       needsUpdate: needsUpdate,
-      lastEvaluation
+      lastEvaluation,
     };
   } catch {
     return {
       evaluated: false,
       needsUpdate: true,
-      lastEvaluation: null
+      lastEvaluation: null,
     };
   }
 }
@@ -544,18 +556,22 @@ ${truncatedContent}
   let retries = 3;
   while (retries > 0) {
     try {
-      console.log('Sending request to OpenAI API...');
-      const response = await axios.post(endpoint, {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000,
-        temperature: 0.3
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
+      console.log("Sending request to OpenAI API...");
+      const response = await axios.post(
+        endpoint,
+        {
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 1000,
+          temperature: 0.3,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (response.data?.choices?.[0]?.message?.content) {
         console.log("Response received from OpenAI API");
@@ -617,14 +633,14 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: studentEmail,
-      subject: 'Assignment Evaluation',
-      text: 'Your assignment evaluation is attached to this email.',
+      subject: "Assignment Evaluation",
+      text: "Your assignment evaluation is attached to this email.",
       attachments: [
         {
-          filename: 'ASSIGNMENT_EVALUATION.md',
-          path: feedbackPath
-        }
-      ]
+          filename: "ASSIGNMENT_EVALUATION.md",
+          path: feedbackPath,
+        },
+      ],
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -634,7 +650,7 @@ async function sendEmailFeedback(feedbackPath: string, studentEmail: string) {
     if (error instanceof Error) {
       console.log(`Error sending email: ${error.message}`);
     } else {
-      console.log('Unknown error sending email:', error);
+      console.log("Unknown error sending email:", error);
     }
     throw error;
   }
@@ -733,15 +749,17 @@ async function main() {
 
         const xml = await fs.readFile(file, "utf-8");
         console.log(`Evaluating file ${file}...`);
-        
-        const feedback = await evaluateWithOpenAI(xml, 'org123', process.cwd());
-        
+
+        const feedback = await evaluateWithOpenAI(xml, "org123", process.cwd());
+
         // Jäsennä AI:n palaute
         const parsedFeedback = await parseAIFeedback(feedback);
-        
+
         // Lasketaan kokonaisarvosana
-        const overallRating = await calculateOverallRating(parsedFeedback.criteria);
-        
+        const overallRating = await calculateOverallRating(
+          parsedFeedback.criteria
+        );
+
         // Luo arviointitulokset
         const evaluationResult: EvaluationResult = {
           overallRating,
@@ -749,24 +767,27 @@ async function main() {
           summary: parsedFeedback.summary,
           metadata: {
             evaluationDate: new Date().toISOString(),
-            submissionId: path.basename(file, '.xml'),
+            submissionId: path.basename(file, ".xml"),
             repoName: path.basename(process.cwd()),
-            assignmentName: "Assignment"
-          }
+            assignmentName: "Assignment",
+          },
         };
 
         // Tallenna markdown-tiedosto
         await saveEvaluationToMarkdown(evaluationResult, process.cwd());
-        
+
         // Lähetä sähköposti
-        const studentEmail = 'student@example.com';
-        await sendEmailFeedback(path.join(process.cwd(), 'ASSIGNMENT_EVALUATION.md'), studentEmail);
+        const studentEmail = "student@example.com";
+        await sendEmailFeedback(
+          path.join(process.cwd(), "ASSIGNMENT_EVALUATION.md"),
+          studentEmail
+        );
         console.log(`Feedback sent via email to ${studentEmail}`);
       } catch (e: unknown) {
         if (e instanceof Error) {
           console.log(`Error evaluating file ${file}: ${e.message}`);
         } else {
-          console.log('Unknown error evaluating file:', e);
+          console.log("Unknown error evaluating file:", e);
         }
       }
     }
@@ -797,9 +818,17 @@ interface EvaluationResult {
   };
 }
 
-async function calculateOverallRating(criteria: EvaluationCriteria[]): Promise<number> {
-  const totalScore = criteria.reduce((sum, criteria) => sum + criteria.score, 0);
-  const maxScore = criteria.reduce((sum, criteria) => sum + criteria.maxScore, 0);
+async function calculateOverallRating(
+  criteria: EvaluationCriteria[]
+): Promise<number> {
+  const totalScore = criteria.reduce(
+    (sum, criteria) => sum + criteria.score,
+    0
+  );
+  const maxScore = criteria.reduce(
+    (sum, criteria) => sum + criteria.maxScore,
+    0
+  );
   // Muunnetaan 100-pistejärjestelmästä 5-pistejärjestelmään
   return (totalScore / maxScore) * 5;
 }
@@ -808,22 +837,28 @@ async function saveEvaluationToMarkdown(
   evaluationResult: EvaluationResult,
   repoPath: string
 ): Promise<void> {
-  const evaluationPath = path.join('output', 'ASSIGNMENT_EVALUATION.md');
-  
+  const evaluationPath = path.join("output", "ASSIGNMENT_EVALUATION.md");
+
   const evaluationDate = new Date(evaluationResult.metadata.evaluationDate);
-  const formattedDate = evaluationDate.toLocaleDateString('fi-FI', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  const formattedDate = evaluationDate.toLocaleDateString("fi-FI", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
-  
+
   // Lasketaan kokonaispisteet
-  const totalScore = evaluationResult.criteria.reduce((sum, criteria) => sum + criteria.score, 0);
-  const maxScore = evaluationResult.criteria.reduce((sum, criteria) => sum + criteria.maxScore, 0);
+  const totalScore = evaluationResult.criteria.reduce(
+    (sum, criteria) => sum + criteria.score,
+    0
+  );
+  const maxScore = evaluationResult.criteria.reduce(
+    (sum, criteria) => sum + criteria.maxScore,
+    0
+  );
   const overallRating = (totalScore / maxScore) * 5;
-  
+
   const markdownContent = `# Assignment Evaluation
 
 ## Summary
@@ -840,11 +875,11 @@ Total Score: ${overallRating.toFixed(1)}/5
 `;
 
   try {
-    await fs.mkdir('output', { recursive: true });
-    await fs.writeFile(evaluationPath, markdownContent, 'utf-8');
+    await fs.mkdir("output", { recursive: true });
+    await fs.writeFile(evaluationPath, markdownContent, "utf-8");
     console.log(`Evaluation saved to ${evaluationPath}`);
   } catch (error) {
-    console.error('Error saving evaluation to markdown:', error);
+    console.error("Error saving evaluation to markdown:", error);
     throw error;
   }
 }
@@ -856,7 +891,7 @@ interface ParsedFeedback {
 
 async function parseAIFeedback(feedback: string): Promise<ParsedFeedback> {
   const criteria: EvaluationCriteria[] = [];
-  
+
   // Syntax and Validity (0-10)
   const syntaxMatch = feedback.match(/Syntax and Validity\s*\((\d+)\/(\d+)\)/);
   if (syntaxMatch) {
@@ -864,40 +899,46 @@ async function parseAIFeedback(feedback: string): Promise<ParsedFeedback> {
       name: "Syntax and Validity",
       score: parseInt(syntaxMatch[1]),
       maxScore: parseInt(syntaxMatch[2]),
-      comments: extractComments(feedback, "Syntax and Validity")
+      comments: extractComments(feedback, "Syntax and Validity"),
     });
   }
 
   // Structure and Organization (0-20)
-  const structureMatch = feedback.match(/Structure and Organization\s*\((\d+)\/(\d+)\)/);
+  const structureMatch = feedback.match(
+    /Structure and Organization\s*\((\d+)\/(\d+)\)/
+  );
   if (structureMatch) {
     criteria.push({
       name: "Structure and Organization",
       score: parseInt(structureMatch[1]),
       maxScore: parseInt(structureMatch[2]),
-      comments: extractComments(feedback, "Structure and Organization")
+      comments: extractComments(feedback, "Structure and Organization"),
     });
   }
 
   // Clarity and Readability (0-20)
-  const clarityMatch = feedback.match(/Clarity and Readability\s*\((\d+)\/(\d+)\)/);
+  const clarityMatch = feedback.match(
+    /Clarity and Readability\s*\((\d+)\/(\d+)\)/
+  );
   if (clarityMatch) {
     criteria.push({
       name: "Clarity and Readability",
       score: parseInt(clarityMatch[1]),
       maxScore: parseInt(clarityMatch[2]),
-      comments: extractComments(feedback, "Clarity and Readability")
+      comments: extractComments(feedback, "Clarity and Readability"),
     });
   }
 
   // Language-specific features (0-20)
-  const languageMatch = feedback.match(/Language-specific features\s*\((\d+)\/(\d+)\)/);
+  const languageMatch = feedback.match(
+    /Language-specific features\s*\((\d+)\/(\d+)\)/
+  );
   if (languageMatch) {
     criteria.push({
       name: "Language-specific Features",
       score: parseInt(languageMatch[1]),
       maxScore: parseInt(languageMatch[2]),
-      comments: extractComments(feedback, "Language-specific features")
+      comments: extractComments(feedback, "Language-specific features"),
     });
   }
 
@@ -908,25 +949,25 @@ async function parseAIFeedback(feedback: string): Promise<ParsedFeedback> {
       name: "Best Practices",
       score: parseInt(practicesMatch[1]),
       maxScore: parseInt(practicesMatch[2]),
-      comments: extractComments(feedback, "Best practices")
+      comments: extractComments(feedback, "Best practices"),
     });
   }
 
   // Poistetaan kaikki Overall Rating -rivit yhteenvedosta
   const summary = feedback
-    .replace(/Overall Rating: \d+\/5\n/g, '')
-    .replace(/Overall Rating: \d+\/5/g, '')
+    .replace(/Overall Rating: \d+\/5\n/g, "")
+    .replace(/Overall Rating: \d+\/5/g, "")
     .trim();
 
   return {
     criteria,
-    summary
+    summary,
   };
 }
 
 function extractComments(feedback: string, criteriaName: string): string[] {
   const comments: string[] = [];
-  const lines = feedback.split('\n');
+  const lines = feedback.split("\n");
   let isInCriteria = false;
 
   for (const line of lines) {
@@ -934,10 +975,10 @@ function extractComments(feedback: string, criteriaName: string): string[] {
       isInCriteria = true;
       continue;
     }
-    if (isInCriteria && line.trim().startsWith('-')) {
+    if (isInCriteria && line.trim().startsWith("-")) {
       comments.push(line.trim().substring(1).trim());
     }
-    if (isInCriteria && line.trim() === '') {
+    if (isInCriteria && line.trim() === "") {
       isInCriteria = false;
     }
   }

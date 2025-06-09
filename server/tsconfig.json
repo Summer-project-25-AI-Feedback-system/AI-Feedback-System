@@ -4,7 +4,7 @@
     "target": "ES2020", // Modern JS features
     "module": "CommonJS",
     "moduleResolution": "node", // Node-style resolution
-    "rootDir": "../", // Source root
+    "rootDir": "..", // Source root
     "outDir": "./dist", // Output folder
     "esModuleInterop": true, // Support commonjs modules
     "forceConsistentCasingInFileNames": true,
