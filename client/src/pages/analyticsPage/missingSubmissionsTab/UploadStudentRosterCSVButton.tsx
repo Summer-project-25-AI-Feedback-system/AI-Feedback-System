@@ -44,6 +44,14 @@ export default function UploadStudentRosterCSVButton({ text, onUpload }: UploadS
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        const expectedHeaders = ["identifier", "github_username", "github_id", "name"];
+        const actualHeaders = results.meta.fields;
+        const headersValid = actualHeaders && expectedHeaders.length === actualHeaders.length && expectedHeaders.every((h, i) => h === actualHeaders[i]);
+        if (!headersValid) {
+          console.error("Invalid CSV format. Expected headers:", expectedHeaders, "but got:", actualHeaders);
+          alert("Invalid CSV format. Header row must exactly match: identifier,github_username,github_id,name");
+          return;
+        }
         const validStudents = results.data.filter((s) => s.identifier);
         onUpload(validStudents);
         (async () => {await saveRosterToDB(validStudents);})();

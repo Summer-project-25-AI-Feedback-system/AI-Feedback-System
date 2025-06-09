@@ -1,12 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 
-export default function Tabs({
-  tabs,
-}: {
-  tabs: { id: string; label: string; content: ReactNode }[];
-}) {
+type Tab = {
+  id: string;
+  label: string;
+  content: ReactNode;
+}
+
+type TabsProps = {
+  tabs: Tab[];
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
+}
+
+export default function Tabs({ tabs, activeTab: controlledTab, onTabChange } : TabsProps) {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
+
+ useEffect(() => {
+    if (controlledTab && tabs.some((tab) => tab.id === controlledTab)) {
+      setActiveTab(controlledTab);
+    }
+  }, [controlledTab, tabs]);
+
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    onTabChange?.(tabId); 
+  };
 
   return (
     <div className="flex flex-col space-y-4">
@@ -14,7 +33,7 @@ export default function Tabs({
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
             className={`px-4 py-2 text-sm font-medium ${
               activeTab === tab.id
                 ? "border-b-2 border-blue-500 text-blue-600"

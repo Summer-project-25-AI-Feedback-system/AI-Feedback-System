@@ -1,3 +1,4 @@
+// this is the output of the handleGetAllOrganizationData() call to the backend (using GutHub API)
 export type OrgReport = {
   org: string;
   assignments: string[];
