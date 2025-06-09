@@ -750,15 +750,13 @@ async function main() {
         const xml = await fs.readFile(file, "utf-8");
         console.log(`Evaluating file ${file}...`);
 
-        const feedback = await evaluateWithOpenAI(xml, "org123", process.cwd());
+        const feedback = await evaluateWithOpenAI(xml, "org123", path.dirname(file));
 
         // Jäsennä AI:n palaute
         const parsedFeedback = await parseAIFeedback(feedback);
 
         // Lasketaan kokonaisarvosana
-        const overallRating = await calculateOverallRating(
-          parsedFeedback.criteria
-        );
+        const overallRating = await calculateOverallRating(parsedFeedback.criteria);
 
         // Luo arviointitulokset
         const evaluationResult: EvaluationResult = {
@@ -768,18 +766,18 @@ async function main() {
           metadata: {
             evaluationDate: new Date().toISOString(),
             submissionId: path.basename(file, ".xml"),
-            repoName: path.basename(process.cwd()),
+            repoName: path.basename(path.dirname(file)),
             assignmentName: "Assignment",
           },
         };
 
         // Tallenna markdown-tiedosto
-        await saveEvaluationToMarkdown(evaluationResult, process.cwd());
+        await saveEvaluationToMarkdown(evaluationResult, path.dirname(file));
 
         // Lähetä sähköposti
         const studentEmail = "student@example.com";
         await sendEmailFeedback(
-          path.join(process.cwd(), "ASSIGNMENT_EVALUATION.md"),
+          path.join(path.dirname(file), "ASSIGNMENT_EVALUATION.md"),
           studentEmail
         );
         console.log(`Feedback sent via email to ${studentEmail}`);
