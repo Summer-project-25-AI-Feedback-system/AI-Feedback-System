@@ -3,18 +3,17 @@ import { evaluateWithOpenAI } from "../../Aievolution";
 
 export async function runRepomix(repoUrl: string) {
   const fetcher = new RepomixFetcher("output");
-  const result = await fetcher.fetchRepositoryAsXml({
+
+  const xml = await fetcher.fetchRepositoryAsXml({
     remoteUrl: repoUrl,
     style: "xml",
   });
-  return result;
+
+  const xmlBase64 = Buffer.from(xml).toString("base64");
+  return xmlBase64;
 }
 
-export async function runAIEvolution(
-  xml: string,
-  organizationId: string,
-  repoPath: string
-) {
-  const feedback = await evaluateWithOpenAI(xml, organizationId, repoPath);
+export async function runAIEvolution(xml: string, organizationId: string) {
+  const feedback = await evaluateWithOpenAI(xml, organizationId);
   return feedback;
 }
