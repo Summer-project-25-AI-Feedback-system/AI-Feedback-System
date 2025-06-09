@@ -1,4 +1,4 @@
-import { RepomixFetcher } from "../../repomix";
+import RepomixFetcher from "../../repomix";
 import { evaluateWithOpenAI } from "../../Aievolution";
 
 export async function runRepomix(repoUrl: string) {

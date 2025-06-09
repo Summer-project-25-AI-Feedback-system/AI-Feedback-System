@@ -14,7 +14,8 @@ export async function handleRunRepomix(
 
   try {
     const xmlOutput = await runRepomix(repoUrl);
-    res.json({ xml: xmlOutput });
+    const encoded = Buffer.from(xmlOutput, "utf-8").toString("base64");
+    res.json({ xml: encoded });
   } catch (error) {
     console.error("Repomix error:", error);
     res.status(500).json({ error: "Failed to run repomix" });
@@ -25,14 +26,15 @@ export async function handleRunAIEvolution(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { xml, organizationId, repoPath } = req.body;
+  const { xml: base64Xml, organizationId, repoPath } = req.body;
 
-  if (!xml || !organizationId || !repoPath) {
+  if (!base64Xml || !organizationId || !repoPath) {
     res.status(400).json({ error: "Missing xml, organizationId, or repoPath" });
     return;
   }
 
   try {
+    const xml = Buffer.from(base64Xml, "base64").toString("utf-8");
     const feedback = await runAIEvolution(xml, organizationId, repoPath);
     res.json({ feedback });
   } catch (error) {
