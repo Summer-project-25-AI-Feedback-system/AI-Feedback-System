@@ -846,24 +846,14 @@ async function saveEvaluationToMarkdown(
     minute: "2-digit",
   });
 
-  // Lasketaan kokonaispisteet
-  const totalScore = evaluationResult.criteria.reduce(
-    (sum, criteria) => sum + criteria.score,
-    0
-  );
-  const maxScore = evaluationResult.criteria.reduce(
-    (sum, criteria) => sum + criteria.maxScore,
-    0
-  );
-  const overallRating = (totalScore / maxScore) * 5;
-
+  // Käytetään suoraan evaluationResult.overallRating
   const markdownContent = `# Assignment Evaluation
 
 ## Summary
 
 ${evaluationResult.summary}
 
-Total Score: ${overallRating.toFixed(1)}/5
+Total Score: ${evaluationResult.overallRating.toFixed(1)}/5
 
 ## Metadata
 - **Evaluation Date:** ${formattedDate}
