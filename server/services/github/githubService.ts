@@ -1,5 +1,5 @@
 import { promises } from "dns";
-import { octokit } from "./octokitClient";
+import { getOctokit } from "./octokitClient";
 import {
   OrgInfo,
   AssignmentInfo,
@@ -9,6 +9,7 @@ import {
 } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
+  const octokit = await getOctokit()
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
   return response.data.map(
     (org): OrgInfo => ({
@@ -20,6 +21,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 }
 
 export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
+  const octokit = await getOctokit()
   const repos = await octokit.rest.repos.listForOrg({
     org: org,
     type: "all",
@@ -59,6 +61,7 @@ export async function getStudentReposForAssignment(
   org: string,
   assignmentPrefix?: string
 ): Promise<RepoInfo[]> {
+  const octokit = await getOctokit();
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
@@ -93,6 +96,7 @@ export async function getStudentReposForAssignment(
 }
 
 async function buildSearchQuery(org: string, assignmentPrefix?: string) {
+  const octokit = await getOctokit()
   const query =
     `fork:true org:${org}` +
     (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
@@ -104,6 +108,7 @@ async function buildSearchQuery(org: string, assignmentPrefix?: string) {
 }
 
 async function extractRepositoryDetails(org: string, repo: any) {
+  const octokit = await getOctokit()
   const lastCommit = await octokit.rest.repos.getCommit({
     owner: org,
     repo: repo.name,
@@ -128,6 +133,7 @@ async function extractRepositoryDetails(org: string, repo: any) {
 }
 
 async function getRepoCollaborators(org: string, repo: string) {
+  const octokit = await getOctokit()
   try {
     const response = await octokit.rest.repos.listCollaborators({
       owner: org,
@@ -206,13 +212,14 @@ export async function getCommits(
   orgName: string,
   repoName: string
 ): Promise<CommitInfo[]> {
+  const octokit = await getOctokit();
   const response = await octokit.rest.repos.listCommits({
     owner: orgName,
     repo: repoName,
     per_page: 100,
   });
 
-  return response.data.map((commit) => ({
+  return response.data.map((commit: any) => ({
     sha: commit.sha,
     html_url: commit.html_url,
     commit: {
@@ -232,10 +239,12 @@ export async function getCommits(
       : null,
   }));
 }
+
 export async function getRepoTree(
   orgName: string,
   repoName: string
 ): Promise<string[]> {
+  const octokit = await getOctokit();
   const { data: refData } = await octokit.rest.git.getRef({
     owner: orgName,
     repo: repoName,
@@ -250,8 +259,8 @@ export async function getRepoTree(
   });
 
   return treeData.tree
-    .filter((item) => item.type === "blob" && item.path)
-    .map((item) => item.path!);
+    .filter((item: any) => item.type === "blob" && item.path)
+    .map((item: any) => item.path!);
 }
 
 export async function getFileContents(
@@ -259,6 +268,7 @@ export async function getFileContents(
   repoName: string,
   path: string
 ): Promise<string | null> {
+  const octokit = await getOctokit();
   try {
     const response = await octokit.rest.repos.getContent({
       owner: orgName,
@@ -282,6 +292,7 @@ export async function compareCommits(
   base: string,
   head: string
 ): Promise<CompareCommitsInfo> {
+  const octokit = await getOctokit();
   const response = await octokit.rest.repos.compareCommits({
     owner: orgName,
     repo: repoName,
@@ -294,7 +305,7 @@ export async function compareCommits(
     ahead_by: response.data.ahead_by ?? 0,
     behind_by: response.data.behind_by ?? 0,
     total_commits: response.data.total_commits ?? 0,
-    commits: response.data.commits.map((commit) => ({
+    commits: response.data.commits.map((commit: any) => ({
       sha: commit.sha,
       html_url: commit.html_url,
       commit: {
@@ -314,7 +325,7 @@ export async function compareCommits(
         : null,
     })),
     files:
-      response.data.files?.map((file) => ({
+      response.data.files?.map((file: any) => ({
         filename: file.filename,
         status: file.status,
         additions: file.additions,
@@ -323,7 +334,9 @@ export async function compareCommits(
       })) ?? [],
   };
 }
+
 export async function getRepos(org: string): Promise<any[]> {
+  const octokit = await getOctokit();
   const repos = await octokit.rest.repos.listForOrg({
     org,
     type: "all",

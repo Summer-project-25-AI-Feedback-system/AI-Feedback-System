@@ -8,18 +8,18 @@ import githubRoutes from "./routes/githubRoutes";
 import submitRoute from "./routes/submitRoute";
 import uploadCsvRoute from "./routes/uploadCsvRoute";
 import aiRoutes from "./routes/aiRoutes";
+import promptRoutes from "./routes/promptRouter";
+import './services/github/githubService';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: process.env.FRONTEND_ORIGIN,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -53,6 +53,7 @@ app.use("/api/github", githubRoutes);
 app.use("/api/evaluation", aiRoutes);
 app.use("/submit", submitRoute);
 app.use("/api", uploadCsvRoute);
+app.use("/api/prompt", promptRoutes);
 
 // Error handling
 app.use(

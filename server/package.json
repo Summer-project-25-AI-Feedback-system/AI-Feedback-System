@@ -4,7 +4,7 @@
   "main": "dist/index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server/index.js",
+    "start": "dotenv -e .env.production -- ts-node-dev --respawn index.ts",
     "dev": "dotenv -e .env -- ts-node-dev --respawn index.ts"
   },
   "dependencies": {

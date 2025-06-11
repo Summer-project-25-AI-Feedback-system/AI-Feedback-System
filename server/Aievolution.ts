@@ -471,7 +471,35 @@ async function recordEvaluation(
   evaluationHistory.set(submissionId, evaluations);
 }
 
-// Modify evaluateWithOpenAI function
+// Funktio promptin hakemiseen tiedostosta
+async function getPromptFromFile(): Promise<string> {
+  const promptPath = path.resolve(__dirname, 'prompt.txt');
+  try {
+    return await fs.readFile(promptPath, 'utf-8');
+  } catch (error) {
+    console.warn('Prompt file not found, using default prompt.');
+    // Palauta oletusprompt jos tiedostoa ei löydy
+    return `
+You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
+
+1. Syntax and Validity (0-10): Is the code syntactically correct and does it run/compile without errors?
+2. Structure and Organization (0-20): Is the code logically organized and are functions, classes, modules, and other language features used appropriately?
+3. Clarity and Readability (0-20): Are the names of variables, functions, and classes descriptive? Is the code well-formed and easy to read?
+4. Language-specific features (0-20): Does the code use features and best practices of the programming language in question (e.g., idiomatic constructs, error handling, etc.)?
+5. Best practices (0-30): Does the code follow general and language-specific best practices (e.g., modularity, avoiding code duplication, proper error handling)?
+
+Instructions:
+- Analyze the code based on the criteria above.
+- Provide a brief summary of the overall quality of the code, including strengths and areas for improvement.
+- Give rates for each criteria and a total rating (0-5, where 0 is incomplete and 5 is excellent) based on the criteria.
+- Keep the feedback clear, supportive, and instructive, student-friendly, and respectful.
+- If the code seems unfinished or the context is unclear, note this and suggest possible improvements.
+- If the code breaks in the middle of a function, note possible problems, but avoid speculative assumptions.
+`;
+  }
+}
+
+// Esimerkki arviointifunktiosta, joka käyttää prompt.txt-tiedostoa
 export async function evaluateWithOpenAI(
   xmlContent: string,
   organizationId: string,
@@ -511,6 +539,23 @@ export async function evaluateWithOpenAI(
     `Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`
   );
 
+  // Truncate content if it's too long
+  const maxContentTokens = 3000;
+  const truncatedContent =
+    estimatedTokens > maxContentTokens
+      ? xmlContent.substring(0, maxContentTokens * 4) +
+        "\n... (content truncated)"
+      : xmlContent;
+
+  // Haetaan prompt tiedostosta
+  const basePrompt = await getPromptFromFile();
+  const prompt = `${basePrompt}
+
+Student Code:
+${truncatedContent}
+`;
+
+  // OpenAI API -kutsu
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("OpenAI API key not found in .env file");
@@ -518,45 +563,9 @@ export async function evaluateWithOpenAI(
 
   const endpoint = "https://api.openai.com/v1/chat/completions";
 
-  // Leave room for prompt and response (about 1000 tokens)
-  const maxContentTokens = 3000;
-
-  // Truncate content if it's too long
-  const truncatedContent =
-    estimatedTokens > maxContentTokens
-      ? xmlContent.substring(0, maxContentTokens * 4) +
-        "\n... (content truncated)"
-      : xmlContent;
-
-  const prompt = `
-You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
-
-1. Syntax and Validity (0-10): Is the code syntactically correct and does it run/compile without errors?
-
-2. Structure and Organization (0-20): Is the code logically organized and are functions, classes, modules, and other language features used appropriately?
-
-3. Clarity and Readability (0-20): Are the names of variables, functions, and classes descriptive? Is the code well-formed and easy to read?
-
-4. Language-specific features (0-20): Does the code use features and best practices of the programming language in question (e.g., idiomatic constructs, error handling, etc.)?
-
-5. Best practices (0-30): Does the code follow general and language-specific best practices (e.g., modularity, avoiding code duplication, proper error handling)?
-
-Instructions:
-- Analyze the code based on the criteria above.
-- Provide a brief summary of the overall quality of the code, including strengths and areas for improvement.
-- Give rates for each criteria and a total rating (0-5, where 0 is incomplete and 5 is excellent) based on the criteria.
-- Keep the feedback clear, supportive, and instructive, student-friendly, and respectful.
-- If the code seems unfinished or the context is unclear, note this and suggest possible improvements.
-- If the code breaks in the middle of a function, note possible problems, but avoid speculative assumptions.
-
-Student Code:
-${truncatedContent}
-`;
-
   let retries = 3;
   while (retries > 0) {
     try {
-      console.log("Sending request to OpenAI API...");
       const response = await axios.post(
         endpoint,
         {

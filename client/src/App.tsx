@@ -9,6 +9,7 @@ import { GitHubProvider } from "./context/GitHubProvider";
 import ReposPage from "./pages/repoPage/ReposPage";
 import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 import AnalyticsPage from './pages/analyticsPage/AnalyticsPage';
+import PromptEditor from './components/PromptEditor';
 
 function App() {
   return (
@@ -39,7 +40,8 @@ function App() {
                 path="/orgs/:orgName/analytics"
                 element={<AnalyticsPage />}
               />
-              </Route>
+            </Route>
+            <Route path="/prompt" element={<PromptEditor />} />
           </Routes>
         </Router>
       </UserProvider>
