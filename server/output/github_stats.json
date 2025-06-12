@@ -638,5 +638,145 @@
         "largeRepoSize": false
       }
     }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 10:59:19 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:00:25 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:00:52 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:01:02 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:02:09 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:03:15 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
+  },
+  {
+    "organizationId": "org123",
+    "repoPath": "output",
+    "analysis": {
+      "timestamp": "6/12/2025, 11:04:30 AM",
+      "lastCommit": {
+        "hash": "de0f1c6d3e1048c72105238bfc75f4b84ccd7b98",
+        "time": "6/12/2025, 10:55:55 AM"
+      },
+      "repository": {
+        "totalCommits": 177,
+        "sizeInMB": 0.47,
+        "changes24h": 14
+      },
+      "warnings": {
+        "highCommitCount": false,
+        "largeRepoSize": false
+      }
+    }
   }
 ]
