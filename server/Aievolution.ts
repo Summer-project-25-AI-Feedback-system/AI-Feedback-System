@@ -473,11 +473,11 @@ async function recordEvaluation(
 
 // Funktio promptin hakemiseen tiedostosta
 async function getPromptFromFile(): Promise<string> {
-  const promptPath = path.resolve(__dirname, 'prompt.txt');
+  const promptPath = path.resolve(__dirname, "prompt.txt");
   try {
-    return await fs.readFile(promptPath, 'utf-8');
+    return await fs.readFile(promptPath, "utf-8");
   } catch (error) {
-    console.warn('Prompt file not found, using default prompt.');
+    console.warn("Prompt file not found, using default prompt.");
     // Palauta oletusprompt jos tiedostoa ei löydy
     return `
 You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
@@ -503,22 +503,36 @@ Instructions:
 export async function evaluateWithOpenAI(
   xmlContent: string,
   organizationId: string,
-  repoPath: string
+  repoPath?: string
 ): Promise<string> {
-  const submissionId = path.basename(repoPath, ".xml");
+  const submissionId = path.basename(repoPath ?? "", ".xml");
 
-  // Check evaluation history
-  const evaluations = evaluationHistory.get(submissionId) || [];
-  const lastEvaluation = evaluations[evaluations.length - 1];
+  if (repoPath) {
+    // Check evaluation history
+    const evaluations = evaluationHistory.get(submissionId) || [];
+    const lastEvaluation = evaluations[evaluations.length - 1];
 
-  if (lastEvaluation?.evaluatedBy === "AI") {
-    throw new Error(
-      "This submission has already been evaluated by AI. Please contact your teacher for re-evaluation."
+    if (lastEvaluation?.evaluatedBy === "AI") {
+      throw new Error(
+        "This submission has already been evaluated by AI. Please contact your teacher for re-evaluation."
+      );
+    }
+
+    // ✅ Check Git repository status
+    await checkGitRepo(organizationId, repoPath);
+
+    // ✅ Check rate limits
+    if (!(await checkRateLimits(repoPath))) {
+      throw new Error("AI call limit reached. Try again later.");
+    }
+
+    // ✅ Increment counters only for repo-based
+    dailyCallCount++;
+    weeklyCallCount++;
+    console.log(
+      `Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`
     );
   }
-
-  // Check Git repository
-  await checkGitRepo(organizationId, repoPath);
 
   // Calculate token count
   const estimatedTokens = Math.ceil(xmlContent.length / 4);
@@ -526,18 +540,6 @@ export async function evaluateWithOpenAI(
 
   // Track token usage
   await trackTokenUsage(organizationId, estimatedTokens);
-
-  // Check limits
-  if (!(await checkRateLimits(repoPath))) {
-    throw new Error("AI call limit reached. Try again later.");
-  }
-
-  // Increment counters
-  dailyCallCount++;
-  weeklyCallCount++;
-  console.log(
-    `Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`
-  );
 
   // Truncate content if it's too long
   const maxContentTokens = 3000;
@@ -759,13 +761,19 @@ async function main() {
         const xml = await fs.readFile(file, "utf-8");
         console.log(`Evaluating file ${file}...`);
 
-        const feedback = await evaluateWithOpenAI(xml, "org123", path.dirname(file));
+        const feedback = await evaluateWithOpenAI(
+          xml,
+          "org123",
+          path.dirname(file)
+        );
 
         // Jäsennä AI:n palaute
         const parsedFeedback = await parseAIFeedback(feedback);
 
         // Lasketaan kokonaisarvosana
-        const overallRating = await calculateOverallRating(parsedFeedback.criteria);
+        const overallRating = await calculateOverallRating(
+          parsedFeedback.criteria
+        );
 
         // Luo arviointitulokset
         const evaluationResult: EvaluationResult = {
