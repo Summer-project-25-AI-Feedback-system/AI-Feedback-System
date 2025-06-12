@@ -12,13 +12,20 @@ export async function handleRunRepomix(
     return;
   }
 
+  console.log(`Running Repomix for: ${repoUrl}`);
+
   try {
     const xmlOutput = await runRepomix(repoUrl);
-    const encoded = Buffer.from(xmlOutput, "utf-8").toString("base64");
-    res.json({ xml: encoded });
+    console.log("Repomix succeeded, sending response");
+    res.json({ xml: xmlOutput });
   } catch (error) {
     console.error("Repomix error:", error);
-    res.status(500).json({ error: "Failed to run repomix" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to run repomix",
+        details: (error as Error).message,
+      });
   }
 }
 
@@ -26,18 +33,15 @@ export async function handleRunAIEvolution(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { xml: base64Xml, organizationId, repoPath } = req.body;
+  const { xml, organizationId } = req.body;
 
-  console.log("[Controller] Submitting repoPath to AIEvolution:", repoPath);
-
-  if (!base64Xml || !organizationId || !repoPath) {
-    res.status(400).json({ error: "Missing xml, organizationId, or repoPath" });
+  if (!xml || !organizationId) {
+    res.status(400).json({ error: "Missing xml or organizationId" });
     return;
   }
 
   try {
-    const xml = Buffer.from(base64Xml, "base64").toString("utf-8");
-    const feedback = await runAIEvolution(xml, organizationId, repoPath);
+    const feedback = await runAIEvolution(xml, organizationId);
     res.json({ feedback });
   } catch (error) {
     console.error("AIEvolution error:", error);
