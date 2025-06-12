@@ -1,4 +1,4 @@
-# Logs
+ # Logs
 logs
 npm-debug.log*
 yarn-debug.log*
@@ -44,3 +44,5 @@ server/.env.vault
 # System files
 .DS_Store
 
+# AI procedure output files
+server/output/*
