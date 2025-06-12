@@ -44,3 +44,6 @@ server/.env.vault
 # System files
 .DS_Store
 
+# Output
+
+server/output/*
