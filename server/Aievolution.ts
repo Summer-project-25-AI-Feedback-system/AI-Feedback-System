@@ -720,27 +720,52 @@ async function handleError(error: unknown): Promise<never> {
   throw new Error("Unknown error occurred");
 }
 
-// Modify main function
+// Lisätään uusi funktio komentoriviparametrien käsittelyyn
+function parseCommandLineArgs(): { inputFile?: string } {
+  const args = process.argv.slice(2);
+  const inputFile = args[0];
+  
+  if (inputFile && !inputFile.endsWith('.xml')) {
+    throw new Error('Input file must be an XML file');
+  }
+  
+  return { inputFile };
+}
+
+// Muokataan main-funktiota
 async function main() {
   try {
-    // Check output directory
+    // Tarkista output-hakemisto
     await fs.access("output").catch(async () => {
       console.log("Creating output directory...");
       await fs.mkdir("output", { recursive: true });
     });
 
-    const xmlFiles = await getXmlFiles("output");
-
-    if (xmlFiles.length === 0) {
-      console.log("No XML files found in output directory");
-      return;
+    // Käsittele komentoriviparametrit
+    const { inputFile } = parseCommandLineArgs();
+    
+    let xmlFiles: string[];
+    if (inputFile) {
+      // Jos annettu tietty tiedosto, käytä sitä
+      const fullPath = path.join("output", inputFile);
+      if (!await fs.access(fullPath).then(() => true).catch(() => false)) {
+        throw new Error(`Input file ${inputFile} not found in output directory`);
+      }
+      xmlFiles = [fullPath];
+      console.log(`Using specified input file: ${inputFile}`);
+    } else {
+      // Muuten käytä kaikkia XML-tiedostoja output-hakemistosta
+      xmlFiles = await getXmlFiles("output");
+      if (xmlFiles.length === 0) {
+        console.log("No XML files found in output directory");
+        return;
+      }
+      console.log(`Found ${xmlFiles.length} XML files to evaluate`);
     }
-
-    console.log(`Found ${xmlFiles.length} XML files to evaluate`);
 
     for (const file of xmlFiles) {
       try {
-        // Check if file has been evaluated
+        // Tarkista onko tiedosto jo arvioitu
         const evaluationStatus = await hasBeenEvaluated(file);
 
         if (evaluationStatus.evaluated && !evaluationStatus.needsUpdate) {
