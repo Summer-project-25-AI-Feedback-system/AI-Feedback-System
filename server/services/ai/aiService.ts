@@ -11,7 +11,11 @@ export async function runRepomix(repoUrl: string) {
   return xmlBase64;
 }
 
-export async function runAIEvolution(xml: string, organizationId: string) {
+export async function runAIEvolution(
+  xmlBase64: string,
+  organizationId: string
+) {
+  const xml = Buffer.from(xmlBase64, "base64").toString("utf-8");
   const feedback = await evaluateWithOpenAI(xml, organizationId);
   return feedback;
 }

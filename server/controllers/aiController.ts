@@ -20,12 +20,10 @@ export async function handleRunRepomix(
     res.json({ xml: xmlOutput });
   } catch (error) {
     console.error("Repomix error:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to run repomix",
-        details: (error as Error).message,
-      });
+    res.status(500).json({
+      error: "Failed to run repomix",
+      details: (error as Error).message,
+    });
   }
 }
 
