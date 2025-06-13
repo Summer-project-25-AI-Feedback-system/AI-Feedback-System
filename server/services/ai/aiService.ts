@@ -1,29 +1,14 @@
-import RepomixFetcher from "../../repomix";
 import { evaluateWithOpenAI } from "../../Aievolution";
+import { fetchXmlFromRepoUrl } from "./repomixHelper";
 
 export async function runRepomix(repoUrl: string) {
-  const fetcher = new RepomixFetcher("output");
+  const { xml, repoName } = await fetchXmlFromRepoUrl(repoUrl);
 
-  const repoName = getRepoNameFromUrl(repoUrl);
-  const outputFileName = `${repoName}.xml`;
-
-  const xml = await fetcher.fetchRepositoryAsXml({
-    remoteUrl: repoUrl,
-    style: "xml",
-    outputFile: outputFileName,
-  });
+  console.log("Repository fetched as XML.");
+  console.log(`XML file saved to: output/${repoName}.xml`);
 
   const xmlBase64 = Buffer.from(xml).toString("base64");
   return xmlBase64;
-}
-
-function getRepoNameFromUrl(url: string): string {
-  return (
-    url
-      .replace(/\.git$/, "")
-      .split("/")
-      .pop() || "unknown-repo"
-  );
 }
 
 export async function runAIEvolution(xml: string, organizationId: string) {
