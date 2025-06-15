@@ -821,7 +821,7 @@ interface EvaluationCriteria {
   comments: string[];
 }
 
-interface EvaluationResult {
+export interface EvaluationResult {
   overallRating: number;
   criteria: EvaluationCriteria[];
   summary: string;
@@ -833,7 +833,7 @@ interface EvaluationResult {
   };
 }
 
-async function calculateOverallRating(
+export async function calculateOverallRating(
   criteria: EvaluationCriteria[]
 ): Promise<number> {
   const totalScore = criteria.reduce(
@@ -894,7 +894,9 @@ interface ParsedFeedback {
   summary: string;
 }
 
-async function parseAIFeedback(feedback: string): Promise<ParsedFeedback> {
+export async function parseAIFeedback(
+  feedback: string
+): Promise<ParsedFeedback> {
   const criteria: EvaluationCriteria[] = [];
 
   // Syntax and Validity (0-10)
