@@ -31,21 +31,24 @@ export async function handleRunAIEvolution(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { xml, organizationId, repoName } = req.body;
+  const { xml, organizationId, repoName, assignmentName } = req.body;
 
-  if (!xml || !organizationId) {
+  if (!xml || !organizationId || !repoName || !assignmentName) {
     res.status(400).json({
-      error: "Missing required fields (xml, organizationId, or repoName)",
+      error:
+        "Missing required fields (xml, organizationId, repoName, or assignmentName)",
     });
     return;
   }
 
   try {
-    const result = await runAIEvolution(xml, organizationId, repoName);
-    res.json({
-      feedback: result.feedback,
-      markdownContent: result.markdownContent,
-    });
+    const markdownContent = await runAIEvolution(
+      xml,
+      organizationId,
+      repoName,
+      assignmentName
+    );
+    res.json({ markdownContent });
   } catch (error) {
     console.error("AIEvolution error:", error);
     res.status(500).json({

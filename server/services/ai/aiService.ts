@@ -19,7 +19,8 @@ export async function runRepomix(repoUrl: string) {
 export async function runAIEvolution(
   xmlBase64: string,
   organizationId: string,
-  repoName: string
+  repoName: string,
+  assignmentName: string
 ) {
   const xml = Buffer.from(xmlBase64, "base64").toString("utf-8");
   const feedback = await evaluateWithOpenAI(xml, organizationId);
@@ -33,23 +34,28 @@ export async function runAIEvolution(
       evaluationDate: new Date().toISOString(),
       submissionId: `submission-${Date.now()}`,
       repoName: repoName,
-      assignmentName: "Assignment",
+      assignmentName: assignmentName,
     },
   };
   const markdownContent = generateMarkdownContent(evaluationResult);
-  return { feedback, markdownContent };
+  return markdownContent;
 }
 
 function generateMarkdownContent(evaluationResult: EvaluationResult): string {
   const evaluationDate = new Date(evaluationResult.metadata.evaluationDate);
-  const formattedDate = evaluationDate.toLocaleDateString("fi-FI", {
+  const formattedDate = evaluationDate.toLocaleDateString("en-US", {
+    timeZone: "Europe/Helsinki",
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    month: "short",
+    day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false, // Use 24-hour format
   });
-
+  console.log(
+    "evaluationResult.overallRating:",
+    evaluationResult.overallRating
+  );
   return `# Assignment Evaluation
 
 ## Summary
