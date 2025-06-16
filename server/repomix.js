@@ -120,7 +120,7 @@ var RepomixFetcher = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ensureDirectories()];
                     case 1:
                         _e.sent();
-                        outputFileName = (_c = options.outputFile) !== null && _c !== void 0 ? _c : 'repomix-output.xml';
+                        outputFileName = (_c = options.outputFile) !== null && _c !== void 0 ? _c : `repomix-output-${Date.now()}.xml`;
                         actualOutputFile = path.join(this.outputDir, outputFileName).replace(/\\/g, '/');
                         tempOutputFile = path.join(this.tempDir, outputFileName).replace(/\\/g, '/');
                         command = "repomix --remote ".concat(options.remoteUrl, " --style ").concat((_d = options.style) !== null && _d !== void 0 ? _d : 'xml', " --output \"").concat(outputFileName, "\"");

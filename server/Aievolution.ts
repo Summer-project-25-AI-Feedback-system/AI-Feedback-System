@@ -499,122 +499,173 @@ Instructions:
   }
 }
 
-// Esimerkki arviointifunktiosta, joka käyttää prompt.txt-tiedostoa
+// Add AIModel type
+type AIModel = 'openai' | 'claude' | 'deepseek';
+
 export async function evaluateWithOpenAI(
   xmlContent: string,
   organizationId: string,
-  repoPath?: string
+  repoPath?: string,
+  model?: AIModel
 ): Promise<string> {
-  const submissionId = path.basename(repoPath ?? "", ".xml");
+  // Jos mallia ei määritelty, käytetään GPT-3.5-turboa
+  const selectedModel = model || 'openai';
+  console.log(`Starting evaluation with model: ${selectedModel}`);
+  
+  const submissionId = repoPath ? path.basename(repoPath, ".xml") : "unknown";
+  const prompt = await getPromptFromFile();
+  console.log('Prompt loaded successfully');
+  
+  const chunks = splitXmlIntoChunks(xmlContent);
+  console.log(`Split content into ${chunks.length} chunks`);
+  let fullResponse = "";
 
-  if (repoPath) {
-    // Check evaluation history
-    const evaluations = evaluationHistory.get(submissionId) || [];
-    const lastEvaluation = evaluations[evaluations.length - 1];
-
-    if (lastEvaluation?.evaluatedBy === "AI") {
-      throw new Error(
-        "This submission has already been evaluated by AI. Please contact your teacher for re-evaluation."
-      );
-    }
-
-    // ✅ Check Git repository status
-    await checkGitRepo(organizationId, repoPath);
-
-    // ✅ Check rate limits
-    if (!(await checkRateLimits(repoPath))) {
-      throw new Error("AI call limit reached. Try again later.");
-    }
-
-    // ✅ Increment counters only for repo-based
-    dailyCallCount++;
-    weeklyCallCount++;
-    console.log(
-      `Daily calls: ${dailyCallCount}, Weekly calls: ${weeklyCallCount}`
-    );
-  }
-
-  // Calculate token count
-  const estimatedTokens = Math.ceil(xmlContent.length / 4);
-  console.log(`Estimated token count: ${estimatedTokens}`);
-
-  // Track token usage
-  await trackTokenUsage(organizationId, estimatedTokens);
-
-  // Truncate content if it's too long
-  const maxContentTokens = 3000;
-  const truncatedContent =
-    estimatedTokens > maxContentTokens
-      ? xmlContent.substring(0, maxContentTokens * 4) +
-        "\n... (content truncated)"
-      : xmlContent;
-
-  // Haetaan prompt tiedostosta
-  const basePrompt = await getPromptFromFile();
-  const prompt = `${basePrompt}
-
-Student Code:
-${truncatedContent}
-`;
-
-  // OpenAI API -kutsu
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("OpenAI API key not found in .env file");
-  }
-
-  const endpoint = "https://api.openai.com/v1/chat/completions";
-
-  let retries = 3;
-  while (retries > 0) {
+  for (const chunk of chunks) {
     try {
-      const response = await axios.post(
-        endpoint,
-        {
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 1000,
-          temperature: 0.3,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      console.log(`Processing chunk ${chunks.indexOf(chunk) + 1}/${chunks.length}`);
+      let response: any = null;
+      
+      switch (selectedModel) {
+        case 'openai':
+          console.log('Sending request to OpenAI (GPT-3.5-turbo)...');
+          let retryCount = 0;
+          const maxRetries = 3;
+          const baseDelay = 2000; // 2 sekuntia
 
-      if (response.data?.choices?.[0]?.message?.content) {
-        console.log("Response received from OpenAI API");
-        // Record evaluation
-        await recordEvaluation(submissionId, "AI");
-        return response.data.choices[0].message.content;
+          while (retryCount < maxRetries) {
+            try {
+              response = await axios.post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                  model: "gpt-3.5-turbo",
+                  messages: [
+                    {
+                      role: "system",
+                      content: prompt,
+                    },
+                    {
+                      role: "user",
+                      content: chunk,
+                    },
+                  ],
+                  temperature: 0.7,
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              if (!response || !response.data || !response.data.choices || !response.data.choices[0] || !response.data.choices[0].message) {
+                throw new Error('Invalid response format from OpenAI API');
+              }
+              fullResponse += response.data.choices[0].message.content;
+              console.log('Received response from OpenAI');
+              break;
+            } catch (error) {
+              if (axios.isAxiosError(error) && error.response?.status === 429) {
+                retryCount++;
+                if (retryCount < maxRetries) {
+                  const delay = baseDelay * Math.pow(2, retryCount - 1); // Exponential backoff
+                  console.log(`Rate limit reached, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
+                  await sleep(delay);
+                  continue;
+                }
+              }
+              throw error;
+            }
+          }
+
+          if (!response) {
+            throw new Error('Failed to get response from OpenAI after all retries');
+          }
+
+          // Track token usage
+          if (response.data && response.data.usage) {
+            await trackTokenUsage(organizationId, response.data.usage.total_tokens);
+            console.log(`Processed ${response.data.usage.total_tokens} tokens`);
+          }
+          break;
+
+        case 'claude':
+          console.log('Sending request to Claude...');
+          response = await axios.post(
+            "https://api.anthropic.com/v1/messages",
+            {
+              model: "claude-3-sonnet-20240229",
+              messages: [
+                {
+                  role: "user",
+                  content: "Hello, are you working?",
+                },
+              ],
+              max_tokens: 100,
+            },
+            {
+              headers: {
+                "x-api-key": process.env.ANTHROPIC_API_KEY,
+                "anthropic-version": "2024-02-15",
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (response.data && response.data.content && response.data.content[0] && response.data.content[0].text) {
+            fullResponse += response.data.content[0].text;
+            console.log('Received response from Claude');
+          } else {
+            console.error('Unexpected Claude response format:', response.data);
+            throw new Error('Invalid response format from Claude API');
+          }
+          break;
+
+        case 'deepseek':
+          console.log('Sending request to DeepSeek...');
+          response = await axios.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            {
+              model: "deepseek-chat",
+              messages: [
+                {
+                  role: "system",
+                  content: prompt,
+                },
+                {
+                  role: "user",
+                  content: chunk,
+                },
+              ],
+              temperature: 0.7,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          fullResponse += response.data.choices[0].message.content;
+          console.log('Received response from DeepSeek');
+          break;
       }
-      throw new Error("Invalid response from OpenAI API");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.log(`Error calling OpenAI API: ${error.message}`);
-      } else {
-        console.log(`Unknown error calling OpenAI API: ${error}`);
-      }
+
+      // Add delay between chunks
+      await sleep(1000);
+    } catch (error) {
+      console.error(`Error processing chunk with ${selectedModel}:`, error);
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          throw new Error("Invalid OpenAI API key. Check .env file.");
-        }
-        if (error.response?.status === 429) {
-          console.log("Rate limit reached, waiting 20 seconds...");
-          await sleep(20000);
-          retries--;
-          continue;
-        }
+        console.error('API Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers
+        });
       }
-      if (retries === 1) throw error;
-      retries--;
-      await sleep(20000);
+      throw error;
     }
   }
 
-  throw new Error("Failed to get response from OpenAI API after all retries");
+  console.log('Evaluation completed successfully');
+  return fullResponse;
 }
 
 // Modify email sending function for Gmail
@@ -721,98 +772,6 @@ async function handleError(error: unknown): Promise<never> {
   console.log("Unknown error occurred");
   throw new Error("Unknown error occurred");
 }
-
-// Modify main function
-async function main() {
-  try {
-    // Check output directory
-    await fs.access("output").catch(async () => {
-      console.log("Creating output directory...");
-      await fs.mkdir("output", { recursive: true });
-    });
-
-    const xmlFiles = await getXmlFiles("output");
-
-    if (xmlFiles.length === 0) {
-      console.log("No XML files found in output directory");
-      return;
-    }
-
-    console.log(`Found ${xmlFiles.length} XML files to evaluate`);
-
-    for (const file of xmlFiles) {
-      try {
-        // Check if file has been evaluated
-        const evaluationStatus = await hasBeenEvaluated(file);
-
-        if (evaluationStatus.evaluated && !evaluationStatus.needsUpdate) {
-          console.log(
-            `File ${file} has already been evaluated and is up to date. Skipping...`
-          );
-          continue;
-        }
-
-        if (evaluationStatus.evaluated && evaluationStatus.needsUpdate) {
-          console.log(
-            `File ${file} has been modified since last evaluation. Re-evaluating...`
-          );
-        }
-
-        const xml = await fs.readFile(file, "utf-8");
-        console.log(`Evaluating file ${file}...`);
-
-        const feedback = await evaluateWithOpenAI(
-          xml,
-          "org123",
-          path.dirname(file)
-        );
-
-        // Jäsennä AI:n palaute
-        const parsedFeedback = await parseAIFeedback(feedback);
-
-        // Lasketaan kokonaisarvosana
-        const overallRating = await calculateOverallRating(
-          parsedFeedback.criteria
-        );
-
-        // Luo arviointitulokset
-        const evaluationResult: EvaluationResult = {
-          overallRating,
-          criteria: parsedFeedback.criteria,
-          summary: parsedFeedback.summary,
-          metadata: {
-            evaluationDate: new Date().toISOString(),
-            submissionId: path.basename(file, ".xml"),
-            repoName: path.basename(path.dirname(file)),
-            assignmentName: "Assignment",
-          },
-        };
-
-        // Tallenna markdown-tiedosto
-        await saveEvaluationToMarkdown(evaluationResult, path.dirname(file));
-
-        // Lähetä sähköposti
-        const studentEmail = "student@example.com";
-        await sendEmailFeedback(
-          path.join(path.dirname(file), "ASSIGNMENT_EVALUATION.md"),
-          studentEmail
-        );
-        console.log(`Feedback sent via email to ${studentEmail}`);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          console.log(`Error evaluating file ${file}: ${e.message}`);
-        } else {
-          console.log("Unknown error evaluating file:", e);
-        }
-      }
-    }
-  } catch (error: unknown) {
-    await handleError(error);
-  }
-}
-
-// Kutsu main-funktiota
-main().catch(console.error);
 
 interface EvaluationCriteria {
   name: string;
@@ -989,4 +948,73 @@ function extractComments(feedback: string, criteriaName: string): string[] {
   }
 
   return comments;
+}
+
+// Modify main function
+async function main() {
+  try {
+    // Get command line arguments
+    const xmlFile = process.argv[2];
+    const model = process.argv[3] as AIModel;
+
+    if (!xmlFile) {
+      console.error('Please provide XML file name as first argument');
+      process.exit(1);
+    }
+
+    if (model && !['openai', 'claude', 'deepseek'].includes(model)) {
+      console.error('Please specify a valid AI model: openai, claude, or deepseek');
+      process.exit(1);
+    }
+
+    console.log(`Processing file: ${xmlFile} with model: ${model || 'openai (default)'}`);
+
+    // Check if file exists in output directory
+    const filePath = path.join(process.cwd(), 'output', xmlFile);
+    if (!existsSync(filePath)) {
+      console.error(`File not found: ${filePath}`);
+      process.exit(1);
+    }
+
+    // Tarkista onko tiedosto jo arvioitu tällä mallilla
+    const evaluationStatus = await hasBeenEvaluated(filePath);
+    if (evaluationStatus.evaluated && !evaluationStatus.needsUpdate) {
+      console.log(`File ${xmlFile} has already been evaluated with model ${model} and is up to date. Skipping...`);
+      process.exit(0);
+    }
+
+    if (evaluationStatus.evaluated && evaluationStatus.needsUpdate) {
+      console.log(`File ${xmlFile} has been evaluated before but needs update. Proceeding with evaluation...`);
+    }
+
+    // Read XML file
+    const xml = await fs.readFile(filePath, 'utf-8');
+    console.log('File read successfully, starting evaluation...');
+
+    // Evaluate with selected model
+    const feedback = await evaluateWithOpenAI(
+      xml,
+      "org123",
+      filePath,
+      model
+    );
+
+    // Save feedback with model-specific filename
+    const baseName = path.basename(xmlFile, '.xml');
+    const feedbackPath = path.join(process.cwd(), 'output', `${baseName}_${model}_feedback.md`);
+    await fs.writeFile(feedbackPath, feedback);
+    console.log(`Feedback saved to: ${feedbackPath}`);
+
+    // Merkitse arviointi tehdyksi tällä mallilla
+    await recordEvaluation(`${baseName}_${model}`, "AI");
+
+  } catch (error) {
+    console.error('Error:', error);
+    await handleError(error);
+  }
+}
+
+// Kutsu main-funktiota vain jos tiedosto suoritetaan suoraan
+if (require.main === module) {
+  main().catch(console.error);
 }
