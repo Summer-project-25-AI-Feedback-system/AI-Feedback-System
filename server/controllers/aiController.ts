@@ -20,12 +20,10 @@ export async function handleRunRepomix(
     res.json({ xml: xmlOutput });
   } catch (error) {
     console.error("Repomix error:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to run repomix",
-        details: (error as Error).message,
-      });
+    res.status(500).json({
+      error: "Failed to run repomix",
+      details: (error as Error).message,
+    });
   }
 }
 
@@ -33,18 +31,29 @@ export async function handleRunAIEvolution(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { xml, organizationId } = req.body;
+  const { xml, organizationId, repoName, assignmentName } = req.body;
 
-  if (!xml || !organizationId) {
-    res.status(400).json({ error: "Missing xml or organizationId" });
+  if (!xml || !organizationId || !repoName || !assignmentName) {
+    res.status(400).json({
+      error:
+        "Missing required fields (xml, organizationId, repoName, or assignmentName)",
+    });
     return;
   }
 
   try {
-    const feedback = await runAIEvolution(xml, organizationId);
-    res.json({ feedback });
+    const markdownContent = await runAIEvolution(
+      xml,
+      organizationId,
+      repoName,
+      assignmentName
+    );
+    res.json({ markdownContent });
   } catch (error) {
     console.error("AIEvolution error:", error);
-    res.status(500).json({ error: "Failed to run AIEvolution" });
+    res.status(500).json({
+      error: "Failed to run AIEvolution",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 }
