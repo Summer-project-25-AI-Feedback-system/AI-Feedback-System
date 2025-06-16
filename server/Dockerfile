@@ -1,23 +1,28 @@
-# 1. Base image
+# Base image
 FROM node:22-alpine
-LABEL org.opencontainers.image.source="https://github.com/Summer-project-25-AI-Feedback-system/AFS"
 
-# 2. Set working directory
+# Install git (and any other necessary tools)
+RUN apk add --no-cache git
+
+# Set working directory
 WORKDIR /app
 
-# 3. Copy package files and install deps
+# Install global CLI: repomix
+RUN npm install -g repomix
+
+# Copy package files and install deps
 COPY server/package*.json ./server/
 RUN cd server && npm install
 
-# 4. Copy server code and shared interfaces
+# Copy server code and shared interfaces
 COPY . .
 
-# 5. Build TypeScript
+# Build TypeScript
 WORKDIR /app/server
 RUN npm run build
 
-# 6. Expose port
+# Expose port
 EXPOSE 5000
 
-# 7. Start app
+# Start app
 CMD ["node", "dist/server/index.js"]

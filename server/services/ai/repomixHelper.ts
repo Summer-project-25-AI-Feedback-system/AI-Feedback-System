@@ -30,8 +30,18 @@ export async function fetchXmlFromRepoUrl(
   const repoName = getRepoNameFromUrl(repoUrl);
   const outputFileName = `${repoName}.xml`;
 
+  const githubToken = process.env.GITHUB_PAT;
+  if (!githubToken) {
+    throw new Error("Missing GITHUB_PAT in environment.");
+  }
+
+  const authedRepoUrl = repoUrl.replace(
+    /^https:\/\//,
+    `https://${githubToken}@`
+  );
+
   const xml = await fetcher.fetchRepositoryAsXml({
-    remoteUrl: repoUrl,
+    remoteUrl: authedRepoUrl,
     style: "xml",
     outputFile: outputFileName,
     ignore: getDefaultIgnorePattern(),
