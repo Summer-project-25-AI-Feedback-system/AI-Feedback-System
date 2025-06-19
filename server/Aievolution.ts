@@ -508,7 +508,6 @@ export async function evaluateWithOpenAI(
   repoPath?: string,
   model?: AIModel
 ): Promise<string> {
-  // Jos mallia ei määritelty, käytetään GPT-3.5-turboa
   const selectedModel = model || 'openai';
   console.log(`Starting evaluation with model: ${selectedModel}`);
   
@@ -530,7 +529,7 @@ export async function evaluateWithOpenAI(
           console.log('Sending request to OpenAI (GPT-3.5-turbo)...');
           let retryCount = 0;
           const maxRetries = 3;
-          const baseDelay = 2000; // 2 sekuntia
+          const baseDelay = 1000;
 
           while (retryCount < maxRetries) {
             try {
@@ -548,29 +547,61 @@ export async function evaluateWithOpenAI(
                       content: chunk,
                     },
                   ],
-                  temperature: 0.7,
+                  temperature: 0.3,
+                  max_tokens: 2000,
                 },
                 {
                   headers: {
                     Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json",
                   },
+                  timeout: 30000,
                 }
               );
+              
               if (!response || !response.data || !response.data.choices || !response.data.choices[0] || !response.data.choices[0].message) {
                 throw new Error('Invalid response format from OpenAI API');
               }
+              
               fullResponse += response.data.choices[0].message.content;
               console.log('Received response from OpenAI');
               break;
+              
             } catch (error) {
-              if (axios.isAxiosError(error) && error.response?.status === 429) {
-                retryCount++;
-                if (retryCount < maxRetries) {
-                  const delay = baseDelay * Math.pow(2, retryCount - 1); // Exponential backoff
-                  console.log(`Rate limit reached, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
-                  await sleep(delay);
-                  continue;
+              if (axios.isAxiosError(error)) {
+                const status = error.response?.status;
+                const data = error.response?.data;
+                
+                console.log(`OpenAI API error: Status ${status}, Data:`, data);
+                
+                // Tarkista onko kyseessä quota-virhe
+                if (status === 429 && data?.error?.code === 'insufficient_quota') {
+                  throw new Error('OpenAI API quota exceeded. Please check your billing and add credits to your account.');
+                }
+                
+                // Tarkista onko kyseessä rate limit (ei quota)
+                if (status === 429 && data?.error?.code !== 'insufficient_quota') {
+                  retryCount++;
+                  if (retryCount < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, retryCount - 1);
+                    console.log(`Rate limit reached, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
+                    await sleep(delay);
+                    continue;
+                  } else {
+                    throw new Error(`Rate limit exceeded after ${maxRetries} retries. Please try again later.`);
+                  }
+                } else if (status === 401) {
+                  throw new Error('OpenAI API key is invalid or missing');
+                } else if (status === 400) {
+                  throw new Error(`OpenAI API error: ${data?.error?.message || 'Bad request'}`);
+                } else if (status >= 500) {
+                  retryCount++;
+                  if (retryCount < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, retryCount - 1);
+                    console.log(`Server error ${status}, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
+                    await sleep(delay);
+                    continue;
+                  }
                 }
               }
               throw error;
@@ -593,19 +624,20 @@ export async function evaluateWithOpenAI(
           response = await axios.post(
             "https://api.anthropic.com/v1/messages",
             {
-              model: "claude-3-sonnet-20240229",
+              model: "claude-3-opus-20240229",
               messages: [
                 {
                   role: "user",
-                  content: "Hello, are you working?",
+                  content: `${prompt}\n\n${chunk}`,
                 },
               ],
-              max_tokens: 100,
+              max_tokens: 4000,
+              temperature: 0.7,
             },
             {
               headers: {
                 "x-api-key": process.env.ANTHROPIC_API_KEY,
-                "anthropic-version": "2024-02-15",
+                "anthropic-version": "2023-06-01",
                 "Content-Type": "application/json",
               },
             }
@@ -650,7 +682,7 @@ export async function evaluateWithOpenAI(
       }
 
       // Add delay between chunks
-      await sleep(1000);
+      await sleep(2000);
     } catch (error) {
       console.error(`Error processing chunk with ${selectedModel}:`, error);
       if (axios.isAxiosError(error)) {
