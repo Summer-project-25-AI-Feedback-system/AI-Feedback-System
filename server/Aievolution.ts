@@ -594,7 +594,7 @@ export async function evaluateWithOpenAI(
                   throw new Error('OpenAI API key is invalid or missing');
                 } else if (status === 400) {
                   throw new Error(`OpenAI API error: ${data?.error?.message || 'Bad request'}`);
-                } else if (status >= 500) {
+                } else if (typeof status === 'number' && status >= 500) {
                   retryCount++;
                   if (retryCount < maxRetries) {
                     const delay = baseDelay * Math.pow(2, retryCount - 1);
