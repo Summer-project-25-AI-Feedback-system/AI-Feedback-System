@@ -1,11 +1,7 @@
 import { Router } from "express";
 import passport from "../utils/passport";
 import dotenv from "dotenv";
-import {
-  githubCallback,
-  getCurrentUser,
-  logout,
-} from "../controllers/authController";
+import { githubCallback, getCurrentUser, logout } from "../controllers/authController";
 import { upsertUser } from "../services/UserService"; 
 
 import { isAuthenticated } from "../middlewares/isAuthenticated";
@@ -44,7 +40,9 @@ router.get(
     }
   }
 );
+
 router.get("/getCurrentUser", isAuthenticated, getCurrentUser);
+
 router.get("/logout", isAuthenticated, logout);
 
 export default router;

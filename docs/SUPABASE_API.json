@@ -373,23 +373,28 @@
         "type": "object",
         "description": "A singular assignment belonging to an organization.",
         "required": [
-          "github_assignment_id",
-          "github_org_id",
+          "id",
+          "external_github_assignment_id",
+          "organization_id",
           "name",
           "deadline",
           "maxPoints"
         ],
         "properties": {
-          "github_assignment_id": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of this assignment."
+          },
+          "external_github_assignment_id": {
             "type": "string",
             "x-stoplight": {
               "id": "q7p7hsc8ki0wn"
             },
-            "description": "The unique identifier of the assignment."
+            "description": "GitHub assignment ID of this assignment."
           },
-          "github_org_id": {
+          "organization_id": {
             "type": "string",
-            "description": "GitHub Organization ID this assignment belongs to."
+            "description": "ID of the organization this assignment belongs to."
           },
           "name": {
             "type": "string",
@@ -494,6 +499,10 @@
               "id": "b1wrxbhtxvivx"
             },
             "description": "The supabase student ID."
+          },
+          "roster_id": {
+            "type": "string",
+            "description": "The ID of the roster this roster student belongs to."
           },
           "github_roster_identifier": {
             "type": "string",
