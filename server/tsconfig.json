@@ -13,8 +13,9 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/*"]
-    }
+    },
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
-  "include": ["./", "Aievolution.ts"], // Include all files in this folder
+  "include": ["./", "Aievolution.ts", "types"], // Include all files in this folder
   "exclude": ["node_modules", "dist"] // Avoid compiling node_modules and output
 }

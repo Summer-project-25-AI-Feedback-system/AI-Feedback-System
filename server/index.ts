@@ -9,6 +9,7 @@ import submitRoute from "./routes/submitRoute";
 import uploadCsvRoute from "./routes/uploadCsvRoute";
 import aiRoutes from "./routes/aiRoutes";
 import promptRoutes from "./routes/promptRouter";
+import supabaseRoutes from "./routes/supabaseRoutes"
 import './services/github/githubService';
 
 dotenv.config();
@@ -54,6 +55,7 @@ app.use("/api/evaluation", aiRoutes);
 app.use("/submit", submitRoute);
 app.use("/api", uploadCsvRoute);
 app.use("/api/prompt", promptRoutes);
+app.use("/supabase", supabaseRoutes)
 
 // Error handling
 app.use(
