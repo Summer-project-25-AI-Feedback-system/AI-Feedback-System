@@ -48,39 +48,24 @@ async function getXmlFiles(dir: string): Promise<string[]> {
   }
 }
 
-// Split large XML file into smaller chunks
-function splitXmlIntoChunks(
-  xmlContent: string,
-  maxChunkSize: number = 15000
-): string[] {
-  const chunks: string[] = [];
-  let currentChunk = "";
+// Split XML content into optimal chunks for all models (OpenAI, Claude, DeepSeek)
+function splitXmlIntoChunks(xmlContent: string): string[] {
+  const totalLength = xmlContent.length;
 
-  // Split XML line by line
-  const lines = xmlContent.split("\n");
-
-  for (const line of lines) {
-    // If current chunk + new line is too large, save chunk and start new one
-    if ((currentChunk + line).length > maxChunkSize) {
-      if (currentChunk) {
-        chunks.push(currentChunk);
-        currentChunk = "";
-      }
-      // If single line is too long, split it into smaller parts
-      if (line.length > maxChunkSize) {
-        const subChunks =
-          line.match(new RegExp(`.{1,${maxChunkSize}}`, "g")) || [];
-        chunks.push(...subChunks);
-      } else {
-        currentChunk = line;
-      }
-    } else {
-      currentChunk += (currentChunk ? "\n" : "") + line;
-    }
+  // If the file is small, do not split
+  if (totalLength <= 100000) {
+    return [xmlContent];
   }
 
-  if (currentChunk) {
-    chunks.push(currentChunk);
+  // For large files: split into four parts
+  const chunkCount = 4;
+  const chunkSize = Math.ceil(totalLength / chunkCount);
+  const chunks: string[] = [];
+
+  for (let i = 0; i < chunkCount; i++) {
+    const start = i * chunkSize;
+    const end = Math.min(start + chunkSize, totalLength);
+    chunks.push(xmlContent.slice(start, end));
   }
 
   return chunks;
