@@ -8,5 +8,6 @@ export const useSupabase = (): SupabaseContextType => {
   if (!context) {
     throw new Error("useSupabase must be used within a SupabaseProvider");
   }
+  
   return context;
 };

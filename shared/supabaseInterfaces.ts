@@ -1,7 +1,7 @@
 // TODO: add users?
 
 export interface Organizations {
-  id: number;
+  id?: number;
   name: string;
   external_github_org_id: string;
   owner_id: string;

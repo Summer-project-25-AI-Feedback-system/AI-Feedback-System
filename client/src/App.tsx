@@ -10,42 +10,45 @@ import ReposPage from "./pages/repoPage/ReposPage";
 import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 import AnalyticsPage from './pages/analyticsPage/AnalyticsPage';
 import PromptEditor from './components/PromptEditor';
+import { SupabaseProvider } from "./context/supabase/SupabaseProvider";
 
 function App() {
   return (
-    <GitHubProvider>
-      <UserProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<LoginPage />} />
-              <Route path="/orgs" element={<OrgsPage />} />
-              <Route
-                path="/orgs/:orgName/assignments"
-                element={<AssignmentsPage />}
-              />
-              <Route
-                path="/orgs/:orgName/assignments/:assignmentName/repos"
-                element={<ReposPage />}
-              />
-              <Route
-                path="/orgs/:orgName/assignments/:assignmentName/repos/:repoId"
-                element={<RepoDetailPage />}
-              />
-              <Route
-                path="/orgs/:orgName/assignments/:assignmentName/submission"
-                element={<SpecificUserSubmissionScreen />}
-              />
-              <Route 
-                path="/orgs/:orgName/analytics"
-                element={<AnalyticsPage />}
-              />
-            </Route>
-            <Route path="/prompt" element={<PromptEditor />} />
-          </Routes>
-        </Router>
-      </UserProvider>
-    </GitHubProvider>
+    <SupabaseProvider>
+      <GitHubProvider>
+        <UserProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<LoginPage />} />
+                <Route path="/orgs" element={<OrgsPage />} />
+                <Route
+                  path="/orgs/:orgName/assignments"
+                  element={<AssignmentsPage />}
+                />
+                <Route
+                  path="/orgs/:orgName/assignments/:assignmentName/repos"
+                  element={<ReposPage />}
+                />
+                <Route
+                  path="/orgs/:orgName/assignments/:assignmentName/repos/:repoId"
+                  element={<RepoDetailPage />}
+                />
+                <Route
+                  path="/orgs/:orgName/assignments/:assignmentName/submission"
+                  element={<SpecificUserSubmissionScreen />}
+                />
+                <Route 
+                  path="/orgs/:orgName/analytics"
+                  element={<AnalyticsPage />}
+                />
+              </Route>
+              <Route path="/prompt" element={<PromptEditor />} />
+            </Routes>
+          </Router>
+        </UserProvider>
+      </GitHubProvider>
+    </SupabaseProvider>
   );
 }
 

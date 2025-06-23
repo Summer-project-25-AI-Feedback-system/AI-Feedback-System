@@ -55,7 +55,7 @@ app.use("/api/evaluation", aiRoutes);
 app.use("/submit", submitRoute);
 app.use("/api", uploadCsvRoute);
 app.use("/api/prompt", promptRoutes);
-app.use("/supabase", supabaseRoutes)
+app.use("/api/supabase", supabaseRoutes)
 
 // Error handling
 app.use(

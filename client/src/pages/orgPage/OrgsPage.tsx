@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
+import { useSupabase } from "../../context/supabase/useSupabase";
 import type { OrgInfo } from "@shared/githubInterfaces";
 import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
@@ -14,15 +15,19 @@ export default function OrgsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const github = useGitHub();
+  const supabase = useSupabase();
   const [sortOrder, setSortOrder] = useState<SortOption>("A–Z");
 
   useEffect(() => {
     github
       .getOrganizations()
-      .then(setOrgs)
+      .then((fetchedOrgs) => {
+        setOrgs(fetchedOrgs)
+        supabase.addOrganizations(fetchedOrgs)
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [github]);
+  }, [github, supabase]);
 
   const filteredOrgs = useFilteredList(orgs, searchTerm, (org, term) =>
     org.name.toLowerCase().includes(term.toLowerCase())
