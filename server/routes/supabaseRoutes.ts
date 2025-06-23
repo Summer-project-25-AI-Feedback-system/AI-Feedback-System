@@ -1,6 +1,7 @@
 import express from 'express';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateOrgAccess } from '../middlewares/validateOrgAccess';
+import { getAllOrganizations } from 'controllers/supabase/organizationController';
 import { getAssignments, addAssignments } from '../controllers/supabase/assignmentController';
 import { getRoster, addRoster } from '../controllers/supabase/rosterController';
 import { addFeedback, getFeedback } from '../controllers/supabase/feedbackController';
@@ -8,6 +9,11 @@ import { addFeedback, getFeedback } from '../controllers/supabase/feedbackContro
 const router = express.Router();
 
 // the given org in the URL is the organization ID from github
+
+// -- Organization routes --
+// GET organizations
+router.get('/organizations', isAuthenticated, validateOrgAccess, getAllOrganizations);
+// POST organization
 
 // -- Assignment routes --
 // GET assignment(s) 

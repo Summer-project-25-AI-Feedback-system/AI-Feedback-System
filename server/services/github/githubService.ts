@@ -13,6 +13,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
   return response.data.map(
     (org): OrgInfo => ({
+      id: org.id,
       name: org.login,
       description: org.description,
       avatarUrl: org.avatar_url,

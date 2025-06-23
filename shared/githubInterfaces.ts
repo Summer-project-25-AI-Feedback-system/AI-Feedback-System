@@ -1,4 +1,5 @@
 export interface OrgInfo {
+  id: number;
   name: string;
   description: string | null;
   avatarUrl: string;
