@@ -6,9 +6,14 @@ export interface OrgInfo {
 }
 
 export interface AssignmentInfo {
+  id: number,
   name: string;
   amountOfStudents: number;
   updatedAt: string;
+  // accepted: number,
+  // submitted: number,
+  // passing: number,
+  // deadline: Date
 }
 
 export interface RepoInfo {

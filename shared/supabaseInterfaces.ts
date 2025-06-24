@@ -8,7 +8,7 @@ export interface Organizations {
 }
 
 export interface Assignments {
-  id: string,
+  id?: string,
   external_github_assignment_id: string,
   organization_id: string,
   name: string,
