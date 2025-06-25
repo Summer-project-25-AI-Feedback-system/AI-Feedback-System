@@ -95,15 +95,15 @@ export default function SpecificUserSubmissionScreen() {
   };
 
   // Delete-painikkeen toiminta
-  const handleDelete = () => {
-    if (
-      window.confirm(
-        "Haluatko varmasti poistaa koko palautuksen? Tätä toimintoa ei voi perua."
-      )
-    ) {
-      navigate(-1);
-    }
-  };
+  // const handleDelete = () => {
+  //   if (
+  //     window.confirm(
+  //       "Haluatko varmasti poistaa koko palautuksen? Tätä toimintoa ei voi perua."
+  //     )
+  //   ) {
+  //     navigate(-1);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex justify-center items-center">
@@ -208,4 +208,3 @@ export default function SpecificUserSubmissionScreen() {
     </div>
   );
 }
-
