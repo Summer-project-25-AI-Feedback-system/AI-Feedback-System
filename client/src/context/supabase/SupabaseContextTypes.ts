@@ -2,7 +2,7 @@ import type {
   Organizations,
   Assignments,
   Rosters,
-  Feedbacks
+  AiEvaluations
 } from "@shared/supabaseInterfaces";
 
 export interface SupabaseContextType {
@@ -14,6 +14,6 @@ export interface SupabaseContextType {
   getRoster: (orgId: string) => Promise<Rosters>;
   addRoster: (orgId: string, data: Partial<Rosters>) => Promise<void>;
 
-  getFeedbacks: (orgId: string) => Promise<Feedbacks[]>;
-  addFeedback: (orgId: string, data: Partial<Feedbacks>) => Promise<void>;
+  getEvaluations: (orgId: string) => Promise<AiEvaluations[]>;
+  addEvaluations: (orgId: string, data: Partial<AiEvaluations>) => Promise<void>;
 }

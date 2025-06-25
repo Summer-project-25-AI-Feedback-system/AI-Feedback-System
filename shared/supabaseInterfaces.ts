@@ -34,12 +34,12 @@ export interface RosterStudents {
   github_display_name?: string
 }
 
-export interface Feedbacks {
+export interface AiEvaluations {
   id: string,
   roster_student_id: string,
   assignment_id: string,
   organization_id: string, 
-  score: number,
-  written_feedback: string,
-  created_at: Date
+  created_at: Date,
+  ai_model: string,
+  md_file: string
 }

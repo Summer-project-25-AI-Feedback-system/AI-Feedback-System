@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { Organizations, Assignments, Rosters, Feedbacks } from "@shared/supabaseInterfaces";
+import type { Organizations, Assignments, Rosters, AiEvaluations } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -39,15 +39,15 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
     });
   };
 
-  const getFeedbacks = async (orgId: string): Promise<Feedbacks[]> => {
-    const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/feedback`, {
+  const getEvaluations = async (orgId: string): Promise<AiEvaluations[]> => {
+    const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/evaluations`, {
       withCredentials: true,
     });
     return res.data;
   };
 
-  const addFeedback = async (orgId: string, data: Partial<Feedbacks>): Promise<void> => {
-    await axios.post(`${baseUrl}/api/supabase/${orgId}/feedback`, data, {
+  const addEvaluations = async (orgId: string, data: Partial<AiEvaluations>): Promise<void> => {
+    await axios.post(`${baseUrl}/api/supabase/${orgId}/evaluations`, data, {
       withCredentials: true,
     });
   };
@@ -59,8 +59,8 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
       addAssignments,
       getRoster,
       addRoster,
-      getFeedbacks,
-      addFeedback,
+      getEvaluations,
+      addEvaluations,
     }),
     []
   );

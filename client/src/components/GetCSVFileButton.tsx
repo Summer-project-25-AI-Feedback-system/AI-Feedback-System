@@ -1,5 +1,5 @@
 import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
-import { useGitHub } from "../context/useGitHub";
+// import { useGitHub } from "../context/useGitHub";
 import UserContext from "../context/UserContext"
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +54,7 @@ const mockOrgData = {
 };
 
 export default function GetCSVFileButton({ text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
-  const github = useGitHub();
+  // const github = useGitHub();
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const username = user?.username || "unknownuser";

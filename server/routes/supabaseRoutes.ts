@@ -5,7 +5,7 @@ import { attachGithubId } from '../middlewares/attachGitHubId';
 import { getAllOrganizations, addOrganizations } from '../controllers/supabase/organizationController';
 import { getAssignments, addAssignments } from '../controllers/supabase/assignmentController';
 import { getRoster, addRoster } from '../controllers/supabase/rosterController';
-import { addFeedback, getFeedback } from '../controllers/supabase/feedbackController';
+import { addEvaluations, getEvaluations } from '../controllers/supabase/evaluationController';
 
 const router = express.Router();
 
@@ -31,11 +31,11 @@ router.get('/:org/roster', isAuthenticated, attachGithubId, validateOrgAccess, g
 router.post('/:org/roster', isAuthenticated, attachGithubId, validateOrgAccess, addRoster); 
 
 
-// -- Feedback routes --
-// GET feedback(s)
-router.get('/:org/feedback', isAuthenticated, attachGithubId, validateOrgAccess, getFeedback);
-// POST feedback(s)
-router.post('/:org/feedback', isAuthenticated, attachGithubId, validateOrgAccess, addFeedback);
+// -- Evaluation routes --
+// GET evaluation(s)
+router.get('/:org/evaluations', isAuthenticated, attachGithubId, validateOrgAccess, getEvaluations);
+// POST evaluation(s)
+router.post('/:org/evaluations', isAuthenticated, attachGithubId, validateOrgAccess, addEvaluations);
 
 
 export default router;
