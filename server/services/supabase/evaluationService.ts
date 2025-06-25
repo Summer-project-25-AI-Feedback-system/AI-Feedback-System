@@ -20,7 +20,7 @@ export const fetchEvaluations = async (organizationId: string, githubAssignmentI
   }
 
   let query = supabase
-    .from('evaluations')
+    .from('ai_evaluations')
     .select(`*`)
     .eq('organization_id', organizationId)
     .order('created_at', { ascending: false });
@@ -59,7 +59,7 @@ export const createOrUpdateEvaluations = async (organizationId: string, feedback
   }));
 
   const { error } = await supabase
-    .from('feedbacks')
+    .from('ai_evaluations')
     .upsert(dataToInsert, { onConflict: 'roster_student_id,assignment_id,organization_id' });
 
   if (error) {
