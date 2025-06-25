@@ -96,7 +96,6 @@ export default function AssignmentsPage() {
         .then((fetchedAssignments) => { 
           setAssignments(fetchedAssignments)
           const assignments = mapToSupabaseAssignments(fetchedAssignments, orgId)
-          console.log("organization ID from assignments page: " + orgId)
           supabase.addAssignments(orgId, assignments)
         })
         .catch(console.error)

@@ -7,6 +7,5 @@ export const attachGithubId = (req: Request, res: Response, next: NextFunction) 
   }
 
   req.githubId = (req.user as any).id;
-  console.log("the github ID in attachGitHubId: " + req.githubId)
   next();
 }; 
