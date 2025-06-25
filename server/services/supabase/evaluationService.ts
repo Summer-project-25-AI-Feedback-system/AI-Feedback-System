@@ -50,11 +50,11 @@ export const fetchEvaluations = async (organizationId: string, githubAssignmentI
   return data;
 };
 
-export const createOrUpdateEvaluations = async (organizationId: string, feedbacks: any | any[]) => {
-  const feedbacksArray = Array.isArray(feedbacks) ? feedbacks : [feedbacks];
+export const createOrUpdateEvaluations = async (organizationId: string, evaluations: any | any[]) => {
+  const evaluationsArray = Array.isArray(evaluations) ? evaluations : [evaluations];
 
-  const dataToInsert = feedbacksArray.map((f) => ({
-    ...f,
+  const dataToInsert = evaluationsArray.map((e) => ({
+    ...e,
     organization_id: organizationId,
   }));
 
