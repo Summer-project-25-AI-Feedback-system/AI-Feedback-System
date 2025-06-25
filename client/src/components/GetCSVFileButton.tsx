@@ -1,5 +1,5 @@
 import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
-import UserContext from "../context/UserContext";
+import UserContext from "../context/UserContext"
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
@@ -56,12 +56,7 @@ interface Submission {
   grades: Record<string, number | null>;
 }
 
-export default function GetCSVFileButton({
-  text,
-  orgName,
-  roster,
-  assignmentFilter,
-}: GetCSVFileButtonProps) {
+export default function GetCSVFileButton({ text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
   const navigate = useNavigate();
   const { user } = useContext(UserContext)!;
   const username = user?.username || "unknownuser";

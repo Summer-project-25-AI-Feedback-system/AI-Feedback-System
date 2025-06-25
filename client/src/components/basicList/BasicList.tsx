@@ -49,7 +49,11 @@ export default function BasicList(props: BasicListProps) {
                   type="org"
                   data={item as OrgInfo}
                   onClick={() =>
-                    navigate(`/orgs/${(item as OrgInfo).name}/assignments`)
+                    navigate(`/orgs/${(item as OrgInfo).name}/assignments`, {
+                      state: {
+                        orgId: (item as OrgInfo).id
+                      }
+                    })
                   }
                 />
               );

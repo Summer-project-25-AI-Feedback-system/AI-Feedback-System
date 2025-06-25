@@ -13,6 +13,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
   return response.data.map(
     (org): OrgInfo => ({
+      id: org.id,
       name: org.login,
       description: org.description,
       avatarUrl: org.avatar_url,
@@ -22,7 +23,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 
 export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   const octokit = await getOctokit()
-  const repos = await octokit.rest.repos.listForOrg({
+  const repos = await octokit.rest.repos.listForOrg({ 
     org: org,
     type: "all",
     per_page: 100,
@@ -34,10 +35,11 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
     const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
     const updatedAt = repo.updated_at;
 
-    const assignment = assignmentMap.get(baseName);
+    const assignment = assignmentMap.get(baseName); 
 
     if (!assignment) {
       assignmentMap.set(baseName, {
+        id: repo.id,
         name: baseName,
         amountOfStudents: 1,
         updatedAt: updatedAt ?? "",

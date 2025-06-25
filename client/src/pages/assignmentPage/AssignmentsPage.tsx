@@ -2,7 +2,9 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useGitHub } from "../../context/useGitHub";
+import { useSupabase } from "../../context/supabase/useSupabase";
 import { useParams, useNavigate } from "react-router-dom";
 import type { AssignmentInfo } from "@shared/githubInterfaces";
 import { useFilteredList } from "../../hooks/useFilteredList";
@@ -13,6 +15,7 @@ import type { SortOption } from "../../utils/sortingUtils";
 import Sidebar from "./sidebar/Sidebar";
 import Spinner from "../../components/Spinner";
 import GetCSVFileButton from "../../components/GetCSVFileButton";
+import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments'
 
 const allAssignments = [
   {
@@ -63,10 +66,14 @@ export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const github = useGitHub();
+  const supabase = useSupabase();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
+
+  const { orgId } = location.state || {};
 
   const filteredAssignments = useFilteredList(
     assignments,
@@ -82,11 +89,15 @@ export default function AssignmentsPage() {
 
   const sortedAssignments = sortData(filteredAssignments, sortOrder);
 
-  useEffect(() => {
-    if (orgName) {
+  useEffect(() => {   
+    if (orgName && orgId) {
       github
         .getAssignments(orgName)
-        .then(setAssignments)
+        .then((fetchedAssignments) => { 
+          setAssignments(fetchedAssignments)
+          const assignments = mapToSupabaseAssignments(fetchedAssignments, orgId)
+          supabase.addAssignments(orgId, assignments)
+        })
         .catch(console.error)
         .finally(() => setLoading(false));
     }

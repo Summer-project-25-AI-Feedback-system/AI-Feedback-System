@@ -3,13 +3,7 @@ import { supabase } from '../utils/supabase';
 
 export const validateOrgAccess = async (req: Request, res: Response, next: NextFunction) => {
   const { org } = req.params;
-  
-  if (!req.user || !(req.user as any).id) {
-    res.status(401).json({ error: "Unauthorized: GitHub ID missing" });
-    return;
-  }
-
-  const githubId = (req.user as any).id;
+  const githubId = req.githubId;
 
   if (!githubId) {
     res.status(401).json({ error: 'Missing GitHub ID in request.' });
