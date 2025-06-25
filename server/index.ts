@@ -9,18 +9,20 @@ import submitRoute from "./routes/submitRoute";
 import uploadCsvRoute from "./routes/uploadCsvRoute";
 import aiRoutes from "./routes/aiRoutes";
 import promptRoutes from "./routes/promptRouter";
-import supabaseRoutes from "./routes/supabaseRoutes"
-import './services/github/githubService';
+import supabaseRoutes from "./routes/supabaseRoutes";
+import "./services/github/githubService";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://ai-feedback.live"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -55,7 +57,7 @@ app.use("/api/evaluation", aiRoutes);
 app.use("/submit", submitRoute);
 app.use("/api", uploadCsvRoute);
 app.use("/api/prompt", promptRoutes);
-app.use("/supabase", supabaseRoutes)
+app.use("/supabase", supabaseRoutes);
 
 // Error handling
 app.use(
@@ -70,6 +72,6 @@ app.use(
   }
 );
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
