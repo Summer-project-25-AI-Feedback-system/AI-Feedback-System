@@ -12,14 +12,18 @@ import promptRoutes from "./routes/promptRouter";
 import supabaseRoutes from "./routes/supabaseRoutes";
 import "./services/github/githubService";
 
-dotenv.config();
+const nodeEnv = process.env.NODE_ENV || "development";
+dotenv.config({ path: nodeEnv === "production" ? ".env.production" : ".env" });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
+const isProd = nodeEnv === "production";
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+const SESSION_SECRET = process.env.SESSION_SECRET;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://ai-feedback.live"],
+    origin: FRONTEND_ORIGIN,
     credentials: true,
   })
 );
@@ -30,13 +34,13 @@ app.use(express.urlencoded({ extended: false }));
 // Set up session
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret",
+    secret: SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true only in production (HTTPS)
-      sameSite: "lax", // or "none" if secure: true for cross-origin
+      secure: isProd, // Set to true only in production (HTTPS)
+      sameSite: isProd ? "none" : "lax",
     },
   })
 );
@@ -67,7 +71,7 @@ app.use(
     res: express.Response,
     next: express.NextFunction
   ) => {
-    console.error(err.stack);
+    console.error("Unhandled Error:", err);
     res.status(500).json({ error: "Something went wrong!" });
   }
 );
