@@ -1,0 +1,37 @@
+# Don't copy node_modules (installed inside container)
+node_modules/
+client/node_modules/
+server/node_modules/
+shared/node_modules/
+
+# Don't copy logs/temp
+*.log
+*.tmp
+*.swp
+npm-debug.log*
+yarn-error.log*
+
+# Don't copy env files (contain secrets)
+.env
+.env.*
+!.env.vault  # keep this if needed in container
+
+# Don't copy git files
+.git/
+.gitignore
+
+# Don't copy Docker config
+Dockerfile
+.dockerignore
+
+# Don't copy built code
+dist/
+build/
+
+# Ignore any IDE specific files (like VS Code, JetBrains, etc.)
+.vscode/
+.idea/
+
+# Ignore other temporary files
+*.bak
+*.orig

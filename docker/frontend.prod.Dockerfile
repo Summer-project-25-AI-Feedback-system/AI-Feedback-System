@@ -1,8 +1,10 @@
+# Base image
 FROM node:22-alpine AS builder
 
+# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install git (and any other necessary tools)
 RUN apk add --no-cache git
 
 # Copy package files for client only
@@ -13,10 +15,9 @@ RUN cd client && npm install
 
 # Copy entire folders needed for build (client, server, shared)
 COPY ./client ./client
-COPY ./server ./server
 COPY ./shared ./shared
 
-# Build frontend inside client folder
+# Build frontend
 RUN cd client && npm run build
 
 # (Optional) Use nginx to serve the built files
