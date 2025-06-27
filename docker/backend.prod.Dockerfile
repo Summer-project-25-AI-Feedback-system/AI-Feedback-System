@@ -11,15 +11,20 @@ WORKDIR /app
 RUN npm install -g repomix
 
 # Copy package files and install deps
-COPY server/package*.json ./server/
-RUN cd server && npm install
+# COPY server/package*.json ./server/
+COPY ./server/package*.json ./
+RUN npm install
+
 
 # Copy server code and shared interfaces
-COPY . .
+COPY ./server ./server
+COPY ./shared ./shared
 
-# Build TypeScript
+# Build backend
+RUN cd server && npm run build
+
+# Set working directory to built code
 WORKDIR /app/server
-RUN npm run build
 
 # Expose port
 EXPOSE 5000
