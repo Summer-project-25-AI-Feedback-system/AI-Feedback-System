@@ -1,8 +1,5 @@
 import passport from "passport";
 import { Strategy as GitHubStrategy, Profile } from "passport-github2";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 // GitHub OAuth configuration
 passport.use(
