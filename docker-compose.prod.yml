@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.prod.Dockerfile
+    image: ghcr.io/summer-project-25-ai-feedback-system/afs-frontend:latest
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.prod.Dockerfile
+    image: ghcr.io/summer-project-25-ai-feedback-system/afs-backend:latest
