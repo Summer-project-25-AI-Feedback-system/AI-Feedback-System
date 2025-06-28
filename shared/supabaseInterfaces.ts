@@ -35,7 +35,7 @@ export interface RosterStudents {
 }
 
 export interface AiEvaluations {
-  id: string,
+  id?: string,
   roster_student_id: string,
   assignment_id: string,
   organization_id: string, 

@@ -1,3 +1,4 @@
+import { AiEvaluations } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
 export const fetchEvaluations = async (organizationId: string, githubAssignmentId?: string, rosterStudentId?: string) => {
@@ -50,7 +51,7 @@ export const fetchEvaluations = async (organizationId: string, githubAssignmentI
   return data;
 };
 
-export const createOrUpdateEvaluations = async (organizationId: string, evaluations: any | any[]) => {
+export const createOrUpdateEvaluations = async (organizationId: string, evaluations: AiEvaluations | AiEvaluations[]) => {
   const evaluationsArray = Array.isArray(evaluations) ? evaluations : [evaluations];
 
   const dataToInsert = evaluationsArray.map((e) => ({
