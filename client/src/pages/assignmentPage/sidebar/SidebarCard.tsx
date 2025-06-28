@@ -46,7 +46,7 @@ export default function SidebarCard({name, acceptedAssignments, submittedAssignm
     <div onClick={() => navigate(linkTo)} className="border border-[#D9D9D9] rounded p-3 mb-2 space-y-2 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors">
       <div>
         <h3 className="font-semibold text-gray-700">{name}</h3>
-        <text className={`text-sm ${hasDeadlinePassed && progressOfSubmittedAssignments < 100? 'text-red-600 font-medium' : 'text-gray-600'}`}>{deadlineInfo()}</text>
+        <p className={`text-sm ${hasDeadlinePassed && progressOfSubmittedAssignments < 100? 'text-red-600 font-medium' : 'text-gray-600'}`}>{deadlineInfo()}</p>
       </div>           
       <div className="flex flex-col gap-1">
         <span className="text-sm">Assignments Accepted</span>

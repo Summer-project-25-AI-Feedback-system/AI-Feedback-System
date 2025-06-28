@@ -16,6 +16,7 @@ import Sidebar from "./sidebar/Sidebar";
 import Spinner from "../../components/Spinner";
 import GetCSVFileButton from "../../components/GetCSVFileButton";
 import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments'
+import type { RosterWithStudents } from "@shared/supabaseInterfaces";
 
 const allAssignments = [
   {
@@ -65,6 +66,7 @@ const allAssignments = [
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [roster, setRoster] = useState<RosterWithStudents | null>(null);
   const github = useGitHub();
   const supabase = useSupabase();
   const navigate = useNavigate();
@@ -97,6 +99,9 @@ export default function AssignmentsPage() {
           setAssignments(fetchedAssignments)
           const assignments = mapToSupabaseAssignments(fetchedAssignments, orgId)
           supabase.addAssignments(orgId, assignments)
+          supabase.getRoster(orgId).then((fetchedRoster) => {
+            setRoster(fetchedRoster)
+          })
         })
         .catch(console.error)
         .finally(() => setLoading(false));
@@ -120,7 +125,7 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
             <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
-            <GetCSVFileButton text={"Export CSV Report"} orgName={orgName}/>
+            <GetCSVFileButton text={"Export CSV Report"} orgName={orgName} roster={roster}/>
           </div>
         </div>
         {loading ? (

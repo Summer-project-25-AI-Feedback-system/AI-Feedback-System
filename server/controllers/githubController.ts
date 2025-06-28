@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { extractAssignmentName } from "../utils/githubUtils";
 import {
   getOrganizations,
+  getOrganization,
   getAssignments,
   getStudentReposForAssignment,
   getCommits,
@@ -158,26 +159,34 @@ export async function handleGetAllOrganizationData(
   res: Response
 ): Promise<void> {
   const org = req.query.org as string;
+
   if (!org) {
     res.status(400).json({ error: "Missing organization parameter" });
     return;
   }
+
   try {
+    const orgInfo = await getOrganization(org);
     const repos = await getStudentReposForAssignment(org);
     const assignmentSet = new Set<string>();
     const studentMap = new Map<string, Record<string, null>>();
+
     for (const repo of repos) {
       const assignment = extractAssignmentName(repo.name);
       assignmentSet.add(assignment);
       const student = repo.collaborators?.[0]?.name || "Unknown Student";
       // TODO: get grade here later from the db (as given by the AI)
+
       if (!studentMap.has(student)) {
         studentMap.set(student, {});
       }
+      
       studentMap.get(student)![assignment] = null;
     }
+
     const responseData = {
       org,
+      orgId: orgInfo.id,
       assignments: Array.from(assignmentSet),
       submissions: Array.from(studentMap.entries()).map(
         ([student, grades]) => ({
@@ -186,6 +195,7 @@ export async function handleGetAllOrganizationData(
         })
       ),
     };
+  
     res.json(responseData);
   } catch (error) {
     console.error("Failed to get all data:", error);

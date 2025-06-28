@@ -1,45 +1,38 @@
 import { useRef } from "react";
 import Papa from "papaparse";
-import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 import { useParams } from "react-router-dom";
+import { useSupabase } from "../../../context/supabase/useSupabase";
+import type { RosterStudents, RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { StudentInStudentRoster } from "src/types/Roster";
 
 type UploadStudentRosterCSVButtonProps = {
   text: string,
-  onUpload: (students: StudentInStudentRoster[]) => void;
+  onUpload: (roster: RosterWithStudents) => void;
+  orgId: number;
 };
 
-// TODO: once we have access to database, save (or update if a new roster is provided) uploaded roster for specific organization there
-export default function UploadStudentRosterCSVButton({ text, onUpload }: UploadStudentRosterCSVButtonProps) {
+export default function UploadStudentRosterCSVButton({ text, onUpload, orgId }: UploadStudentRosterCSVButtonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { orgName } = useParams<{ orgName: string }>();
+  const supabase = useSupabase(); 
 
   const handleClick = () => {
     fileInputRef.current?.click();
   };
 
-  const saveRosterToDB = async (roster: StudentInStudentRoster[]) => {
-    if (!orgName) return;
-    try {
-      const response = await fetch(`/api/orgs/${orgName}/roster`, {
-        method: "POST", // in backend if a roster already exists for the specific org, update it instead of posting it (use same backend function for both though)
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ roster }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to save roster: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error("Error saving roster to DB:", error);
+  const saveRosterToDB = async (roster: RosterWithStudents) => {
+    if (orgName && orgId) {
+      const stringId = String(orgId)
+      supabase.addRoster(stringId, roster)
+      .catch(console.error) 
+    } else {
+      console.error("Missing orgName or orgId");
     }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     Papa.parse<StudentInStudentRoster>(file, {
       header: true,
       skipEmptyLines: true,
@@ -52,9 +45,24 @@ export default function UploadStudentRosterCSVButton({ text, onUpload }: UploadS
           alert("Invalid CSV format. Header row must exactly match: identifier,github_username,github_id,name");
           return;
         }
-        const validStudents = results.data.filter((s) => s.identifier);
-        onUpload(validStudents);
-        (async () => {await saveRosterToDB(validStudents);})();
+        const validStudents = results.data.filter((s) => s.identifier); 
+        if (validStudents.length === 0) {
+          console.error("No students found in the CSV file.");
+          alert("The uploaded CSV must contain at least one student.");
+          return;
+        }
+        const rosterStudents: RosterStudents[] = validStudents.map((student) => ({
+          github_roster_identifier: student.identifier,
+          github_username: student.github_username,
+          github_user_id: student.github_id,
+          github_display_name: student.name,
+        }));
+        const roster: RosterWithStudents = {
+          amount_of_students: validStudents.length,
+          roster_students: rosterStudents,
+        };
+        onUpload(roster);
+        (async () => {await saveRosterToDB(roster);})();
       },
       error: (err) => {
         console.error("CSV parsing error:", err);

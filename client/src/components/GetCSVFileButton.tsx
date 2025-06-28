@@ -1,84 +1,43 @@
 import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
-import UserContext from "../context/UserContext"
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
+import { useGitHub } from "../context/useGitHub";
+import type { RosterWithStudents } from "@shared/supabaseInterfaces";
 
 interface GetCSVFileButtonProps {
   text: string;
   orgName: string | undefined;
-  roster?: StudentInStudentRoster[];
+  roster: RosterWithStudents | null;
   assignmentFilter?: string[];
 }
-
-// delete this later
-const mockOrgData = {
-  org: "Mock University",
-  assignments: ["intro-to-data", "java-assignment", "css-intro-assignment"],
-  submissions: [
-    {
-      student: "astronautie",
-      grades: {
-        "intro-to-data": 20,
-        "java-assignment": 10,
-        "css-intro-assignment": null,
-      },
-    },
-    {
-      student: "FuzzyKala",
-      grades: {
-        "intro-to-data": 18,
-        "java-assignment": null,
-        "css-intro-assignment": null,
-      },
-    },
-    {
-      student: "vima20",
-      grades: {
-        "intro-to-data": 20,
-        "java-assignment": 10,
-        "css-intro-assignment": 30,
-      },
-    },
-    {
-      student: "nonRoster",
-      grades: {
-        "intro-to-data": null,
-        "java-assignment": 15,
-        "css-intro-assignment": 25,
-      },
-    },
-  ],
-};
 
 interface Submission {
   student: string;
   grades: Record<string, number | null>;
 }
 
-export default function GetCSVFileButton({ text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
+export default function GetCSVFileButton({text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
   const navigate = useNavigate();
-  const { user } = useContext(UserContext)!;
-  const username = user?.username || "unknownuser";
+  const github = useGitHub()
 
   const handleClick = async () => {
     if (!orgName) return;
-    if (!roster || roster.length === 0) {
+
+    if (!roster || !roster.roster_students || roster.roster_students.length === 0) {
       navigate(`/orgs/${orgName}/analytics?tab=missing-submissions`);
       alert(
         "A roster is required to generate the CSV report. Please upload a roster first."
       );
       return;
     }
+
     try {
-      // const data = await github.getAllOrganizationData(orgName);
-      const data = mockOrgData;
+      const data = await github.getAllOrganizationData(orgName);
+      
       const filteredData = assignmentFilter
         ? {
             ...data,
             assignments: assignmentFilter,
             submissions: data.submissions.map((s: Submission) => ({
-              // change the type of s later
               ...s,
               grades: Object.fromEntries(
                 Object.entries(s.grades || {}).filter(([k]) =>
@@ -88,21 +47,10 @@ export default function GetCSVFileButton({ text, orgName, roster, assignmentFilt
             })),
           }
         : data;
+
       generateCSVFromOrg(filteredData, roster);
-      const response = await fetch("http://localhost:5000/api/csv-reports", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ rows: data, username: username }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Tallennus epäonnistui");
-      }
-      console.log("✅ Data tallennettu Supabaseen");
     } catch (error) {
-      console.error("🚫 Virhe tallennuksessa:", error);
+      console.error("Error generating CSV", error);
     }
   };
 

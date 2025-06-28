@@ -21,6 +21,19 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   );
 }
 
+export async function getOrganization(orgName: string): Promise<OrgInfo> {
+  const octokit = await getOctokit();
+
+  const { data: org } = await octokit.rest.orgs.get({ org: orgName });
+  
+  return {
+    id: org.id,
+    name: org.login,
+    description: org.description,
+    avatarUrl: org.avatar_url,
+  };
+}
+
 export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   const octokit = await getOctokit()
   const repos = await octokit.rest.repos.listForOrg({ 

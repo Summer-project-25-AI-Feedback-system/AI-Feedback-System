@@ -1,6 +1,7 @@
+import { RosterWithStudents } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
-export const fetchRoster = async (organizationId: string) => {
+export const fetchRoster = async (organizationId: string): Promise<RosterWithStudents | null> => {
   const { data, error } = await supabase
     .from('rosters')
     .select(`
@@ -16,7 +17,7 @@ export const fetchRoster = async (organizationId: string) => {
 };
 
 // TODO: add functionality so if deleting old roster students succeeds but adding new ones doesn't, then nothing works at all and so on
-export const createOrUpdateRoster = async (organizationId: string, rosterData: any) => { 
+export const createOrUpdateRoster = async (organizationId: string, rosterData: RosterWithStudents) => { 
   const rosterCore = {
     organization_id: organizationId,
     amount_of_students: rosterData.amount_of_students,
