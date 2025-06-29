@@ -4,6 +4,7 @@ import GitHubContext from "./GitHubContext";
 import type { GitHubContextType } from "./types";
 import type {
   AssignmentInfo,
+  DetailedAssignmentInfo,
   OrgInfo,
   RepoInfo,
   CommitInfo,
@@ -20,6 +21,14 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
+  const getAllOrganizationData = async (org: string) => {
+    const res = await axios.get(`${baseUrl}/api/github/org-report`, {
+      withCredentials: true,
+      params: { org },
+    });
+    return res.data;
+  };
+
   const getAssignments = async (orgName: string): Promise<AssignmentInfo[]> => {
     const res = await axios.get(
       `${baseUrl}/api/github/orgs/${orgName}/assignments`,
@@ -30,6 +39,13 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
+  const getDetailedAssignments = async (orgName: string): Promise<DetailedAssignmentInfo[]> => {
+    const res = await axios.get(`${baseUrl}/api/github/orgs/${orgName}/assignmentsDetails`, {
+      withCredentials: true,
+    });
+    return res.data;
+  }
+
   const getRepos = async (
     orgName: string,
     assignmentName = ""
@@ -38,14 +54,6 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
       `${baseUrl}/api/github/orgs/${orgName}/assignments/${assignmentName}/repos`,
       { withCredentials: true }
     );
-    return res.data;
-  };
-
-  const getAllOrganizationData = async (org: string) => {
-    const res = await axios.get(`${baseUrl}/api/github/org-report`, {
-      withCredentials: true,
-      params: { org },
-    });
     return res.data;
   };
 
@@ -105,6 +113,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
       getRepos,
       getAllOrganizationData,
       getAssignments,
+      getDetailedAssignments,
       getCommits,
       getRepoTree,
       getFileContents,

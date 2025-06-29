@@ -4,6 +4,7 @@ import {
   getOrganizations,
   getOrganization,
   getAssignments,
+  getAssignment,
   getStudentReposForAssignment,
   getCommits,
   getRepoTree,
@@ -41,6 +42,48 @@ export async function handleGetAssignments(
   } catch (error: any) {
     console.error("Failed to fetch assignments:", error);
     res.status(500).json({ error: "Failed to fetch assignments" });
+  }
+}
+
+export async function handleGetAssignmentsDetails(req: Request, res: Response): Promise<void> {
+  const orgName = req.params.orgName;
+
+  if (!orgName) {
+    res.status(400).json({ error: "Organization login not provided" });
+    return;
+  }
+
+  try {
+    const assignments = await getAssignments(orgName);
+
+    const detailedAssignments = await Promise.all(
+      assignments.map(async (assignment) => {
+        try {
+          const details = await getAssignment(assignment.id);
+          return {
+            name: assignment.name,
+            accepted: details.accepted,
+            submitted: details.submitted,
+            passing: details.passing, 
+            deadline: details.deadline,
+          };
+        } catch (err) {
+          console.warn(`Failed to fetch details for assignment ${assignment.name}:`, err);
+          return {
+            name: assignment.name,
+            submitted: 0,
+            accepted: 0,
+            passing: 0,
+            deadline: null,
+          };
+        }
+      })
+    );
+
+    res.json(detailedAssignments);
+  } catch (error: any) {
+    console.error("Failed to fetch assignments' details:", error);
+    res.status(500).json({ error: "Failed to fetch assignments' details" });
   }
 }
 

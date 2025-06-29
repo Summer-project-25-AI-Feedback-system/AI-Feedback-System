@@ -3,19 +3,20 @@ import ProgressBar from './ProgressBar';
 
 interface SidebarCardProps {
   name: string;
-  acceptedAssignments: number
+  acceptedAssignments: number;
   submittedAssignments: number;
   totalAssignments: number;
-  assignmentDeadline: Date;
+  assignmentDeadline: Date | null;
   linkTo: string;
 }
 
 export default function SidebarCard({name, acceptedAssignments, submittedAssignments, totalAssignments, assignmentDeadline, linkTo }: SidebarCardProps) {
   const navigate = useNavigate();
   const now = new Date();
-  const hasDeadlinePassed = assignmentDeadline.getTime() < now.getTime();
+  const hasDeadlinePassed = assignmentDeadline !== null ? assignmentDeadline.getTime() < now.getTime() : false;
 
   const deadlineInfo = () => {
+    if (!assignmentDeadline) return "No deadline";
     const diff = assignmentDeadline.getTime() - now.getTime();
     if (diff > 0) {
       return `Deadline: ${assignmentDeadline.toLocaleDateString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric'})}`;

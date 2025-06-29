@@ -2,7 +2,7 @@ import { Router } from "express";
 import passport from "../utils/passport";
 import dotenv from "dotenv";
 import { githubCallback, getCurrentUser, logout } from "../controllers/authController";
-import { upsertUser } from "../services/supabase/UserService"; 
+import { upsertUser } from "../services/supabase/userService"; 
 
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
