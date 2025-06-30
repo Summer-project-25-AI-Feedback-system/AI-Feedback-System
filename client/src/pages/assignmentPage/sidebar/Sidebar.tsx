@@ -3,17 +3,10 @@ import { useParams } from 'react-router-dom';
 import SidebarButton from './SidebarButton';
 import SidebarCard from './SidebarCard';
 import SidebarPagination from './SidebarPagination';
-
-type RosterAndOrgDataAssignmentInfo = {
-  name: string;
-  submitted: number;
-  accepted: number;
-  total: number;
-  deadline: Date;
-};
+import type { EnrichedAssignmentInfo } from 'src/types/Assignment';
 
 interface SidebarProps {
-  assignments: RosterAndOrgDataAssignmentInfo[];
+  assignments: EnrichedAssignmentInfo[];
 } 
 
 export default function Sidebar({ assignments } : SidebarProps) {
@@ -23,9 +16,10 @@ export default function Sidebar({ assignments } : SidebarProps) {
 
   const sortedAssignments = [...assignments].sort((a, b) => {
     const now = new Date();
-    const getRank = (assignment: RosterAndOrgDataAssignmentInfo) => {
+    const getRank = (assignment: EnrichedAssignmentInfo) => {
+      if (!assignment.deadline) return 2; // Lowest priority (No deadline)
       const isOverdue = assignment.deadline <= now;
-      const isComplete = assignment.submitted >= assignment.total;
+      const isComplete = assignment.submitted >= assignment.totalStudents;
       if (isOverdue && !isComplete) return 0; // Highest priority 
       if (!isOverdue && !isComplete) return 1; // Second priority
       return 2; // Lowest priority (Completed)
@@ -33,6 +27,9 @@ export default function Sidebar({ assignments } : SidebarProps) {
     const rankA = getRank(a);
     const rankB = getRank(b);
     if (rankA !== rankB) return rankA - rankB; 
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
     return a.deadline.getTime() - b.deadline.getTime();
   });
 
@@ -54,7 +51,7 @@ export default function Sidebar({ assignments } : SidebarProps) {
             name={assignment.name}
             acceptedAssignments={assignment.accepted}
             submittedAssignments={assignment.submitted}
-            totalAssignments={assignment.total}
+            totalAssignments={assignment.totalStudents}
             assignmentDeadline={assignment.deadline}
             linkTo={`/orgs/${orgName}/analytics?tab=missing-submissions&assignment=${encodeURIComponent(assignment.name)}`}
           />

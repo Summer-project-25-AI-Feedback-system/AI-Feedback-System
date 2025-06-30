@@ -8,6 +8,7 @@ import {
   handleGetAllOrganizationData,
   handleGetCommits,
   handleCompareCommits,
+  handleGetAssignmentsDetails,
 } from "../controllers/githubController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
@@ -17,6 +18,7 @@ router.use(isAuthenticated);
 
 router.get("/orgs", handleGetOrganizations);
 router.get("/orgs/:orgName/assignments", handleGetAssignments);
+router.get("/orgs/:orgName/assignmentsDetails", handleGetAssignmentsDetails);
 router.get(
   "/orgs/:orgName/assignments/:assignmentName/repos",
   handleGetStudentReposForAssignment
@@ -34,6 +36,5 @@ router.get(
 // Reporting route
 router.get("/org-report", handleGetAllOrganizationData);
 
-//
 
 export default router;

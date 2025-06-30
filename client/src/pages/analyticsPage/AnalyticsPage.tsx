@@ -13,6 +13,7 @@ import Tabs from "../../components/Tabs";
 // delete this later
 const mockOrgData = {
   org: "Mock University",
+  orgId: 2,
   assignments: ["intro-to-data", "java-assignment", "css-intro-assignment"],
   submissions: [
     {
@@ -111,14 +112,15 @@ export default function AnalyticsPage() {
     setSearchParams(params);
   }
 
-  const tabs = useMemo(
-    () => [
+  const tabs = useMemo( () => {
+    if (!orgData) return [];
+    return [
       {
         id: "average-points",
         label: "Average Assignment Points",
         content: (
           <AveragePointsChart
-            orgData={mockOrgData}
+            orgData={orgData}
             maxPointsPerAssignment={maxPointsPerAssignment}
           />
         ),
@@ -133,10 +135,10 @@ export default function AnalyticsPage() {
       {
         id: "missing-submissions",
         label: "Missing Submissions",
-        content: <MissingSubmissionsList orgData={mockOrgData} />,
+        content: <MissingSubmissionsList orgData={orgData} />,
       },
-    ],[]
-  );
+    ]
+  }, [orgData]);
 
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12"> 

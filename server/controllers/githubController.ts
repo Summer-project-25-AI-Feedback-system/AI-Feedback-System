@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { extractAssignmentName } from "../utils/githubUtils";
 import {
   getOrganizations,
+  getOrganization,
   getAssignments,
+  getAssignment,
   getStudentReposForAssignment,
   getCommits,
   getRepoTree,
@@ -40,6 +42,48 @@ export async function handleGetAssignments(
   } catch (error: any) {
     console.error("Failed to fetch assignments:", error);
     res.status(500).json({ error: "Failed to fetch assignments" });
+  }
+}
+
+export async function handleGetAssignmentsDetails(req: Request, res: Response): Promise<void> {
+  const orgName = req.params.orgName;
+
+  if (!orgName) {
+    res.status(400).json({ error: "Organization login not provided" });
+    return;
+  }
+
+  try {
+    const assignments = await getAssignments(orgName);
+
+    const detailedAssignments = await Promise.all(
+      assignments.map(async (assignment) => {
+        try {
+          const details = await getAssignment(assignment.id);
+          return {
+            name: assignment.name,
+            accepted: details.accepted,
+            submitted: details.submitted,
+            passing: details.passing, 
+            deadline: details.deadline,
+          };
+        } catch (err) {
+          console.warn(`Failed to fetch details for assignment ${assignment.name}:`, err);
+          return {
+            name: assignment.name,
+            submitted: 0,
+            accepted: 0,
+            passing: 0,
+            deadline: null,
+          };
+        }
+      })
+    );
+
+    res.json(detailedAssignments);
+  } catch (error: any) {
+    console.error("Failed to fetch assignments' details:", error);
+    res.status(500).json({ error: "Failed to fetch assignments' details" });
   }
 }
 
@@ -158,26 +202,34 @@ export async function handleGetAllOrganizationData(
   res: Response
 ): Promise<void> {
   const org = req.query.org as string;
+
   if (!org) {
     res.status(400).json({ error: "Missing organization parameter" });
     return;
   }
+
   try {
+    const orgInfo = await getOrganization(org);
     const repos = await getStudentReposForAssignment(org);
     const assignmentSet = new Set<string>();
     const studentMap = new Map<string, Record<string, null>>();
+
     for (const repo of repos) {
       const assignment = extractAssignmentName(repo.name);
       assignmentSet.add(assignment);
       const student = repo.collaborators?.[0]?.name || "Unknown Student";
       // TODO: get grade here later from the db (as given by the AI)
+
       if (!studentMap.has(student)) {
         studentMap.set(student, {});
       }
+      
       studentMap.get(student)![assignment] = null;
     }
+
     const responseData = {
       org,
+      orgId: orgInfo.id,
       assignments: Array.from(assignmentSet),
       submissions: Array.from(studentMap.entries()).map(
         ([student, grades]) => ({
@@ -186,6 +238,7 @@ export async function handleGetAllOrganizationData(
         })
       ),
     };
+  
     res.json(responseData);
   } catch (error) {
     console.error("Failed to get all data:", error);

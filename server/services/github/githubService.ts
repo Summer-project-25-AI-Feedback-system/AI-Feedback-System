@@ -6,6 +6,7 @@ import {
   RepoInfo,
   CommitInfo,
   CompareCommitsInfo,
+  DetailedAssignmentInfo,
 } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
@@ -19,6 +20,19 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
       avatarUrl: org.avatar_url,
     })
   );
+}
+
+export async function getOrganization(orgName: string): Promise<OrgInfo> {
+  const octokit = await getOctokit();
+
+  const { data: org } = await octokit.rest.orgs.get({ org: orgName });
+  
+  return {
+    id: org.id,
+    name: org.login,
+    description: org.description,
+    avatarUrl: org.avatar_url,
+  };
 }
 
 export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
@@ -57,6 +71,27 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   });
 
   return Array.from(assignmentMap.values());
+}
+
+export async function getAssignment(assignmentId: number): Promise<DetailedAssignmentInfo> {
+  const octokit = await getOctokit();
+
+  // this call is new so it's not yet in octokit as a function (update later once it is)
+  const { data: assignment } = await octokit.request('GET /assignments/{assignment_id}', {
+    assignment_id: assignmentId,
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  })
+  
+  return {
+    id: assignment.id,
+    name: assignment.title,
+    accepted: assignment.accepted,
+    submitted: assignment.submitted,
+    passing: assignment.passing,
+    deadline:  assignment.deadline ? new Date(assignment.deadline) : null
+  };
 }
 
 export async function getStudentReposForAssignment(

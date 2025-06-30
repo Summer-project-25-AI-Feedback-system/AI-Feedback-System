@@ -1,5 +1,3 @@
-// TODO: add users?
-
 export interface Organizations {
   id?: number;
   name: string;
@@ -20,18 +18,22 @@ export interface Assignments {
 }
 
 export interface Rosters {
-  id: string,
-  organization_id: string,
+  id?: string,
+  organization_id?: string,
   amount_of_students: number
 }
 
 export interface RosterStudents {
-  id: string,
-  roster_id: string,
+  id?: string,
+  roster_id?: string,
   github_roster_identifier: string,
   github_username?: string,
   github_user_id?: string,
   github_display_name?: string
+}
+
+export interface RosterWithStudents extends Rosters {
+  roster_students: RosterStudents[];
 }
 
 export interface AiEvaluations {

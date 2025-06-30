@@ -6,10 +6,6 @@ export const getRoster = async (req: Request, res: Response) => {
 
   try {
     const roster = await fetchRoster(organizationId);
-    if (!roster) {
-      res.status(204).send(); // No Content
-      return;
-    }
 
     res.status(200).json(roster);
   } catch (error: any) {

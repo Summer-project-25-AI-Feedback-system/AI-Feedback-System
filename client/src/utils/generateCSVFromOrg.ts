@@ -10,8 +10,8 @@ Willie Wonka        willie                23234             Error               
 
 */
 
+import type { RosterWithStudents } from "@shared/supabaseInterfaces";
 import type { OrgReport } from "src/types/OrgReport";
-import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 
 function downloadCSV(csvContent: string, filename: string = "report.csv") {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -25,7 +25,7 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
   document.body.removeChild(link);
 }
 
-export function generateCSVFromOrg(orgData: OrgReport, roster: StudentInStudentRoster[]) {
+export function generateCSVFromOrg(orgData: OrgReport, roster: RosterWithStudents) {
   const assignmentNames = orgData.assignments;
   const headerRow = ["Name", "GitHub Username", "Roster Identifier", ...assignmentNames, "Total Points"]; 
   const submissionMap = new Map(
@@ -35,30 +35,33 @@ export function generateCSVFromOrg(orgData: OrgReport, roster: StudentInStudentR
     ["Overview of Student Points and Submissions"], // title row
     headerRow, // header row
   ];
-  for (const student of roster) {
-    if (!student.identifier) continue;
-    const scores = submissionMap.get(student.github_username) || {};
-    const row: (string | number)[] = [
-      student.name || "N/A",
-      student.github_username || "N/A",
-      student.identifier || "N/A",
-    ];
-    let total = 0;
-    let count = 0;
-    for (const assignment of assignmentNames) {
-      const points = scores[assignment];
-      if (typeof points === "number") {
-        row.push(points);
-        total += points;
-        count++;
-      } else if (points === "Error") {
-        row.push("Error");
-      } else {
-        row.push("N/A");
+  const students = roster.roster_students;
+  if (Array.isArray(students)) {
+    for (const student of students) {
+      if (!student.github_roster_identifier) continue;
+      const scores = student.github_username? submissionMap.get(student.github_username) || {} : {};
+      const row: (string | number)[] = [
+        student.github_display_name || "N/A",
+        student.github_username || "N/A",
+        student.github_roster_identifier || "N/A",
+      ];
+      let total = 0;
+      let count = 0;
+      for (const assignment of assignmentNames) {
+        const points = scores[assignment];
+        if (typeof points === "number") {
+          row.push(points);
+          total += points;
+          count++;
+        } else if (points === "Error") {
+          row.push("Error");
+        } else {
+          row.push("N/A");
+        }
       }
+      row.push(count > 0 ? total : "N/A");
+      csvLines.push(row.map(String));
     }
-    row.push(count > 0 ? total : "N/A");
-    csvLines.push(row.map(String));
   }
 
   const csvContent = csvLines.map((row) => row.join(";")).join("\n");

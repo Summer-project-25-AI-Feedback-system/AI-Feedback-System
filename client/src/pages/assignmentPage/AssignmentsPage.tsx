@@ -16,55 +16,14 @@ import Sidebar from "./sidebar/Sidebar";
 import Spinner from "../../components/Spinner";
 import GetCSVFileButton from "../../components/GetCSVFileButton";
 import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments'
-
-const allAssignments = [
-  {
-    name: "Assignment 1",
-    submitted: 5,
-    accepted: 5,
-    total: 10,
-    deadline: new Date('2025-04-01T23:59:59Z'),
-  },
-  {
-    name: "Assignment 2",
-    submitted: 10,
-    accepted: 10,
-    total: 10,
-    deadline: new Date('2025-05-01T23:59:59Z'),
-  },
-  {
-    name: "Assignment 3",
-    submitted: 7,
-    accepted: 8,
-    total: 10,
-    deadline: new Date('2025-06-01T23:59:59Z'),
-  },
-  {
-    name: "Assignment 4",
-    submitted: 3,
-    accepted: 4,
-    total: 10,
-    deadline: new Date('2025-04-01T23:59:59Z'),
-  },
-  {
-    name: "Assignment 5",
-    submitted: 10,
-    accepted: 10,
-    total: 10,
-    deadline: new Date('2025-04-10T23:59:59Z'),
-  },
-  {
-    name: "Assignment 6",
-    submitted: 6,
-    accepted: 8,
-    total: 10,
-    deadline: new Date('2025-06-10T23:59:59Z'),
-  },
-];
+import type { RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { EnrichedAssignmentInfo } from "src/types/Assignment";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [detailedAssignments, setDetailedAssignments] = useState<EnrichedAssignmentInfo[]>([]);
+  const [roster, setRoster] = useState<RosterWithStudents | null>(null);
   const github = useGitHub();
   const supabase = useSupabase();
   const navigate = useNavigate();
@@ -97,15 +56,31 @@ export default function AssignmentsPage() {
           setAssignments(fetchedAssignments)
           const assignments = mapToSupabaseAssignments(fetchedAssignments, orgId)
           supabase.addAssignments(orgId, assignments)
+          supabase.getRoster(orgId).then((fetchedRoster) => {
+            setRoster(fetchedRoster)
+            const students = fetchedRoster?.amount_of_students ?? 0
+            github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
+              const enrichedAssignments: EnrichedAssignmentInfo[] = fetchedDetailedAssignments.map((assignment) => ({
+                id: assignment.id,
+                name: assignment.name,
+                accepted: assignment.accepted,
+                submitted: assignment.submitted,
+                passing: assignment.passing,
+                totalStudents: students,
+                deadline: assignment.deadline ? assignment.deadline : null,
+              }));
+              setDetailedAssignments(enrichedAssignments)
+            })
+          })
         })
         .catch(console.error)
         .finally(() => setLoading(false));
     }
-  }, [orgName, github]);
+  }, [orgName, github, supabase]);
 
   return (
     <div className="flex flex-row min-h-screen">
-      <Sidebar assignments={allAssignments}/>
+      <Sidebar assignments={detailedAssignments}/>
       <div className="flex-1 flex justify-center"> 
       <div className="flex flex-col space-y-10 pr-4 pt-4 md:pr-12 md:pt-12 pl-0">
         <div className="flex flex-col space-y-6">
@@ -120,7 +95,7 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
             <BasicButton text="Go To Analytics Page" onClick={handleAnalyticsClick}/>
-            <GetCSVFileButton text={"Export CSV Report"} orgName={orgName}/>
+            <GetCSVFileButton text={"Export CSV Report"} orgName={orgName} roster={roster}/>
           </div>
         </div>
         {loading ? (

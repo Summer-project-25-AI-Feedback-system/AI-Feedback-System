@@ -1,11 +1,11 @@
-import type { StudentInStudentRoster } from "src/types/StudentInStudentRoster";
 import { useSearchParams } from "react-router-dom";
 import type { OrgReport } from "src/types/OrgReport";
 import StudentTable from "./StudentTable";
 import Tabs from "../../../../components/Tabs";
+import type { RosterWithStudents } from "@shared/supabaseInterfaces";
 
 type StudentTableWithTabsProps = {
-  roster: StudentInStudentRoster[];
+  roster: RosterWithStudents;
   orgData: OrgReport;
   selectedTab: string;
   orgName?: string;

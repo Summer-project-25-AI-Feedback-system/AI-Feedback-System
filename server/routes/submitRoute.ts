@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { upsertUser } from "../services/supabase/UserService";
+import { upsertUser } from "../services/supabase/userService";
 
 const router = Router();
 

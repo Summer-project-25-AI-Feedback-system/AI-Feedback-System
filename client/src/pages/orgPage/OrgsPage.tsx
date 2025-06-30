@@ -33,7 +33,6 @@ export default function OrgsPage() {
     org.name.toLowerCase().includes(term.toLowerCase())
   );
   const sortedOrgs = sortData(filteredOrgs, sortOrder);
-  console.log("orgs:", orgs);
 
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
