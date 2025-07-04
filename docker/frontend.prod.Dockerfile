@@ -23,11 +23,14 @@ RUN cd client && npm run build
 # (Optional) Use nginx to serve the built files
 FROM nginx:alpine
 
-# Set working directory for clarity (optional)
+# Set working directory for clarity
 WORKDIR /usr/share/nginx/html
 
 # Copy built files into nginx html dir
 COPY --from=builder /app/client/dist /usr/share/nginx/html
+
+# Copy custom nginx config
+COPY ./docker/nginx/frontend.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
