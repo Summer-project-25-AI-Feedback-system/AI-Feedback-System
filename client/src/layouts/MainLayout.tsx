@@ -10,6 +10,8 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isLoginPage = location.pathname === "/";
+
   useEffect(() => {
     const checkAndRedirect = async () => {
       await refreshUser?.();
@@ -35,7 +37,7 @@ export default function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header loggedIn={!!isLogin} onClick={handleHeaderButtonClick} />
-      <main className="flex-1 flex justify-center items-start">
+      <main className={`flex-1 flex justify-center ${isLoginPage ? "items-center" : "items-start"}`}>
           <div className="w-full max-w-screen-xl">
             <Outlet />
           </div>

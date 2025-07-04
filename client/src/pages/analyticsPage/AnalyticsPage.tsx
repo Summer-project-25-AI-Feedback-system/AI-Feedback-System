@@ -4,11 +4,11 @@ import { useGitHub } from "../../context/useGitHub";
 import type { OrgReport } from "src/types/OrgReport";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
-import AveragePointsChart from "./averageAssignmentPointsTab/AveragePointsChart";
 import MissingSubmissionsList from "./missingSubmissionsTab/MissingSubmissionsTab";
 import Spinner from "../../components/Spinner";
 import CommonIssuesTab from "./commonIssuesTab/CommonIssuesTab";
 import Tabs from "../../components/Tabs";
+import AveragePointsTab from "./averageAssignmentPointsTab/AveragePointsTab";
 
 // delete this later
 // const mockOrgData = {
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
         id: "average-points",
         label: "Average Assignment Points",
         content: (
-          <AveragePointsChart
+          <AveragePointsTab
             orgData={orgData}
             maxPointsPerAssignment={maxPointsPerAssignment}
           />

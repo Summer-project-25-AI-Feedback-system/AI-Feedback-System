@@ -14,7 +14,7 @@ import type { SortOption } from "../../utils/sortingUtils";
 import Sidebar from "./sidebar/Sidebar";
 import Spinner from "../../components/Spinner";
 import GetCSVFileButton from "../../components/GetCSVFileButton";
-import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments'
+import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments';
 import type { RosterWithStudents } from "@shared/supabaseInterfaces";
 import type { EnrichedAssignmentInfo } from "src/types/Assignment";
 
@@ -28,6 +28,8 @@ export default function AssignmentsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [rosterLoaded, setRosterLoaded] = useState(false);
+  const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
 
   const filteredAssignments = useFilteredList(
@@ -51,13 +53,14 @@ export default function AssignmentsPage() {
         .then((fetchedAssignments) => { 
           setAssignments(fetchedAssignments)
           github.getAllOrganizationData(orgName).then((fetchedOrgData) => {
-            console.log("the fetched orgData ID: " + fetchedOrgData.orgId)
             const assignments = mapToSupabaseAssignments(fetchedAssignments, fetchedOrgData.orgId)
             supabase.addAssignments(fetchedOrgData.orgId, assignments)
             supabase.getRoster(fetchedOrgData.orgId).then((fetchedRoster) => {
               setRoster(fetchedRoster)
+              setRosterLoaded(true);
               const students = fetchedRoster?.amount_of_students ?? 0
-              github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
+
+              /*github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
                 const enrichedAssignments: EnrichedAssignmentInfo[] = fetchedDetailedAssignments.map((assignment) => ({
                   id: assignment.id,
                   name: assignment.name,
@@ -66,22 +69,40 @@ export default function AssignmentsPage() {
                   passing: assignment.passing,
                   totalStudents: students,
                   deadline: assignment.deadline ? assignment.deadline : null,
-                }));
-                setDetailedAssignments(enrichedAssignments)
-              })
+                }));*/
+
+              // temporarily hardcoded until the assignment details issue is fixed
+              const enrichedAssignments: EnrichedAssignmentInfo[] = [
+                {
+                  id: 1234,
+                  name: "assignment name",
+                  accepted: 2,
+                  submitted: 1,
+                  passing: 1,
+                  totalStudents: students,
+                  deadline: null,
+                }
+              ];
+              setDetailedAssignments(enrichedAssignments)
+              setAssignmentsLoaded(true);
             })
           })
         })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+        .catch(console.error);
     }
   }, [orgName, github, supabase]);
 
+  useEffect(() => {
+    if (rosterLoaded && assignmentsLoaded) {
+      setLoading(false);
+    }
+  }, [rosterLoaded, assignmentsLoaded]);
+
   return (
-    <div className="flex flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       <Sidebar assignments={detailedAssignments}/>
       <div className="flex-1 flex justify-center"> 
-      <div className="flex flex-col space-y-10 pr-4 pt-4 md:pr-12 md:pt-12 pl-0">
+      <div className="flex flex-col space-y-10 pr-4 pt-4 pl-4 md:pr-12 md:pt-12">
         <div className="flex flex-col space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex space-x-4">
@@ -100,14 +121,16 @@ export default function AssignmentsPage() {
         {loading ? (
           <Spinner />
         ) : (
-          <BasicList
-            type="assignment"
-            items={sortedAssignments}
-            orgName={orgName!}
-            isLoading={loading}
-            sortOrder={sortOrder}
-            onSortChange={setSortOrder}
-          />
+          <div>
+            <BasicList
+              type="assignment"
+              items={sortedAssignments}
+              orgName={orgName!}
+              isLoading={loading}
+              sortOrder={sortOrder}
+              onSortChange={setSortOrder}
+            />
+          </div>
         )}
       </div>
       </div>
