@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+  title: AI Feedback System API
+  version: 1.0.0
+  description: API documentation for the AFS backend
+servers:
+  - url: https://ai-feedback.live
+    description: Hetzner server
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /api/message:
+    get:
+      summary: Test backend message
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                additionalProperties: false
+
+  /api/auth/login:
+    get:
+      summary: Start GitHub OAuth login
+      responses:
+        "302":
+          description: Redirects to GitHub
+
+  /api/auth/callback:
+    get:
+      summary: GitHub OAuth callback
+      responses:
+        "302":
+          description: Redirects to frontend
+
+  /api/auth/getCurrentUser:
+    get:
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Returns user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+
+  /api/auth/logout:
+    get:
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logout success
