@@ -1007,6 +1007,9 @@ async function main() {
     // Get command line arguments
     const xmlFile = process.argv[2];
     const model = process.argv[3] as AIModel;
+    const organizationId = process.argv[4];
+    const assignmentId = process.argv[5];
+    const rosterStudentId = process.argv[6];
 
     if (!xmlFile) {
       console.error('Please provide XML file name as first argument');
@@ -1045,11 +1048,11 @@ async function main() {
     // Evaluate with selected model
     const feedback = await evaluateWithOpenAI(
       xml,
-      "e94efeb8-5eb6-42bf-8627-60b1c3b6d780",
+      organizationId,
       filePath,
       model,
-      "33e8bc66-5539-4f19-9736-6f1bac4645d0",
-      "ef78ddb4-94a8-4084-8b0a-1353a2b2f959"
+      rosterStudentId,
+      assignmentId
     );
 
     // Save feedback with model-specific filename
