@@ -11,10 +11,15 @@ router.post("/", async (req: Request, res: Response) => {
     res.status(200).json({ message: "User upserted", user });
   } catch (err) {
     console.error("Virhe käyttäjän tallennuksessa:", err);
-    res.status(500).json({ error: err instanceof Error ? err.message : "Käyttäjän tallennus epäonnistui" });
+    res
+      .status(500)
+      .json({
+        error:
+          err instanceof Error
+            ? err.message
+            : "Käyttäjän tallennus epäonnistui",
+      });
   }
-}); 
+});
 
 export default router;
-
-
