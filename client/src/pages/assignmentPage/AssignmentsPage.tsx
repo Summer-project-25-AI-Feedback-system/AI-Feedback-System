@@ -2,7 +2,6 @@ import BasicHeading from "../../components/BasicHeading";
 import BasicList from "../../components/basicList/BasicList";
 import BasicSearchBar from "../../components/BasicSearchBar";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useGitHub } from "../../context/useGitHub";
 import { useSupabase } from "../../context/supabase/useSupabase";
 import { useParams, useNavigate } from "react-router-dom";
@@ -27,12 +26,9 @@ export default function AssignmentsPage() {
   const github = useGitHub();
   const supabase = useSupabase();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState<SortOption>("Newest");
-
-  const { orgId } = location.state || {};
 
   const filteredAssignments = useFilteredList(
     assignments,
@@ -49,27 +45,30 @@ export default function AssignmentsPage() {
   const sortedAssignments = sortData(filteredAssignments, sortOrder);
 
   useEffect(() => {   
-    if (orgName && orgId) {
+    if (orgName) {
       github
         .getAssignments(orgName)
         .then((fetchedAssignments) => { 
           setAssignments(fetchedAssignments)
-          const assignments = mapToSupabaseAssignments(fetchedAssignments, orgId)
-          supabase.addAssignments(orgId, assignments)
-          supabase.getRoster(orgId).then((fetchedRoster) => {
-            setRoster(fetchedRoster)
-            const students = fetchedRoster?.amount_of_students ?? 0
-            github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
-              const enrichedAssignments: EnrichedAssignmentInfo[] = fetchedDetailedAssignments.map((assignment) => ({
-                id: assignment.id,
-                name: assignment.name,
-                accepted: assignment.accepted,
-                submitted: assignment.submitted,
-                passing: assignment.passing,
-                totalStudents: students,
-                deadline: assignment.deadline ? assignment.deadline : null,
-              }));
-              setDetailedAssignments(enrichedAssignments)
+          github.getAllOrganizationData(orgName).then((fetchedOrgData) => {
+            console.log("the fetched orgData ID: " + fetchedOrgData.orgId)
+            const assignments = mapToSupabaseAssignments(fetchedAssignments, fetchedOrgData.orgId)
+            supabase.addAssignments(fetchedOrgData.orgId, assignments)
+            supabase.getRoster(fetchedOrgData.orgId).then((fetchedRoster) => {
+              setRoster(fetchedRoster)
+              const students = fetchedRoster?.amount_of_students ?? 0
+              github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
+                const enrichedAssignments: EnrichedAssignmentInfo[] = fetchedDetailedAssignments.map((assignment) => ({
+                  id: assignment.id,
+                  name: assignment.name,
+                  accepted: assignment.accepted,
+                  submitted: assignment.submitted,
+                  passing: assignment.passing,
+                  totalStudents: students,
+                  deadline: assignment.deadline ? assignment.deadline : null,
+                }));
+                setDetailedAssignments(enrichedAssignments)
+              })
             })
           })
         })
