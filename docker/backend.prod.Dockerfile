@@ -1,14 +1,14 @@
 # Base image
 FROM node:22-alpine AS builder
 
-# Install git (and any other necessary tools)
-RUN apk add --no-cache git
+# # Install git (and any other necessary tools)
+# RUN apk add --no-cache git
 
 # Set working directory
 WORKDIR /app
 
-# Install global CLI: repomix
-RUN npm install -g repomix
+# # Install global CLI: repomix
+# RUN npm install -g repomix
 
 
 # Copy package files and install deps
@@ -25,6 +25,9 @@ RUN cd server && npm run build
 
 # production runtime
 FROM node:22-alpine
+
+# Install git (needed for repomix)
+RUN apk add --no-cache git
 
 # Set working directory to built code
 WORKDIR /app
