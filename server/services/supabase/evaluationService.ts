@@ -1,13 +1,13 @@
 import { AiEvaluations } from "@shared/supabaseInterfaces";
-import { getSupabaseClient } from "../../utils/supabase";
+import { supabase } from "../../utils/supabase";
 
 export const fetchEvaluations = async (organizationId: string, githubAssignmentId?: string, rosterStudentId?: string) => {
-  const supabase = getSupabaseClient();
+  // Käytä suoraan supabase-instanssia
   // ... existing code ...
 };
 
 export const createOrUpdateEvaluations = async (organizationId: string, evaluations: AiEvaluations | AiEvaluations[]) => {
-  const supabase = getSupabaseClient();
+  // Käytä suoraan supabase-instanssia
   
   const evaluationsArray = Array.isArray(evaluations) ? evaluations : [evaluations];
   

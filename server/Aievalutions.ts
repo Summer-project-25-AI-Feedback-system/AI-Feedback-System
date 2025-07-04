@@ -1,6 +1,9 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY);
 import * as fs from "fs/promises";
 import axios from "axios";
-import * as dotenv from "dotenv";
 import * as nodemailer from "nodemailer";
 import path from "path";
 import { simpleGit, SimpleGit } from "simple-git";
@@ -8,9 +11,10 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 import { createOrUpdateEvaluations } from "./services/supabase/evaluationService";
 import type { AiEvaluations } from "@shared/supabaseInterfaces";
+import { supabase } from "./utils/supabase";
 
 // Load environment variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+
 
 
 // OpenAI API response types
@@ -1003,9 +1007,6 @@ async function main() {
     // Get command line arguments
     const xmlFile = process.argv[2];
     const model = process.argv[3] as AIModel;
-    const organizationId = process.argv[4];
-    const rosterStudentId = process.argv[5];
-    const assignmentId = process.argv[6];
 
     if (!xmlFile) {
       console.error('Please provide XML file name as first argument');
@@ -1017,15 +1018,7 @@ async function main() {
       process.exit(1);
     }
 
-    if (!organizationId || !rosterStudentId || !assignmentId) {
-      console.error('Please provide organizationId, rosterStudentId ja assignmentId komentorivillä!');
-      process.exit(1);
-    }
-
     console.log(`Processing file: ${xmlFile} with model: ${model || 'openai (default)'}`);
-    console.log(`organizationId: ${organizationId}`);
-    console.log(`rosterStudentId: ${rosterStudentId}`);
-    console.log(`assignmentId: ${assignmentId}`);
 
     // Check if file exists in output directory
     const filePath = path.join(process.cwd(), 'output', xmlFile);
@@ -1052,11 +1045,11 @@ async function main() {
     // Evaluate with selected model
     const feedback = await evaluateWithOpenAI(
       xml,
-      organizationId,
+      "e94efeb8-5eb6-42bf-8627-60b1c3b6d780",
       filePath,
       model,
-      rosterStudentId,
-      assignmentId
+      "33e8bc66-5539-4f19-9736-6f1bac4645d0",
+      "ef78ddb4-94a8-4084-8b0a-1353a2b2f959"
     );
 
     // Save feedback with model-specific filename
