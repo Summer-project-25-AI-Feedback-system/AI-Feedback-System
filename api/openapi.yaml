@@ -17,6 +17,7 @@ paths:
   /api/message:
     get:
       summary: Test backend message
+      security: []
       responses:
         "200":
           description: Successful response
@@ -33,6 +34,7 @@ paths:
     get:
       summary: Start GitHub OAuth login
       description: Redirects the user to GitHub for authentication.
+      security: []
       responses:
         "302":
           description: Redirect to GitHub OAuth
@@ -41,11 +43,26 @@ paths:
               description: GitHub authorization URL
               schema:
                 type: string
+        "500":
+          description: Authentication setup failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to initialize authentication
 
   /api/auth/callback:
     get:
       summary: GitHub OAuth callback
-      description: Receives the callback from GitHub after authentication and redirects to /orgs on success.
+      description: |
+        Receives the callback from GitHub after authentication:
+        1. Validates GitHub authentication
+        2. Upserts user data to database
+        3. Redirects to /orgs on success
+      security: []
       responses:
         "302":
           description: Redirect to frontend's /orgs page
@@ -56,10 +73,20 @@ paths:
                 type: string
         "500":
           description: Failed to save user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User save failed
 
   /api/auth/getCurrentUser:
     get:
       summary: Get current authenticated user
+      security:
+        - cookieAuth: []
       responses:
         "200":
           description: Returns user information
@@ -69,16 +96,7 @@ paths:
                 type: object
                 properties:
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      username:
-                        type: string
-                      email:
-                        type: string
-                      profileUrl:
-                        type: string
+                    $ref: "#/components/schemas/User"
         "401":
           description: Unauthorized
           content:
@@ -92,28 +110,15 @@ paths:
 
   /api/auth/logout:
     get:
-      summary: Logout current user
+      summary: Logout current user and redirect to frontend
       responses:
-        "200":
-          description: Logout successful
-          content:
-            application/json:
+        "302":
+          description: Redirect to frontend after successful logout
+          headers:
+            Location:
+              description: Frontend URL
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Logged out successfully
-        "500":
-          description: Logout failed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Logout failed
+                type: string
         "401":
           description: Unauthorized
           content:
@@ -124,6 +129,16 @@ paths:
                   error:
                     type: string
                     example: Unauthorized
+        "500":
+          description: Logout failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Logout failed
 
   /api/github/orgs:
     get:
@@ -408,9 +423,26 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: connect.sid
+      name: afs_session
+      description: Session cookie for authenticated users. Set after successful GitHub OAuth login.
 
   schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: GitHub user ID
+        username:
+          type: string
+          description: GitHub username
+        email:
+          type: string
+          description: User's primary email
+        profileUrl:
+          type: string
+          description: URL to GitHub profile
+
     OrgInfo:
       type: object
       properties:

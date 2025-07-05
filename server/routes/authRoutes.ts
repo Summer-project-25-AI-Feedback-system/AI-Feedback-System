@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import passport from "../utils/passport";
-import dotenv from "dotenv";
 import {
   githubCallback,
   getCurrentUser,
