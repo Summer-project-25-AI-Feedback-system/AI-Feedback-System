@@ -45,13 +45,13 @@ paths:
   /api/auth/callback:
     get:
       summary: GitHub OAuth callback
-      description: Receives the callback from GitHub after authentication.
+      description: Receives the callback from GitHub after authentication and redirects to /orgs on success.
       responses:
         "302":
-          description: Redirect to frontend
+          description: Redirect to frontend's /orgs page
           headers:
             Location:
-              description: Frontend URL after login
+              description: Frontend URL after login (redirects to /orgs)
               schema:
                 type: string
         "500":
