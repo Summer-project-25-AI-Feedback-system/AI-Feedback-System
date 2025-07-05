@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import dotenv from "dotenv";
 
 export const githubCallback = (req: Request, res: Response) => {
   // console.log("Authenticated user:", req.user);

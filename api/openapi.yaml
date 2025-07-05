@@ -3,11 +3,15 @@ info:
   title: AI Feedback System API
   version: 1.0.0
   description: API documentation for the AFS backend
+
 servers:
   - url: https://ai-feedback.live
-    description: Hetzner server
-  - url: http://localhost:5000
-    description: Local development server
+    description: Production server (HTTPS only)
+  - url: https://localhost:5000
+    description: Local development server (HTTPS required)
+
+security:
+  - cookieAuth: []
 
 paths:
   /api/message:
@@ -28,16 +32,30 @@ paths:
   /api/auth/login:
     get:
       summary: Start GitHub OAuth login
+      description: Redirects the user to GitHub for authentication.
       responses:
         "302":
-          description: Redirects to GitHub
+          description: Redirect to GitHub OAuth
+          headers:
+            Location:
+              description: GitHub authorization URL
+              schema:
+                type: string
 
   /api/auth/callback:
     get:
       summary: GitHub OAuth callback
+      description: Receives the callback from GitHub after authentication.
       responses:
         "302":
-          description: Redirects to frontend
+          description: Redirect to frontend
+          headers:
+            Location:
+              description: Frontend URL after login
+              schema:
+                type: string
+        "500":
+          description: Failed to save user
 
   /api/auth/getCurrentUser:
     get:
@@ -50,16 +68,505 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      profileUrl:
+                        type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
-                  username:
-                    type: string
-                  email:
-                    type: string
+                    example: Unauthorized
 
   /api/auth/logout:
     get:
       summary: Logout current user
       responses:
         "200":
-          description: Logout success
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out successfully
+        "500":
+          description: Logout failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Logout failed
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+
+  /api/github/orgs:
+    get:
+      summary: List GitHub organizations accessible to the user
+      responses:
+        "200":
+          description: List of organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: "#/components/schemas/OrgInfo"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch organizations
+
+  /api/github/orgs/{orgName}/assignments:
+    get:
+      summary: List assignments in an organization
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: "#/components/schemas/AssignmentInfo"
+        "400":
+          description: Organization login not provided
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch assignments
+
+  /api/github/orgs/{orgName}/assignmentsDetails:
+    get:
+      summary: Get detailed information about assignments in an organization
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detailed assignment information
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: "#/components/schemas/DetailedAssignmentInfo"
+        "400":
+          description: Organization login not provided
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch assignments' details
+
+  /api/github/orgs/{orgName}/assignments/{assignmentName}/repos:
+    get:
+      summary: Get student repositories for a specific assignment
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: assignmentName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of student repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: "#/components/schemas/RepoInfo"
+        "400":
+          description: Missing organization or assignment name
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch student repos
+
+  /api/github/repos/{orgName}/{repoName}/commits:
+    get:
+      summary: Get commit history for a repository
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: repoName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of commits
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: "#/components/schemas/CommitInfo"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch commits
+
+  /api/github/repos/{orgName}/{repoName}/tree:
+    get:
+      summary: Get repository file tree
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: repoName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of file paths in the repository
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  type: string
+        "400":
+          description: Organization and repository names are required
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to fetch repository tree
+
+  /api/github/repos/{orgName}/{repoName}/contents:
+    get:
+      summary: Get contents of a specific file in a repository
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: repoName
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: File contents
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Organization, repository and path are required
+        "401":
+          description: Unauthorized
+        "404":
+          description: File not found
+        "500":
+          description: Failed to fetch file contents
+
+  /api/github/repos/{orgName}/{repoName}/compare/{base}/{head}:
+    get:
+      summary: Compare two commits in a repository
+      parameters:
+        - in: path
+          name: orgName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: repoName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: base
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: head
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Comparison results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompareCommitsInfo"
+        "400":
+          description: Organization, repository, base and head commits are required
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to compare commits
+
+  /api/github/org-report:
+    get:
+      summary: Get comprehensive report for an organization
+      parameters:
+        - in: query
+          name: org
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Organization report data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  org:
+                    type: string
+                  orgId:
+                    type: integer
+                  assignments:
+                    type: array
+                    maxItems: 100
+                    items:
+                      type: string
+                  submissions:
+                    type: array
+                    maxItems: 100
+                    items:
+                      type: object
+                      properties:
+                        student:
+                          type: string
+                        grades:
+                          type: object
+                          additionalProperties: true
+        "400":
+          description: Missing organization parameter
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to generate all data
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+
+  schemas:
+    OrgInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        avatarUrl:
+          type: string
+
+    AssignmentInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        amountOfStudents:
+          type: integer
+        updatedAt:
+          type: string
+
+    DetailedAssignmentInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        accepted:
+          type: integer
+        submitted:
+          type: integer
+        passing:
+          type: integer
+        deadline:
+          type: string
+          format: date-time
+
+    RepoInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        owner:
+          type: string
+        avatarUrl:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        defaultBranch:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        lastPush:
+          type: string
+        lastCommitMessage:
+          type: string
+        lastCommitDate:
+          type: string
+        collaborators:
+          type: array
+          items:
+            $ref: "#/components/schemas/Collaborator"
+
+    Collaborator:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        htmlUrl:
+          type: string
+        permissions:
+          type: object
+          properties:
+            admin:
+              type: boolean
+            maintain:
+              type: boolean
+            push:
+              type: boolean
+            triage:
+              type: boolean
+            pull:
+              type: boolean
+
+    CommitInfo:
+      type: object
+      properties:
+        sha:
+          type: string
+        html_url:
+          type: string
+        commit:
+          type: object
+          properties:
+            message:
+              type: string
+            author:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                date:
+                  type: string
+        author:
+          type: object
+          properties:
+            login:
+              type: string
+            avatar_url:
+              type: string
+            html_url:
+              type: string
+
+    CompareCommitsInfo:
+      type: object
+      properties:
+        status:
+          type: string
+        ahead_by:
+          type: integer
+        behind_by:
+          type: integer
+        total_commits:
+          type: integer
+        commits:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommitInfo"
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              status:
+                type: string
+              additions:
+                type: integer
+              deletions:
+                type: integer
+              changes:
+                type: integer
