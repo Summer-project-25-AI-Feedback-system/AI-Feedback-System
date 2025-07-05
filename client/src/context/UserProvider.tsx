@@ -26,8 +26,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
-    await axios.get(`${baseUrl}/api/auth/logout`, { withCredentials: true });
-    setUser(null);
+    try {
+      await axios.get(`${baseUrl}/api/auth/logout`, { withCredentials: true });
+      setUser(null);
+      window.location.href = "/"; // Force full page reload to home/login page
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   useEffect(() => {
