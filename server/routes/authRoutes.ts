@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import passport from "../utils/passport";
 import dotenv from "dotenv";
 import {
@@ -20,7 +20,7 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("github", { failureRedirect: "/login" }),
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const user = req.user as {
         id: string;
@@ -29,17 +29,17 @@ router.get(
         profileUrl?: string;
       };
 
-      const githubId = user.id;
-      const username = user.username;
-      const email = user.emails?.[0]?.value || ""; // fallback jos ei ole emailia
-      const githubUrl = user.profileUrl || "";
+      await upsertUser(
+        user.id,
+        user.username,
+        user.emails?.[0]?.value || "",
+        user.profileUrl || ""
+      );
 
-      await upsertUser(githubId, username, email, githubUrl);
-
-      res.redirect(`${process.env.FRONTEND_ORIGIN}`);
+      githubCallback(req, res);
     } catch (error) {
-      console.error("Tallennus epäonnistui:", error);
-      res.status(500).json({ error: "Käyttäjän tallennus epäonnistui" });
+      console.error("User save failed:", error);
+      res.status(500).json({ error: "User save failed" });
     }
   }
 );

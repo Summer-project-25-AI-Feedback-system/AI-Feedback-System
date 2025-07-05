@@ -36,12 +36,14 @@ app.use(
   session({
     secret: SESSION_SECRET!,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: isProd, // Set to true only in production (HTTPS)
       sameSite: isProd ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
+    name: "afs_session", // Custom session cookie name
   })
 );
 
