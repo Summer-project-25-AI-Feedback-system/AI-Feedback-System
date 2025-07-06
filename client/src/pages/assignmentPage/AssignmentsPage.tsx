@@ -16,12 +16,12 @@ import Spinner from "../../components/Spinner";
 import GetCSVFileButton from "../../components/GetCSVFileButton";
 import { mapToSupabaseAssignments } from '../../utils/mappings/mapToSupabaseAssignments';
 import type { RosterWithStudents } from "@shared/supabaseInterfaces";
-import type { EnrichedAssignmentInfo } from "src/types/Assignment";
+import type { EnrichedAssignmentClassroomInfo } from "src/types/EnrichedAssignmentClassroomInfo";
 
 export default function AssignmentsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
-  const [detailedAssignments, setDetailedAssignments] = useState<EnrichedAssignmentInfo[]>([]);
+  const [enrichedAssignments, setEnrichedAssignments] = useState<EnrichedAssignmentClassroomInfo[]>([]);
   const [roster, setRoster] = useState<RosterWithStudents | null>(null);
   const github = useGitHub();
   const supabase = useSupabase();
@@ -59,32 +59,19 @@ export default function AssignmentsPage() {
               setRoster(fetchedRoster)
               setRosterLoaded(true);
               const students = fetchedRoster?.amount_of_students ?? 0
-
-              /*github.getDetailedAssignments(orgName).then((fetchedDetailedAssignments) => {
-                const enrichedAssignments: EnrichedAssignmentInfo[] = fetchedDetailedAssignments.map((assignment) => ({
+              github.getAssignmentClassroomInfo(orgName).then((fetchedAssignmentClassroomInfo) => {
+                const enrichedAssignments: EnrichedAssignmentClassroomInfo[] = fetchedAssignmentClassroomInfo.map((assignment) => ({
                   id: assignment.id,
                   name: assignment.name,
                   accepted: assignment.accepted,
                   submitted: assignment.submitted,
                   passing: assignment.passing,
                   totalStudents: students,
-                  deadline: assignment.deadline ? assignment.deadline : null,
-                }));*/
-
-              // temporarily hardcoded until the assignment details issue is fixed
-              const enrichedAssignments: EnrichedAssignmentInfo[] = [
-                {
-                  id: 1234,
-                  name: "assignment name",
-                  accepted: 2,
-                  submitted: 1,
-                  passing: 1,
-                  totalStudents: students,
-                  deadline: null,
-                }
-              ];
-              setDetailedAssignments(enrichedAssignments)
-              setAssignmentsLoaded(true);
+                  deadline: assignment.deadline ? new Date(assignment.deadline) : null,
+                }));
+                setEnrichedAssignments(enrichedAssignments)
+                setAssignmentsLoaded(true);
+              })
             })
           })
         })
@@ -100,7 +87,7 @@ export default function AssignmentsPage() {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      <Sidebar assignments={detailedAssignments}/>
+      <Sidebar assignments={enrichedAssignments}/>
       <div className="flex-1 flex justify-center"> 
       <div className="flex flex-col space-y-10 pr-4 pt-4 pl-4 md:pr-12 md:pt-12">
         <div className="flex flex-col space-y-6">

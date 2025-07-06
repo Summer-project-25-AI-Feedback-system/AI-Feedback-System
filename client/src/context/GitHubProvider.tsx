@@ -39,8 +39,8 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
-  const getDetailedAssignments = async (orgName: string): Promise<DetailedAssignmentInfo[]> => {
-    const res = await axios.get(`${baseUrl}/api/github/orgs/${orgName}/assignmentsDetails`, {
+  const getAssignmentClassroomInfo = async (orgName: string): Promise<DetailedAssignmentInfo[]> => {
+    const res = await axios.get(`${baseUrl}/api/github/orgs/${orgName}/assignmentClassroomInfo`, {
       withCredentials: true,
     });
     return res.data;
@@ -113,7 +113,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
       getRepos,
       getAllOrganizationData,
       getAssignments,
-      getDetailedAssignments,
+      getAssignmentClassroomInfo,
       getCommits,
       getRepoTree,
       getFileContents,

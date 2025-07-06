@@ -4,7 +4,7 @@ import {
   getOrganizations,
   getOrganization,
   getAssignments,
-  getAssignment,
+  getAssignmentClassroomInfo,
   getStudentReposForAssignment,
   getCommits,
   getRepoTree,
@@ -45,7 +45,7 @@ export async function handleGetAssignments(
   }
 }
 
-export async function handleGetAssignmentsDetails(req: Request, res: Response): Promise<void> {
+export async function handleGetAssignmentClassroomInfo(req: Request, res: Response): Promise<void> {
   const orgName = req.params.orgName;
 
   if (!orgName) {
@@ -54,36 +54,12 @@ export async function handleGetAssignmentsDetails(req: Request, res: Response): 
   }
 
   try {
-    const assignments = await getAssignments(orgName);
+    const assignmentClassroomInfo = await getAssignmentClassroomInfo(orgName);
 
-    const detailedAssignments = await Promise.all(
-      assignments.map(async (assignment) => {
-        try {
-          const details = await getAssignment(assignment.id);
-          return {
-            name: assignment.name,
-            accepted: details.accepted,
-            submitted: details.submitted,
-            passing: details.passing, 
-            deadline: details.deadline,
-          };
-        } catch (err) {
-          console.warn(`Failed to fetch details for assignment ${assignment.name}:`, err);
-          return {
-            name: assignment.name,
-            submitted: 0,
-            accepted: 0,
-            passing: 0,
-            deadline: null,
-          };
-        }
-      })
-    );
-
-    res.json(detailedAssignments);
-  } catch (error: any) {
-    console.error("Failed to fetch assignments' details:", error);
-    res.status(500).json({ error: "Failed to fetch assignments' details" });
+    res.json(assignmentClassroomInfo);
+  } catch (err) {
+    console.warn(`Failed to fetch assignments' classroom info`, err);
+    res.status(500).json({ error: "Failed to fetch assignments' classroom info" });
   }
 }
 

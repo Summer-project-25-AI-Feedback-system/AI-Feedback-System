@@ -5,7 +5,7 @@ import {
   RepoInfo,
   CommitInfo,
   CompareCommitsInfo,
-  DetailedAssignmentInfo,
+  AssignmentClassroomInfo,
 } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
@@ -72,31 +72,46 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   return Array.from(assignmentMap.values());
 }
 
-export async function getAssignment(
-  assignmentId: number
-): Promise<DetailedAssignmentInfo> {
+export async function getAssignmentClassroomInfo(org: string): Promise<AssignmentClassroomInfo[]> {
   const octokit = await getOctokit();
 
-  // this call is new so it's not yet in octokit as a function (update later once it is)
-  const { data: assignment } = await octokit.request(
-    "GET /assignments/{assignment_id}",
-    {
-      assignment_id: assignmentId,
-      headers: {
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
+  // find classroom that matches our org
+  const { data: classrooms} = await octokit.request('GET /classrooms', {
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28'
     }
+  })
+
+  // match the organization name to the classroom name
+  const matchedClassroom = classrooms.find((c: any) =>
+    c.name.startsWith(org) 
   );
 
-  return {
+  if (!matchedClassroom) {
+    throw new Error(`No classroom found for organization: ${org}`);
+  }
+
+  const classroomId = matchedClassroom.id;
+
+  // get all assignments for that classroom
+  const { data: assignments } = await octokit.request('GET /classrooms/{classroom_id}/assignments', {
+    classroom_id: classroomId,
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  });
+  
+  const detailedAssignments: AssignmentClassroomInfo[] = assignments.map((assignment: any) => ({
     id: assignment.id,
-    name: assignment.title,
-    accepted: assignment.accepted,
-    submitted: assignment.submitted,
-    passing: assignment.passing,
-    deadline: assignment.deadline ? new Date(assignment.deadline) : null,
-  };
-}
+    name: assignment.title ?? 'Untitled Assignment',
+    accepted: assignment.accepted ?? 0,
+    submitted: assignment.submitted ?? 0, // problem with retrieving submission values
+    passing: assignment.passing ?? 0,
+    deadline: assignment.deadline ? new Date(assignment.deadline) : null
+  }));
+
+  return detailedAssignments;
+} 
 
 export async function getStudentReposForAssignment(
   org: string,

@@ -5,17 +5,15 @@ import type {
   User,
   CommitInfo,
   CompareCommitsInfo,
-  DetailedAssignmentInfo,
+  AssignmentClassroomInfo,
 } from "@shared/githubInterfaces";
 
 export interface GitHubContextType {
   getOrganizations: () => Promise<OrgInfo[]>;
   getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
-  getDetailedAssignments: (
-    orgName: string
-  ) => Promise<DetailedAssignmentInfo[]>;
+  getAssignmentClassroomInfo: (orgName: string) => Promise<AssignmentClassroomInfo[]>;
   getRepos: (org: string, assignmentPrefix?: string) => Promise<RepoInfo[]>;
-  getAllOrganizationData: (org: string) => Promise<unknown>;
+  getAllOrganizationData: (org: string) => Promise<any>; // TODO: change the type here
   getCommits: (orgName: string, repoName: string) => Promise<CommitInfo[]>;
   getRepoTree: (orgName: string, repoName: string) => Promise<string[]>;
   getFileContents: (

@@ -1,4 +1,4 @@
-export type EnrichedAssignmentInfo = {
+export type EnrichedAssignmentClassroomInfo = {
   id: number;
   name: string;
   accepted: number;

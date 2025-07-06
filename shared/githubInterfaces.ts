@@ -12,7 +12,7 @@ export interface AssignmentInfo {
   updatedAt: string;
 }
 
-export type DetailedAssignmentInfo = {
+export type AssignmentClassroomInfo = {
   id: number;
   name: string;
   accepted: number;

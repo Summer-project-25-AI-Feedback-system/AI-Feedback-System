@@ -1,27 +1,32 @@
 import { useNavigate } from "react-router-dom";
 import ProgressBar from './ProgressBar';
+import type { EnrichedAssignmentClassroomInfo } from "src/types/EnrichedAssignmentClassroomInfo";
 
 interface SidebarCardProps {
-  name: string;
-  acceptedAssignments: number;
-  submittedAssignments: number;
-  totalAssignments: number;
-  assignmentDeadline: Date | null;
+  assignment: EnrichedAssignmentClassroomInfo;
   linkTo: string;
 }
 
-export default function SidebarCard({name, acceptedAssignments, submittedAssignments, totalAssignments, assignmentDeadline, linkTo }: SidebarCardProps) {
+export default function SidebarCard({assignment, linkTo }: SidebarCardProps) {
+  const {
+    name,
+    accepted,
+    submitted,
+    totalStudents,
+    deadline
+  } = assignment;
+
   const navigate = useNavigate();
   const now = new Date();
-  const hasDeadlinePassed = assignmentDeadline !== null ? assignmentDeadline.getTime() < now.getTime() : false;
+  const hasDeadlinePassed = deadline !== null ? deadline.getTime() < now.getTime() : false;
 
   const deadlineInfo = () => {
-    if (!assignmentDeadline) return "No deadline";
-    const diff = assignmentDeadline.getTime() - now.getTime();
+    if (!deadline) return "No deadline";
+    const diff = deadline.getTime() - now.getTime();
     if (diff > 0) {
-      return `Deadline: ${assignmentDeadline.toLocaleDateString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric'})}`;
+      return `Deadline: ${deadline.toLocaleDateString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric'})}`;
     } else {
-      const msAgo = now.getTime() - assignmentDeadline.getTime();
+      const msAgo = now.getTime() - deadline.getTime();
       const daysAgo = Math.floor(msAgo / (1000 * 60 * 60 * 24));
       if (daysAgo < 1) {
         const hoursAgo = Math.floor(msAgo / (1000 * 60 * 60));
@@ -35,12 +40,12 @@ export default function SidebarCard({name, acceptedAssignments, submittedAssignm
     }
   };
 
-  const progressOfAcceptedAssignments = totalAssignments > 0
-    ? Math.round((acceptedAssignments / totalAssignments) * 100)
+  const progressOfAcceptedAssignments = totalStudents > 0
+    ? Math.round((accepted / totalStudents) * 100)
     : 0;
   
-  const progressOfSubmittedAssignments = totalAssignments > 0
-    ? Math.round((submittedAssignments / totalAssignments) * 100)
+  const progressOfSubmittedAssignments = totalStudents > 0
+    ? Math.round((submitted / totalStudents) * 100)
     : 0;
 
   return (

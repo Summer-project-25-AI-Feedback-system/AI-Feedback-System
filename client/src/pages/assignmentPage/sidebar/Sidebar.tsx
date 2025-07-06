@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 import SidebarButton from './SidebarButton';
 import SidebarCard from './SidebarCard';
 import SidebarPagination from './SidebarPagination';
-import type { EnrichedAssignmentInfo } from 'src/types/Assignment';
+import type { EnrichedAssignmentClassroomInfo } from 'src/types/EnrichedAssignmentClassroomInfo';
 
 interface SidebarProps {
-  assignments: EnrichedAssignmentInfo[];
+  assignments: EnrichedAssignmentClassroomInfo[];
 } 
 
 export default function Sidebar({ assignments } : SidebarProps) {
@@ -16,7 +16,7 @@ export default function Sidebar({ assignments } : SidebarProps) {
 
   const sortedAssignments = [...assignments].sort((a, b) => {
     const now = new Date();
-    const getRank = (assignment: EnrichedAssignmentInfo) => {
+    const getRank = (assignment: EnrichedAssignmentClassroomInfo) => {
       if (!assignment.deadline) return 2; // Lowest priority (No deadline)
       const isOverdue = assignment.deadline <= now;
       const isComplete = assignment.submitted >= assignment.totalStudents;
@@ -48,11 +48,7 @@ export default function Sidebar({ assignments } : SidebarProps) {
         {currentAssignments.map((assignment) => (
           <SidebarCard 
             key={assignment.name}
-            name={assignment.name}
-            acceptedAssignments={assignment.accepted}
-            submittedAssignments={assignment.submitted}
-            totalAssignments={assignment.totalStudents}
-            assignmentDeadline={assignment.deadline}
+            assignment={assignment}
             linkTo={`/orgs/${orgName}/analytics?tab=missing-submissions&assignment=${encodeURIComponent(assignment.name)}`}
           />
         ))}
