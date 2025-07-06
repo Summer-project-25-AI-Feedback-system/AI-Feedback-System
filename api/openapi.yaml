@@ -130,21 +130,30 @@ paths:
 
   /api/github/orgs:
     get:
-      summary: List GitHub organizations accessible to the user
+      summary: List accessible GitHub organizations
+      description: Returns a list of GitHub organizations the authenticated user has access to.
       responses:
         "200":
-          description: List of organizations
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 100
                 items:
                   $ref: "#/components/schemas/OrgInfo"
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch organizations
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
 
   /api/github/orgs/{orgName}/assignments:
     get:
@@ -155,79 +164,91 @@ paths:
           required: true
           schema:
             type: string
+          description: GitHub organization name
       responses:
         "200":
-          description: List of assignments
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 50
                 items:
                   $ref: "#/components/schemas/AssignmentInfo"
         "400":
-          description: Organization login not provided
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: string
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch assignments
+          description: Internal Server Error
 
   /api/github/orgs/{orgName}/assignmentsDetails:
     get:
-      summary: Get detailed information about assignments in an organization
+      summary: Get detailed assignments information
       parameters:
         - in: path
           name: orgName
           required: true
           schema:
             type: string
+          description: GitHub organization name
       responses:
         "200":
-          description: Detailed assignment information
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 50
                 items:
                   $ref: "#/components/schemas/DetailedAssignmentInfo"
         "400":
-          description: Organization login not provided
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch assignments' details
+          description: Internal Server Error
 
   /api/github/orgs/{orgName}/assignments/{assignmentName}/repos:
     get:
-      summary: Get student repositories for a specific assignment
+      summary: Get student repositories for an assignment
       parameters:
         - in: path
           name: orgName
           required: true
           schema:
             type: string
+          description: GitHub organization name
         - in: path
           name: assignmentName
           required: true
           schema:
             type: string
+          description: Assignment name prefix
       responses:
         "200":
-          description: List of student repositories
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 100
                 items:
                   $ref: "#/components/schemas/RepoInfo"
         "400":
-          description: Missing organization or assignment name
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch student repos
+          description: Internal Server Error
 
   /api/github/repos/{orgName}/{repoName}/commits:
     get:
@@ -238,142 +259,154 @@ paths:
           required: true
           schema:
             type: string
+          description: GitHub organization name
         - in: path
           name: repoName
           required: true
           schema:
             type: string
+          description: Repository name
       responses:
         "200":
-          description: List of commits
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 100
                 items:
                   $ref: "#/components/schemas/CommitInfo"
+        "400":
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch commits
+          description: Internal Server Error
 
   /api/github/repos/{orgName}/{repoName}/tree:
     get:
-      summary: Get repository file tree
+      summary: Get repository file tree structure
       parameters:
         - in: path
           name: orgName
           required: true
           schema:
             type: string
+          description: GitHub organization name
         - in: path
           name: repoName
           required: true
           schema:
             type: string
+          description: Repository name
       responses:
         "200":
-          description: List of file paths in the repository
+          description: Successful response
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 50
                 items:
                   type: string
         "400":
-          description: Organization and repository names are required
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to fetch repository tree
+          description: Internal Server Error
 
   /api/github/repos/{orgName}/{repoName}/contents:
     get:
-      summary: Get contents of a specific file in a repository
+      summary: Get file contents
       parameters:
         - in: path
           name: orgName
           required: true
           schema:
             type: string
+          description: GitHub organization name
         - in: path
           name: repoName
           required: true
           schema:
             type: string
+          description: Repository name
         - in: query
           name: path
           required: true
           schema:
             type: string
+          description: File path in repository
       responses:
         "200":
           description: File contents
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
         "400":
-          description: Organization, repository and path are required
+          description: Bad Request
         "401":
           description: Unauthorized
         "404":
-          description: File not found
+          description: File Not Found
         "500":
-          description: Failed to fetch file contents
+          description: Internal Server Error
 
   /api/github/repos/{orgName}/{repoName}/compare/{base}/{head}:
     get:
-      summary: Compare two commits in a repository
+      summary: Compare two commits
       parameters:
         - in: path
           name: orgName
           required: true
           schema:
             type: string
+          description: GitHub organization name
         - in: path
           name: repoName
           required: true
           schema:
             type: string
+          description: Repository name
         - in: path
           name: base
           required: true
           schema:
             type: string
+          description: Base commit SHA
         - in: path
           name: head
           required: true
           schema:
             type: string
+          description: Head commit SHA
       responses:
         "200":
-          description: Comparison results
+          description: Comparison result
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CompareCommitsInfo"
         "400":
-          description: Organization, repository, base and head commits are required
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to compare commits
+          description: Internal Server Error
 
   /api/github/org-report:
     get:
-      summary: Get comprehensive report for an organization
+      summary: Get comprehensive organization report
       parameters:
         - in: query
           name: org
           required: true
           schema:
             type: string
+          description: GitHub organization name
       responses:
         "200":
-          description: Organization report data
+          description: Organization report
           content:
             application/json:
               schema:
@@ -385,12 +418,10 @@ paths:
                     type: integer
                   assignments:
                     type: array
-                    maxItems: 100
                     items:
                       type: string
                   submissions:
                     type: array
-                    maxItems: 100
                     items:
                       type: object
                       properties:
@@ -398,13 +429,14 @@ paths:
                           type: string
                         grades:
                           type: object
-                          additionalProperties: true
+                          additionalProperties:
+                            type: any
         "400":
-          description: Missing organization parameter
+          description: Bad Request
         "401":
           description: Unauthorized
         "500":
-          description: Failed to generate all data
+          description: Internal Server Error
 
 components:
   securitySchemes:
@@ -461,6 +493,13 @@ components:
           type: string
 
     DetailedAssignmentInfo:
+      example:
+        id: 12345
+        name: "assignment-1"
+        accepted: 25
+        submitted: 30
+        passing: 20
+        deadline: "2023-12-31T23:59:59Z"
       type: object
       properties:
         id:

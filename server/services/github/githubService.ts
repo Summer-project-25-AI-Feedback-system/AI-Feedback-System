@@ -1,4 +1,3 @@
-import { promises } from "dns";
 import { getOctokit } from "./octokitClient";
 import {
   OrgInfo,
@@ -10,7 +9,7 @@ import {
 } from "@shared/githubInterfaces";
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
-  const octokit = await getOctokit()
+  const octokit = await getOctokit();
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
   return response.data.map(
     (org): OrgInfo => ({
@@ -26,7 +25,7 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
   const octokit = await getOctokit();
 
   const { data: org } = await octokit.rest.orgs.get({ org: orgName });
-  
+
   return {
     id: org.id,
     name: org.login,
@@ -36,8 +35,8 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 }
 
 export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
-  const octokit = await getOctokit()
-  const repos = await octokit.rest.repos.listForOrg({ 
+  const octokit = await getOctokit();
+  const repos = await octokit.rest.repos.listForOrg({
     org: org,
     type: "all",
     per_page: 100,
@@ -49,7 +48,7 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
     const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
     const updatedAt = repo.updated_at;
 
-    const assignment = assignmentMap.get(baseName); 
+    const assignment = assignmentMap.get(baseName);
 
     if (!assignment) {
       assignmentMap.set(baseName, {
@@ -73,24 +72,29 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   return Array.from(assignmentMap.values());
 }
 
-export async function getAssignment(assignmentId: number): Promise<DetailedAssignmentInfo> {
+export async function getAssignment(
+  assignmentId: number
+): Promise<DetailedAssignmentInfo> {
   const octokit = await getOctokit();
 
   // this call is new so it's not yet in octokit as a function (update later once it is)
-  const { data: assignment } = await octokit.request('GET /assignments/{assignment_id}', {
-    assignment_id: assignmentId,
-    headers: {
-      'X-GitHub-Api-Version': '2022-11-28'
+  const { data: assignment } = await octokit.request(
+    "GET /assignments/{assignment_id}",
+    {
+      assignment_id: assignmentId,
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
     }
-  })
-  
+  );
+
   return {
     id: assignment.id,
     name: assignment.title,
     accepted: assignment.accepted,
     submitted: assignment.submitted,
     passing: assignment.passing,
-    deadline:  assignment.deadline ? new Date(assignment.deadline) : null
+    deadline: assignment.deadline ? new Date(assignment.deadline) : null,
   };
 }
 
@@ -133,7 +137,7 @@ export async function getStudentReposForAssignment(
 }
 
 async function buildSearchQuery(org: string, assignmentPrefix?: string) {
-  const octokit = await getOctokit()
+  const octokit = await getOctokit();
   const query =
     `fork:true org:${org}` +
     (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
@@ -145,7 +149,7 @@ async function buildSearchQuery(org: string, assignmentPrefix?: string) {
 }
 
 async function extractRepositoryDetails(org: string, repo: any) {
-  const octokit = await getOctokit()
+  const octokit = await getOctokit();
   const lastCommit = await octokit.rest.repos.getCommit({
     owner: org,
     repo: repo.name,
@@ -170,7 +174,7 @@ async function extractRepositoryDetails(org: string, repo: any) {
 }
 
 async function getRepoCollaborators(org: string, repo: string) {
-  const octokit = await getOctokit()
+  const octokit = await getOctokit();
   try {
     const response = await octokit.rest.repos.listCollaborators({
       owner: org,
