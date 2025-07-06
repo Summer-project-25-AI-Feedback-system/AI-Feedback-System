@@ -22,10 +22,10 @@ export default function MainLayout() {
     checkAndRedirect();
   }, [refreshUser, navigate, user, location.pathname]);
 
-  const handleHeaderButtonClick = async () => {
+  const handleLogout = async () => {
     if (isLogin) {
       await logout?.();
-      navigate("/");
+      navigate("/", { replace: true });
     } else {
       const loginUrl = login?.();
       if (loginUrl) {
@@ -36,11 +36,15 @@ export default function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header loggedIn={!!isLogin} onClick={handleHeaderButtonClick} />
-      <main className={`flex-1 flex justify-center ${isLoginPage ? "items-center" : "items-start"}`}>
-          <div className="w-full max-w-screen-xl">
-            <Outlet />
-          </div>
+      <Header loggedIn={!!isLogin} onClick={handleLogout} />
+      <main
+        className={`flex-1 flex justify-center ${
+          isLoginPage ? "items-center" : "items-start"
+        }`}
+      >
+        <div className="w-full max-w-screen-xl">
+          <Outlet />
+        </div>
       </main>
       <Footer />
     </div>

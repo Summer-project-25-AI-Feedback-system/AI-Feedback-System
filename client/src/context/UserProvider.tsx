@@ -1,4 +1,3 @@
-// Provides state and logic (data + functions)
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
@@ -29,7 +28,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await axios.get(`${baseUrl}/api/auth/logout`, { withCredentials: true });
       setUser(null);
-      window.location.href = "/"; // Force full page reload to home/login page
     } catch (error) {
       console.error("Logout failed:", error);
     }
