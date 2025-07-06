@@ -438,6 +438,132 @@ paths:
         "500":
           description: Internal Server Error
 
+  /api/evaluation/run-repomix:
+    post:
+      summary: Generate XML representation of a GitHub repository
+      operationId: runRepomix
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repoUrl:
+                  type: string
+                  format: uri
+                  example: "https://github.com/user/repo"
+                  description: URL of the GitHub repository to analyze
+              required:
+                - repoUrl
+      responses:
+        "200":
+          description: Successful XML generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  xml:
+                    type: string
+                    description: Base64-encoded XML representation
+                    example: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4K..."
+        "400":
+          description: Missing required parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing repoUrl"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to run repomix"
+                  details:
+                    type: string
+                    example: "Error connecting to GitHub"
+
+  /api/evaluation/run-aievolution:
+    post:
+      summary: Generate evaluation report from XML
+      operationId: runAIEvolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                xml:
+                  type: string
+                  description: Base64-encoded XML from run-repomix
+                  example: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4K..."
+                organizationId:
+                  type: string
+                  example: "org-12345"
+                  description: Organization identifier
+                repoName:
+                  type: string
+                  example: "my-project"
+                  description: Repository name
+                assignmentName:
+                  type: string
+                  example: "JavaScript Basics"
+                  description: Assignment name
+              required:
+                - xml
+                - organizationId
+                - repoName
+                - assignmentName
+      responses:
+        "200":
+          description: Successful evaluation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  markdownContent:
+                    type: string
+                    description: Markdown formatted evaluation report
+                    example: |
+                      # Assignment Evaluation
+                      ## Summary
+                      Good implementation with minor issues...
+                      Total Score: 4.2/5
+        "400":
+          description: Missing required parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields"
+        "500":
+          description: Evaluation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to run AIEvolution"
+                  details:
+                    type: string
+                    example: "OpenAI API timeout"
+
 components:
   securitySchemes:
     cookieAuth:
