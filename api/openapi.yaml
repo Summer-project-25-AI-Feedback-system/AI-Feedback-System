@@ -33,7 +33,10 @@ paths:
   /api/auth/login:
     get:
       summary: Start GitHub OAuth login
-      description: Redirects the user to GitHub for authentication.
+      description: |
+        Redirects to GitHub OAuth login page.
+        After successful authentication, user will be redirected to
+        /api/auth/callback endpoint.
       security: []
       responses:
         "302":
@@ -85,8 +88,6 @@ paths:
   /api/auth/getCurrentUser:
     get:
       summary: Get current authenticated user
-      security:
-        - cookieAuth: []
       responses:
         "200":
           description: Returns user information
@@ -98,7 +99,7 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         "401":
-          description: Unauthorized
+          description: Unauthorized or not logged in
           content:
             application/json:
               schema:
@@ -106,39 +107,26 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: Unauthorized
+                    example: User not authenticated
 
   /api/auth/logout:
     get:
-      summary: Logout current user and redirect to frontend
+      summary: Logout current user
       responses:
-        "302":
-          description: Redirect to frontend after successful logout
-          headers:
-            Location:
-              description: Frontend URL
+        "200":
+          description: Logout successful
+          content:
+            application/json:
               schema:
-                type: string
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out successfully
         "401":
           description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Unauthorized
         "500":
           description: Logout failed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Logout failed
 
   /api/github/orgs:
     get:
@@ -428,6 +416,11 @@ components:
 
   schemas:
     User:
+      example:
+        id: "123456"
+        username: "octocat"
+        email: "octocat@github.com"
+        profileUrl: "https://github.com/octocat"
       type: object
       properties:
         id:

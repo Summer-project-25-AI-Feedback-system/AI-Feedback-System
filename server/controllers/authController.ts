@@ -1,7 +1,27 @@
 import { Request, Response } from "express";
+import { upsertUser } from "../services/supabase/userService";
 
-export const githubCallback = (req: Request, res: Response) => {
-  res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
+export const handleCallback = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as {
+      id: string;
+      username: string;
+      emails?: { value: string }[];
+      profileUrl?: string;
+    };
+
+    await upsertUser(
+      user.id,
+      user.username,
+      user.emails?.[0]?.value || "",
+      user.profileUrl || ""
+    );
+
+    res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
+  } catch (error) {
+    console.error("User save failed:", error);
+    res.status(500).json({ error: "User save failed" });
+  }
 };
 
 export const getCurrentUser = (req: Request, res: Response) => {
