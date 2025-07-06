@@ -21,11 +21,9 @@ export const logout = (req: Request, res: Response) => {
 
       if (err) {
         console.error("Session destruction error:", err);
-        return res.redirect(
-          `${process.env.FRONTEND_ORIGIN}/error?message=session_cleanup_failed`
-        );
+        return res.status(500).json({ error: "session_cleanup_failed" });
       }
-      res.redirect(`${process.env.FRONTEND_ORIGIN}`);
+      res.status(200).json({ message: "Logged out successfully" });
     });
   });
 };

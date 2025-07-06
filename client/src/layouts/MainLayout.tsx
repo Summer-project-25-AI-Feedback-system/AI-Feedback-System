@@ -17,6 +17,7 @@ export default function MainLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       if (isLoggingOut.current) return;
+
       if (initialLoad.current || location.pathname === "/") {
         await refreshUser?.();
         initialLoad.current = false;
@@ -42,7 +43,9 @@ export default function MainLayout() {
         window.location.href = loginUrl;
       }
     }
-    isLoggingOut.current = false; // Reset logout flag
+    setTimeout(() => {
+      isLoggingOut.current = false;
+    }, 1000);
   };
 
   return (
