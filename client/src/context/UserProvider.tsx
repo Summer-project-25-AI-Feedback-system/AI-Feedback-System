@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import isEqual from "lodash/isEqual";
 import axios from "axios";
 import UserContext from "./UserContext";
 import type { UserContextType } from "./types";
@@ -9,33 +10,38 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const refreshUser = async () => {
+  // Use useCallback to stabilize the refreshUser function
+  const refreshUser = useCallback(async () => {
     try {
       const res = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
         withCredentials: true,
       });
-      setUser(res.data.user || null);
+      // Only update state if user data actually changed
+      setUser((prev) => {
+        const newUser = res.data.user || null;
+        return isEqual(prev, newUser) ? prev : newUser;
+      });
     } catch {
-      setUser(null);
+      setUser((prev) => (prev === null ? prev : null));
     }
-  };
+  }, []);
 
   const login = () => {
     return `${baseUrl}/api/auth/login`;
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await axios.get(`${baseUrl}/api/auth/logout`, { withCredentials: true });
       setUser(null);
     } catch (error) {
       console.error("Logout failed:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshUser();
-  }, []);
+  }, [refreshUser]);
 
   const contextValue: UserContextType = useMemo(
     () => ({

@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useUser } from "../context/useUser";
@@ -11,18 +11,28 @@ export default function MainLayout() {
   const location = useLocation();
 
   const isLoginPage = location.pathname === "/";
+  const initialLoad = useRef(true); // Add this ref
+  const isLoggingOut = useRef(false); // Track logout state
 
   useEffect(() => {
-    const checkAndRedirect = async () => {
-      await refreshUser?.();
+    const checkAuth = async () => {
+      if (isLoggingOut.current) return;
+      if (initialLoad.current || location.pathname === "/") {
+        await refreshUser?.();
+        initialLoad.current = false;
+      }
+
+      // Redirect logic
       if (user && location.pathname === "/") {
         navigate("/orgs");
       }
     };
-    checkAndRedirect();
+
+    checkAuth();
   }, [refreshUser, navigate, user, location.pathname]);
 
   const handleLogout = async () => {
+    isLoggingOut.current = true; // Set logout flag
     if (isLogin) {
       await logout?.();
       navigate("/", { replace: true });
@@ -32,6 +42,7 @@ export default function MainLayout() {
         window.location.href = loginUrl;
       }
     }
+    isLoggingOut.current = false; // Reset logout flag
   };
 
   return (
