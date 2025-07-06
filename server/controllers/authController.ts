@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 
 export const githubCallback = (req: Request, res: Response) => {
-  // console.log("Authenticated user:", req.user);
   res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
 };
 
@@ -15,12 +14,13 @@ export const logout = (req: Request, res: Response) => {
       console.error("Logout error:", err);
       return res.status(500).json({ error: "Logout failed" });
     }
-    req.session.destroy((err) => {
+
+    req.session.destroy((sessionErr) => {
       res.clearCookie("afs_session");
       res.clearCookie("connect.sid");
 
-      if (err) {
-        console.error("Session destruction error:", err);
+      if (sessionErr) {
+        console.error("Session destruction error:", sessionErr);
         return res.status(500).json({ error: "session_cleanup_failed" });
       }
       res.status(200).json({ message: "Logged out successfully" });

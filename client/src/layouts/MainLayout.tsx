@@ -1,56 +1,44 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useUser } from "../context/useUser";
 
 export default function MainLayout() {
-  const { user, isLogin, refreshUser, logout, login } = useUser();
-
+  const { user, refreshUser, logout, login } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const isLoginPage = pathname === "/";
 
-  const isLoginPage = location.pathname === "/";
-  const initialLoad = useRef(true); // Add this ref
-  const isLoggingOut = useRef(false); // Track logout state
-
+  // auth status management
   useEffect(() => {
     const checkAuth = async () => {
-      if (isLoggingOut.current) return;
+      await refreshUser?.();
 
-      if (initialLoad.current || location.pathname === "/") {
-        await refreshUser?.();
-        initialLoad.current = false;
-      }
-
-      // Redirect logic
-      if (user && location.pathname === "/") {
+      // redirect after login
+      if (user && pathname === "/") {
         navigate("/orgs");
       }
     };
 
-    checkAuth();
-  }, [refreshUser, navigate, user, location.pathname]);
+    // only check auth in login page
+    if (pathname === "/") {
+      checkAuth();
+    }
+  }, [pathname, user, refreshUser, navigate]);
 
-  const handleLogout = async () => {
-    isLoggingOut.current = true; // Set logout flag
-    if (isLogin) {
+  const handleAuthAction = async () => {
+    if (user) {
       await logout?.();
       navigate("/", { replace: true });
     } else {
-      const loginUrl = login?.();
-      if (loginUrl) {
-        window.location.href = loginUrl;
-      }
+      window.location.href = login?.() || "/";
     }
-    setTimeout(() => {
-      isLoggingOut.current = false;
-    }, 1000);
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header loggedIn={!!isLogin} onClick={handleLogout} />
+      <Header loggedIn={!!user} onClick={handleAuthAction} />
       <main
         className={`flex-1 flex justify-center ${
           isLoginPage ? "items-center" : "items-start"

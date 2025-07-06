@@ -11,9 +11,11 @@ import type {
 export interface GitHubContextType {
   getOrganizations: () => Promise<OrgInfo[]>;
   getAssignments: (orgLogin: string) => Promise<AssignmentInfo[]>;
-  getDetailedAssignments: (orgName: string) => Promise<DetailedAssignmentInfo[]>;
+  getDetailedAssignments: (
+    orgName: string
+  ) => Promise<DetailedAssignmentInfo[]>;
   getRepos: (org: string, assignmentPrefix?: string) => Promise<RepoInfo[]>;
-  getAllOrganizationData: (org: string) => Promise<any>;
+  getAllOrganizationData: (org: string) => Promise<unknown>;
   getCommits: (orgName: string, repoName: string) => Promise<CommitInfo[]>;
   getRepoTree: (orgName: string, repoName: string) => Promise<string[]>;
   getFileContents: (

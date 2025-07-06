@@ -1,5 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
-import isEqual from "lodash/isEqual";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import UserContext from "./UserContext";
 import type { UserContextType } from "./types";
@@ -10,25 +9,18 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Use useCallback to stabilize the refreshUser function
   const refreshUser = useCallback(async () => {
     try {
-      const res = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
+      const { data } = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
         withCredentials: true,
       });
-      // Only update state if user data actually changed
-      setUser((prev) => {
-        const newUser = res.data.user || null;
-        return isEqual(prev, newUser) ? prev : newUser;
-      });
+      setUser(data.user || null);
     } catch {
-      setUser((prev) => (prev === null ? prev : null));
+      setUser(null);
     }
   }, []);
 
-  const login = () => {
-    return `${baseUrl}/api/auth/login`;
-  };
+  const login = useCallback(() => `${baseUrl}/api/auth/login`, []);
 
   const logout = useCallback(async () => {
     try {
@@ -39,20 +31,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  // initialing user
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
 
-  const contextValue: UserContextType = useMemo(
-    () => ({
-      user,
-      isLogin: !!user,
-      refreshUser,
-      logout,
-      login,
-    }),
-    [user]
-  );
+  const contextValue: UserContextType = {
+    user,
+    refreshUser,
+    isLogin: user !== null,
+    logout,
+    login,
+  };
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
