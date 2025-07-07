@@ -5,15 +5,16 @@ import type { OrgReport } from "src/types/OrgReport";
 import { useParams, useSearchParams } from "react-router-dom";
 import StudentTableWithTabs from "./studentTable/StudentTableWithTabs";
 import { useSupabase } from "../../../context/supabase/useSupabase";
-import type { RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 import Spinner from "../../../components/Spinner";
+import { mapToRosterWithStudentInputType } from "../../../utils/mappings/mapToRosterWithStudentInputType";
 
 type MissingSubmissionsTabProps = {
   orgData: OrgReport;
 };
 
 export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTabProps) {
-  const [roster, setRoster] = useState<RosterWithStudents | null>(null);
+  const [roster, setRoster] = useState<RosterWithStudentsInput | null>(null);
   const { orgName } = useParams<{ orgName: string }>();
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
@@ -25,7 +26,11 @@ export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTab
       const stringId = String(orgData.orgId)
       supabase.getRoster(stringId)
       .then((fetchedRoster) => { 
-        setRoster(fetchedRoster) // null if no roster, otherwise an object
+        if (fetchedRoster) {
+          setRoster(mapToRosterWithStudentInputType(fetchedRoster));
+        } else {
+          setRoster(null);
+        }
       })
       .catch((err) => {
         console.error(err)

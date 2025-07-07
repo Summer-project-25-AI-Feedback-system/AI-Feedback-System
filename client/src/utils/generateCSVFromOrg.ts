@@ -10,7 +10,7 @@ Willie Wonka        willie                23234             Error               
 
 */
 
-import type { RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 import type { OrgReport } from "src/types/OrgReport";
 
 function downloadCSV(csvContent: string, filename: string = "report.csv") {
@@ -25,7 +25,7 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
   document.body.removeChild(link);
 }
 
-export function generateCSVFromOrg(orgData: OrgReport, roster: RosterWithStudents) {
+export function generateCSVFromOrg(orgData: OrgReport, roster: RosterWithStudentsInput) {
   const assignmentNames = orgData.assignments;
   const headerRow = ["Name", "GitHub Username", "Roster Identifier", ...assignmentNames, "Total Points"]; 
   const submissionMap = new Map(

@@ -2,12 +2,12 @@ import { useRef } from "react";
 import Papa from "papaparse";
 import { useParams } from "react-router-dom";
 import { useSupabase } from "../../../context/supabase/useSupabase";
-import type { RosterStudents, RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 import type { StudentInStudentRoster } from "src/types/Roster";
 
 type UploadStudentRosterCSVButtonProps = {
   text: string,
-  onUpload: (roster: RosterWithStudents) => void;
+  onUpload: (roster: RosterWithStudentsInput) => void;
   orgId: number;
 };
 
@@ -20,7 +20,7 @@ export default function UploadStudentRosterCSVButton({ text, onUpload, orgId }: 
     fileInputRef.current?.click();
   };
 
-  const saveRosterToDB = async (roster: RosterWithStudents) => {
+  const saveRosterToDB = async (roster: RosterWithStudentsInput) => {
     if (orgName && orgId) {
       const stringId = String(orgId)
       supabase.addRoster(stringId, roster)
@@ -51,15 +51,14 @@ export default function UploadStudentRosterCSVButton({ text, onUpload, orgId }: 
           alert("The uploaded CSV must contain at least one student.");
           return;
         }
-        const rosterStudents: RosterStudents[] = validStudents.map((student) => ({
-          github_roster_identifier: student.identifier,
-          github_username: student.github_username,
-          github_user_id: student.github_id,
-          github_display_name: student.name,
-        }));
-        const roster: RosterWithStudents = {
+        const roster: RosterWithStudentsInput = {
           amount_of_students: validStudents.length,
-          roster_students: rosterStudents,
+          roster_students: validStudents.map((student) => ({
+            github_roster_identifier: student.identifier,
+            github_username: student.github_username,
+            github_user_id: student.github_id,
+            github_display_name: student.name,
+          })),
         };
         onUpload(roster);
         (async () => {await saveRosterToDB(roster);})();

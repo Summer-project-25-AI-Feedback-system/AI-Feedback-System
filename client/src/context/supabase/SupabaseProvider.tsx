@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { OrganizationInput, Assignment, AssignmentInput, AiEvaluations, RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { OrganizationInput, Assignment, AssignmentInput, AiEvaluations, RosterWithStudents, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -34,7 +34,7 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
     return res.data;
   };
 
-  const addRoster = async (orgId: string, data: Partial<RosterWithStudents>): Promise<void> => {
+  const addRoster = async (orgId: string, data: RosterWithStudentsInput): Promise<void> => {
     await axios.post(`${baseUrl}/api/supabase/${orgId}/roster`, data, {
       withCredentials: true,
     });

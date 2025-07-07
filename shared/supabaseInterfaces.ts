@@ -1,5 +1,5 @@
 export interface Organization {
-  id: number;
+  id: string;
   name: string;
   external_github_org_id: number;
   owner_id: string;
@@ -26,23 +26,38 @@ export interface AssignmentInput {
   submitted?: number,
 }
 
-export interface Rosters {
-  id?: string,
-  organization_id?: string,
+export interface Roster {
+  id: string,
+  organization_id: string,
   amount_of_students: number
 }
 
-export interface RosterStudents {
-  id?: string,
-  roster_id?: string,
+export interface RosterInput {
+  amount_of_students: number
+}
+
+export interface RosterStudent {
+  id: string,
+  roster_id: string,
   github_roster_identifier: string,
   github_username?: string,
   github_user_id?: string,
   github_display_name?: string
 }
 
-export interface RosterWithStudents extends Rosters {
-  roster_students: RosterStudents[];
+export interface RosterStudentInput {
+  github_roster_identifier: string,
+  github_username?: string,
+  github_user_id?: string,
+  github_display_name?: string
+}
+
+export interface RosterWithStudents extends Roster {
+  roster_students: RosterStudent[];
+}
+
+export interface RosterWithStudentsInput extends RosterInput {
+  roster_students: RosterStudentInput[];
 }
 
 export interface AiEvaluations {

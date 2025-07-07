@@ -1,12 +1,12 @@
 import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
 import { useNavigate } from "react-router-dom";
 import { useGitHub } from "../context/useGitHub";
-import type { RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 
 interface GetCSVFileButtonProps {
   text: string;
   orgName: string | undefined;
-  roster: RosterWithStudents | null;
+  roster: RosterWithStudentsInput | null;
   assignmentFilter?: string[];
 }
 

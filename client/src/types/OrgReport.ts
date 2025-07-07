@@ -1,4 +1,4 @@
-// this is the output of the handleGetAllOrganizationData() call to the backend (using GutHub API)
+// this is the output of the handleGetAllOrganizationData() call to the backend (using GitHub API)
 export type OrgReport = {
   org: string;
   orgId: number;

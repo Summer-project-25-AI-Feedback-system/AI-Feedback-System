@@ -7,4 +7,5 @@ export const mapToSupabaseAssignments = (fetched: AssignmentInfo[]): AssignmentI
     name: a.name,
     max_points: 100, // change later to real values
     submitted: 0,
-  }));
+  })
+);

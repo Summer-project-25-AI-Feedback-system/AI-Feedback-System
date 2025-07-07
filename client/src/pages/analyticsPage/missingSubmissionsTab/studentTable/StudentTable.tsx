@@ -2,10 +2,10 @@ import type { OrgReport } from "src/types/OrgReport";
 import GetCSVFileButton from "../../../../components/GetCSVFileButton";
 import StudentTableHeader from "./StudentTableHeader";
 import StudentTableRow from "./StudentTableRow";
-import type { RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 
 type StudentTableProps = {
-  roster: RosterWithStudents; 
+  roster: RosterWithStudentsInput; 
   orgData: OrgReport;
   assignmentFilter?: string[];
   orgName?: string;
