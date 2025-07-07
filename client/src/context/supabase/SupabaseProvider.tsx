@@ -2,12 +2,12 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { Organizations, Assignments, AiEvaluations, RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { OrganizationInput, Assignments, AiEvaluations, RosterWithStudents } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const SupabaseProvider = ({ children }: { children: React.ReactNode }) => { 
-  const addOrganizations = async (data: Partial<Organizations>[]): Promise<void> => {
+  const addOrganizations = async (data: OrganizationInput | OrganizationInput[]): Promise<void> => {
     await axios.post(`${baseUrl}/api/supabase/organizations`, data, {
       withCredentials: true,
     });

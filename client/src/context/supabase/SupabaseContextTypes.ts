@@ -1,12 +1,12 @@
 import type {
-  Organizations,
+  OrganizationInput,
   Assignments,
   AiEvaluations,
   RosterWithStudents
 } from "@shared/supabaseInterfaces";
 
 export interface SupabaseContextType {
-  addOrganizations: (data: Partial<Organizations>[]) => Promise<void>;
+  addOrganizations: (data: OrganizationInput | OrganizationInput[]) => Promise<void>;
 
   getAssignments: (orgId: string) => Promise<Assignments[]>;
   addAssignments: (orgId: string, data: Partial<Assignments>[]) => Promise<void>;

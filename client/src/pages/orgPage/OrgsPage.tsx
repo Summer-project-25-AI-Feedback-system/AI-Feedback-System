@@ -9,6 +9,7 @@ import { useFilteredList } from "../../hooks/useFilteredList";
 import type { SortOption } from "../../utils/sortingUtils";
 import { sortData } from "../../utils/sortingUtils";
 import Spinner from "../../components/Spinner";
+import type { OrganizationInput } from "@shared/supabaseInterfaces";
 
 export default function OrgsPage() {
   const [orgs, setOrgs] = useState<OrgInfo[]>([]);
@@ -23,7 +24,12 @@ export default function OrgsPage() {
       .getOrganizations()
       .then((fetchedOrgs) => {
         setOrgs(fetchedOrgs)
-        supabase.addOrganizations(fetchedOrgs)
+        const orgInputs: OrganizationInput[] = fetchedOrgs.map((org) => ({
+          name: org.name,
+          external_github_org_id: org.id,
+        }));
+        console.log("the org inputs in the client: " + orgInputs[0].external_github_org_id) // this gets the correct id
+        supabase.addOrganizations(orgInputs)
       })
       .catch(console.error)
       .finally(() => setLoading(false));

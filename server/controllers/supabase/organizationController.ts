@@ -13,14 +13,9 @@ export const getAllOrganizations = async (req: Request, res: Response) => {
 
 export const addOrganizations = async (req: Request, res: Response) => {
   const githubId = (req as any).githubId;
-  const body = req.body;
+  const organizations = req.body;
 
   try {
-    const organizations = body.map((org: OrgInfo) => ({
-      name: org.name,
-      external_github_org_id: String(org.id),
-    }));
-
     await createOrUpdateOrganizations(githubId, organizations);
     res.status(200).send('Organization(s) created or updated');
   } catch (error: any) {

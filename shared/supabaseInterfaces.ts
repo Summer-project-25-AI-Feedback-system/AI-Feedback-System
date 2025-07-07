@@ -1,8 +1,13 @@
-export interface Organizations {
-  id?: number;
+export interface Organization {
+  id: number;
   name: string;
-  external_github_org_id: string;
+  external_github_org_id: number;
   owner_id: string;
+}
+
+export interface OrganizationInput {
+  name: string;
+  external_github_org_id: number;
 }
 
 export interface Assignments {

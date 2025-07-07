@@ -1,5 +1,5 @@
 import { supabase } from "../../utils/supabase";
-import type { Organizations } from '@shared/supabaseInterfaces'
+import type { OrganizationInput} from '@shared/supabaseInterfaces'
 
 export const getOrganizations = async () => {
   const { data, error } = await supabase
@@ -14,7 +14,7 @@ export const getOrganizations = async () => {
   return data;
 }
 
-export const createOrUpdateOrganizations = async (githubId: string, organizations: Organizations | Organizations[]) => {
+export const createOrUpdateOrganizations = async (githubId: string, organizations: OrganizationInput | OrganizationInput[]) => {
   const organizationsArray = Array.isArray(organizations) ? organizations : [organizations];
 
   // get the logged in user's id
