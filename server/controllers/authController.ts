@@ -2,16 +2,13 @@ import { Request, Response } from "express";
 import { insertUserToDatabase } from "../services/supabase/userService";
 
 export const handleCallback = async (req: Request, res: Response) => {
-  console.log("req.user:", req.user);
   try {
     const user = req.user as {
       id: string;
       username: string;
       profileUrl: string;
     };
-
     await insertUserToDatabase(user.id, user.username, user.profileUrl || "");
-
     res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
   } catch (error) {
     console.error("User save failed:", error);
