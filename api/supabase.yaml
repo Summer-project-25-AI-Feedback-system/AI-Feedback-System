@@ -1,0 +1,430 @@
+openapi: 3.0.0
+
+info:
+  title: AI Feedback System API for Supabase (Unfinished -- Missing POST evaluations for example if they are needed)
+  version: 1.0.0
+  description: API documentation for the AFS supabase backend
+
+servers:
+  - url: https://ai-feedback.live
+    description: Production server (HTTPS only)
+  - url: https://localhost:5000
+    description: Local development server (HTTPS required)
+
+security:
+  - cookieAuth: []
+
+paths:
+  /supabase/organizations:
+    post:
+      summary: Add one or more organizations
+      description: Creates one or more organizations in the database.
+      operationId: addOrganizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/OrganizationInput'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/OrganizationInput'
+      responses:
+        '200':
+          description: Organization(s) created or updated successfully
+        '400':
+          description: Invalid input
+        '404':
+          description: Logged in user not found in Supabase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unable to find currently logged in user from supabase          
+        '401':
+          description: Unauthorized
+        '500':
+          description: Failed to store organization(s)
+      security:
+        - cookieAuth: []
+  /supabase/{org}/assignments:
+    get:
+      summary: Get assignments
+      description: Retrieves one or more assignments for the given organization.
+      operationId: getAssignments
+      parameters:
+        - name: org
+          in: path
+          required: true
+          description: The organization's ID
+          schema:
+            type: string
+        - name: github_assignment_id
+          in: query
+          required: false
+          description: Optional GitHub assignment ID to filter the result
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Assignment'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Assignments not found
+        '500':
+          description: Server error while retrieving assignments
+      security:
+        - cookieAuth: []
+    post:
+      summary: Create or update assignments
+      description: Upserts one or more assignments for the organization. Deletes any missing ones.
+      operationId: addAssignments
+      parameters:
+        - name: org
+          in: path
+          required: true
+          description: The organization's ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AssignmentInput'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/AssignmentInput'
+      responses:
+        '200':
+          description: Assignment(s) created or updated
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Failed to create or update assignments
+      security:
+        - cookieAuth: []
+  /supabase/{org}/roster:
+    get:
+      summary: Get organization roster
+      description: Retrieves the roster and its associated students for the specified organization.
+      operationId: getRoster
+      parameters:
+        - name: org
+          in: path
+          required: true
+          description: The organization's ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved the roster
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RosterWithStudents'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Unexpected server error while retrieving roster
+      security:
+        - cookieAuth: []
+    post:
+      summary: Create or update a roster
+      description: Creates or updates a roster and its students for the specified organization.
+      operationId: addRoster
+      parameters:
+        - name: org
+          in: path
+          required: true
+          description: The organization's ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RosterWithStudentsInput'
+      responses:
+        '201':
+          description: Roster created or updated
+        '400':
+          description: Invalid roster input
+        '401':
+          description: Unauthorized
+        '500':
+          description: Failed to create or update roster
+      security:
+        - cookieAuth: []
+  /supabase/{org}/evaluations:
+    get:
+      summary: Get AI evaluations for an organization
+      description: |
+        Retrieves AI-generated evaluations for the given organization.
+        Optionally filter by GitHub assignment ID or roster student ID.
+      operationId: getEvaluations
+      parameters:
+        - name: org
+          in: path
+          required: true
+          description: The organization's ID
+          schema:
+            type: string
+        - name: github_assignment_id
+          in: query
+          required: false
+          description: GitHub's external assignment ID (used to filter evaluations)
+          schema:
+            type: string
+            example: "123456789"
+        - name: roster_student_id
+          in: query
+          required: false
+          description: Supabase roster student ID (used to filter evaluations)
+          schema:
+            type: string
+            format: uuid
+            example: "2ef4a5c0-d9b7-4dbb-809b-81d3e2b0e1a5"
+      responses:
+        '200':
+          description: Evaluation records successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiEvaluation'
+        '204':
+          description: No evaluations found for the given filters
+        '401':
+          description: Unauthorized
+        '500':
+          description: Unexpected server error while retrieving evaluations
+      security:
+        - cookieAuth: []
+components:
+  schemas:
+    OrganizationInput:
+      type: object
+      required:
+        - name
+        - external_github_org_id
+      properties:
+        name:
+          type: string
+          format: text
+          example: My GitHub Org
+          description: Name of the GitHub organization
+        external_github_org_id:
+          type: integer
+          format: int8
+          example: 12345678
+          description: GitHub's external numeric ID for the organization
+    AssignmentInput:
+      type: object
+      required:
+        - external_github_assignment_id
+        - name
+        - max_points
+      properties:
+        external_github_assignment_id:
+          type: integer
+          format: int8
+          example: 987654321
+          description: GitHub's external numeric ID for the assignment
+        name:
+          type: string
+          format: text
+          example: Linux-Assignment
+          description: Name of the assignment in the GitHub organization
+        max_points:
+          type: integer
+          format: int4
+          example: 100
+          description: Maximum amount of points a student can get from the completion of said assignment
+        submitted:
+          type: integer
+          format: int4
+          example: 50
+          description: Amount of students who have submitted said assignment         
+    Assignment:
+      allOf:
+        - $ref: '#/components/schemas/AssignmentInput'
+        - type: object
+        - required:
+          - id
+          - organization_id
+          - external_github_assignment_id
+          - name
+          - max_points
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "a3f6e36c-e331-4d89-bf95-2c46f27b93f7"
+              description: Supabase ID for the assignment
+            organization_id:
+              type: string
+              format: uuid
+              example: "d57eeaf1-b5a3-4ec7-8e2b-c6213a419305"
+              description: Supabase ID for the organization. References the organization ID in organization supabase table.
+    RosterInput:
+      type: object
+      required:
+        - amount_of_students
+      properties:
+        amount_of_students:
+          type: integer
+          format: int4
+          example: 42
+          description: Number of students in the roster
+    RosterStudentInput:
+      type: object
+      required:
+        - github_roster_identifier
+      properties:
+        github_roster_identifier:
+          type: string
+          format: text
+          example: student123
+          description: GitHub identifier for the student in the roster
+        github_username:
+          type: string
+          format: text
+          example: johndoe
+          description: GitHub username for the student in the roster
+        github_user_id:
+          type: string
+          format: text
+          example: "12345678"
+          description: GitHub user ID for the student in the roster
+        github_display_name:
+          type: string
+          format: text
+          example: John Doe
+          description: GitHub display name for the student in the roster
+    RosterWithStudentsInput:
+      allOf:
+        - $ref: '#/components/schemas/RosterInput'
+        - type: object
+          required:
+            - amount_of_students
+            - roster_students
+          properties:
+            roster_students:
+              type: array
+              items:
+                $ref: '#/components/schemas/RosterStudentInput'
+    Roster:
+      allOf:
+        - $ref: '#/components/schemas/RosterInput'
+        - type: object
+          required:
+            - id
+            - organization_id
+            - amount_of_students
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "a3f6e36c-e331-4d89-bf95-2c46f27b93f7"
+              description: Supabase ID for the roster.
+            organization_id:
+              type: string
+              format: uuid
+              example: "d57eeaf1-b5a3-4ec7-8e2b-c6213a419305"
+              description: Supabase ID for the organization. References the organization ID in organization supabase table.
+    RosterStudent:
+      allOf:
+        - $ref: '#/components/schemas/RosterStudentInput'
+        - type: object
+          required:
+            - id
+            - roster_id
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "b6fbe7e8-5cc3-4e3e-8481-7f2cbcb22ff2"
+              description: Supabase ID for the roster student.
+            roster_id:
+              type: string
+              format: uuid
+              example: "f3e257c6-45b2-45b3-a037-0cb9a42324e6"
+              description: Supabase ID for the roster. References the roster ID in the roster supabase table.
+    RosterWithStudents:
+      allOf:
+        - $ref: '#/components/schemas/Roster'
+        - type: object
+          properties:
+            roster_students:
+              type: array
+              items:
+                $ref: '#/components/schemas/RosterStudent'
+    AiEvaluation:
+      type: object
+      required:
+        - id
+        - roster_student_id
+        - assignment_id
+        - organization_id
+        - created_at
+        - ai_model
+        - md_file
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "b6fbe7e8-5cc3-4e3e-8481-7f2cbcb22ff2"
+          description: Supabase ID for the recorded evaluation.
+        roster_student_id:
+          type: string
+          format: uuid
+          example: "e6f3e2ab-53e2-4e37-a123-b1a3e0a734d6"
+          description: Supabase ID for the roster student. References the roster student ID in the roster student supabase table.
+        assignment_id:
+          type: string
+          format: uuid
+          example: "d1d4d17c-dbf9-4f0d-b749-f24613a1cf4e"
+          description: Supabase ID for the assignment. References the assignment ID in the assignment supabase table.
+        organization_id:
+          type: string
+          format: uuid
+          example: "f0f1d67b-c1d9-4e8f-a35e-f64a6a9cfe2b"
+          description: Supabase ID for the organization. References the organization ID in the organization supabase table.
+        created_at:
+          type: string
+          format: timestamptz
+          example: "2025-07-07T14:32:00Z"
+          description: Time of when the evaluation was created.
+        ai_model:
+          type: string
+          format: text
+          example: "gpt-4"
+          description: AI model used to generate the evaluation.
+        md_file:
+          type: string
+          format: text
+          description: Markdown content generated by the AI
+          example: "# Feedback\nGreat job on the project!"
+    securitySchemes:
+      cookieAuth:
+        type: apiKey
+        in: cookie
+        name: connect.sid
+        description: Session cookie for authenticated users. Set after successful GitHub OAuth login.
