@@ -23,7 +23,6 @@ router.get(
 );
 // Session routes
 router.get("/current", isAuthenticated, getCurrentUser);
-
 router.get("/logout", isAuthenticated, logout);
 
 export default router;
