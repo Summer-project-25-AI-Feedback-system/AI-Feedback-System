@@ -4,7 +4,7 @@ import GitHubContext from "./GitHubContext";
 import type { GitHubContextType } from "./types";
 import type {
   AssignmentInfo,
-  DetailedAssignmentInfo,
+  AssignmentClassroomInfo,
   OrgInfo,
   RepoInfo,
   CommitInfo,
@@ -39,12 +39,17 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
-  const getAssignmentClassroomInfo = async (orgName: string): Promise<DetailedAssignmentInfo[]> => {
-    const res = await axios.get(`${baseUrl}/api/github/orgs/${orgName}/assignmentClassroomInfo`, {
-      withCredentials: true,
-    });
+  const getAssignmentClassroomInfo = async (
+    orgName: string
+  ): Promise<AssignmentClassroomInfo[]> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/orgs/${orgName}/assignmentClassroomInfo`,
+      {
+        withCredentials: true,
+      }
+    );
     return res.data;
-  }
+  };
 
   const getRepos = async (
     orgName: string,
