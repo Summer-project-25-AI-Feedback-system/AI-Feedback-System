@@ -1,19 +1,6 @@
 import { supabase } from "../../utils/supabase";
 import type { OrganizationInput} from '@shared/supabaseInterfaces'
 
-export const getOrganizations = async () => {
-  const { data, error } = await supabase
-    .from('organization')
-    .select('*');
-
-  if (error) {
-    throw new Error(`Supabase error: ${error.message}`);
-  }
-
-  console.log("Data from getOrganizations: " + data);
-  return data;
-}
-
 export const createOrUpdateOrganizations = async (githubId: string, organizations: OrganizationInput | OrganizationInput[]) => {
   const organizationsArray = Array.isArray(organizations) ? organizations : [organizations];
 

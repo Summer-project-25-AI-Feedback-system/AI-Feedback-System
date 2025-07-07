@@ -1,15 +1,5 @@
 import { Request, Response } from 'express';
-import { getOrganizations, createOrUpdateOrganizations } from '../../services/supabase/organizationService';
-import type { OrgInfo } from '@shared/githubInterfaces';
-
-export const getAllOrganizations = async (req: Request, res: Response) => {
-  try {
-    const orgs = await getOrganizations();
-    res.json(orgs);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
+import { createOrUpdateOrganizations } from '../../services/supabase/organizationService';
 
 export const addOrganizations = async (req: Request, res: Response) => {
   const githubId = (req as any).githubId;
