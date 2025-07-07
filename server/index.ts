@@ -5,8 +5,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import githubRoutes from "./routes/githubRoutes";
-import submitRoute from "./routes/submitRoute";
-import uploadCsvRoute from "./routes/uploadCsvRoute";
 import aiRoutes from "./routes/aiRoutes";
 import promptRoutes from "./routes/promptRouter";
 import supabaseRoutes from "./routes/supabaseRoutes";
@@ -18,12 +16,10 @@ dotenv.config({ path: nodeEnv === "production" ? ".env.production" : ".env" });
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const isProd = nodeEnv === "production";
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
-const SESSION_SECRET = process.env.SESSION_SECRET;
 
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,
+    origin: process.env.FRONTEND_ORIGIN,
     credentials: true,
   })
 );
@@ -34,7 +30,7 @@ app.use(express.urlencoded({ extended: false }));
 // Set up session
 app.use(
   session({
-    secret: SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -51,7 +47,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// test message
+// Health check
 app.get("/api/message", (req, res) => {
   res.json({ message: "Test message from backend!" });
 });
@@ -60,8 +56,6 @@ app.get("/api/message", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/github", githubRoutes);
 app.use("/api/evaluation", aiRoutes);
-app.use("/submit", submitRoute);
-app.use("/api", uploadCsvRoute);
 app.use("/api/prompt", promptRoutes);
 app.use("/api/supabase", supabaseRoutes);
 
@@ -69,12 +63,12 @@ app.use("/api/supabase", supabaseRoutes);
 app.use(
   (
     err: any,
-    req: express.Request,
+    _: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    __: express.NextFunction
   ) => {
-    console.error("Unhandled Error:", err);
-    res.status(500).json({ error: "Something went wrong!" });
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 );
 

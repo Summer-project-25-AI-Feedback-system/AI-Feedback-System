@@ -1,22 +1,14 @@
 import { Request, Response } from "express";
-import { upsertUser } from "../services/supabase/userService";
+import { insertUserToDatabase } from "../services/supabase/userService";
 
 export const handleCallback = async (req: Request, res: Response) => {
   try {
     const user = req.user as {
       id: string;
       username: string;
-      emails?: { value: string }[];
-      profileUrl?: string;
+      profileUrl: string;
     };
-
-    await upsertUser(
-      user.id,
-      user.username,
-      user.emails?.[0]?.value || "",
-      user.profileUrl || ""
-    );
-
+    await insertUserToDatabase(user.id, user.username, user.profileUrl || "");
     res.redirect(`${process.env.FRONTEND_ORIGIN}/orgs`);
   } catch (error) {
     console.error("User save failed:", error);

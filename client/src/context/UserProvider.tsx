@@ -11,7 +11,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshUser = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${baseUrl}/api/auth/getCurrentUser`, {
+      const { data } = await axios.get(`${baseUrl}/api/auth/current`, {
         withCredentials: true,
       });
       setUser(data.user || null);
