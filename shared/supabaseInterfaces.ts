@@ -59,9 +59,18 @@ export interface RosterWithStudents extends Roster {
 export interface RosterWithStudentsInput extends RosterInput {
   roster_students: RosterStudentInput[];
 }
+ 
+export interface AiEvaluation {
+  id: string,
+  roster_student_id: string,
+  assignment_id: string,
+  organization_id: string, 
+  created_at: Date,
+  ai_model: string,
+  md_file: string
+}
 
-export interface AiEvaluations {
-  id?: string,
+export interface AiEvaluationInput {
   roster_student_id: string,
   assignment_id: string,
   organization_id: string, 

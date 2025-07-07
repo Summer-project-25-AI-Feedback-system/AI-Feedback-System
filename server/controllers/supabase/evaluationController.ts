@@ -8,10 +8,10 @@ export const getEvaluations = async (req: Request, res: Response) => {
   try {
     const feedback = await fetchEvaluations(organizationId, github_assignment_id as string | undefined, roster_student_id as string | undefined);
 
-    /* if (!feedback || feedback.length === 0) {
+    if (!feedback || feedback.length === 0) {
       res.status(204).send();
       return;
-    } */
+    } 
 
     res.status(200).json(feedback);
   } catch (error: any) {
@@ -22,6 +22,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
   }
 };
 
+// TODO: is this still needed or working since the service function was completely changed for Ville's command prompt? is this needed in the frontend at all?
 export const addEvaluations = async (req: Request, res: Response) => { 
   const organizationId = (req as any).organizationId;
   const body = req.body;
