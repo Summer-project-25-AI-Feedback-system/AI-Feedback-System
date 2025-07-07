@@ -3,7 +3,7 @@ import {
   parseAIFeedback,
   calculateOverallRating,
   EvaluationResult,
-} from "../../Aievolution";
+} from "../../Aievalutions";
 import { fetchXmlFromRepoUrl } from "./repomixHelper";
 
 export async function runRepomix(repoUrl: string) {
