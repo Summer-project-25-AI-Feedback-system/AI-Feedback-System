@@ -20,10 +20,10 @@ export const getAssignments = async (req: Request, res: Response) => {
 
 export const addAssignments = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
-  const body = req.body;
+  const assignments = req.body;
 
   try {
-    await createOrUpdateAssignments(organizationId, body);
+    await createOrUpdateAssignments(organizationId, assignments);
     res.status(200).send('Assignment(s) created or updated');
   } catch (error: any) {
     if (error.status === 404) {

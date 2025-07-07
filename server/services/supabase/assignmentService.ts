@@ -1,6 +1,7 @@
+import { Assignment, AssignmentInput } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
-export const fetchAssignments = async (organizationId: string, assignmentId?: string) => {
+export const fetchAssignments = async (organizationId: string, assignmentId?: string): Promise<Assignment[]> => {
   let query = supabase
     .from('assignments')
     .select('*')
@@ -21,7 +22,7 @@ export const fetchAssignments = async (organizationId: string, assignmentId?: st
   return data;
 };
 
-export const createOrUpdateAssignments = async (organizationId: string, assignments: any | any[]) => {
+export const createOrUpdateAssignments = async (organizationId: string, assignments: AssignmentInput | AssignmentInput[]) => {
   const assignmentsArray = Array.isArray(assignments) ? assignments : [assignments];
 
   // fetch existing assignments from supabase for the user

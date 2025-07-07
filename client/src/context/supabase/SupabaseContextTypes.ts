@@ -1,6 +1,7 @@
 import type {
   OrganizationInput,
-  Assignments,
+  Assignment,
+  AssignmentInput,
   AiEvaluations,
   RosterWithStudents
 } from "@shared/supabaseInterfaces";
@@ -8,8 +9,8 @@ import type {
 export interface SupabaseContextType {
   addOrganizations: (data: OrganizationInput | OrganizationInput[]) => Promise<void>;
 
-  getAssignments: (orgId: string) => Promise<Assignments[]>;
-  addAssignments: (orgId: string, data: Partial<Assignments>[]) => Promise<void>;
+  getAssignments: (orgId: string, assignmentId?: string) => Promise<Assignment[]>;
+  addAssignments: (orgId: string, data: AssignmentInput | AssignmentInput[]) => Promise<void>;
 
   getRoster: (orgId: string) => Promise<RosterWithStudents | null>;
   addRoster: (orgId: string, data: Partial<RosterWithStudents>) => Promise<void>;

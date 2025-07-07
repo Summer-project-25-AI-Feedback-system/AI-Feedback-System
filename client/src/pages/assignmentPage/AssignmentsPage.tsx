@@ -53,7 +53,7 @@ export default function AssignmentsPage() {
         .then((fetchedAssignments) => { 
           setAssignments(fetchedAssignments)
           github.getAllOrganizationData(orgName).then((fetchedOrgData) => {
-            const assignments = mapToSupabaseAssignments(fetchedAssignments, fetchedOrgData.orgId)
+            const assignments = mapToSupabaseAssignments(fetchedAssignments)
             supabase.addAssignments(fetchedOrgData.orgId, assignments)
             supabase.getRoster(fetchedOrgData.orgId).then((fetchedRoster) => {
               setRoster(fetchedRoster)

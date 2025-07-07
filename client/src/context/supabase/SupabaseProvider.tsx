@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { OrganizationInput, Assignments, AiEvaluations, RosterWithStudents } from "@shared/supabaseInterfaces";
+import type { OrganizationInput, Assignment, AssignmentInput, AiEvaluations, RosterWithStudents } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -13,14 +13,15 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
     });
   };
 
-  const getAssignments = async (orgId: string): Promise<Assignments[]> => {
+  const getAssignments = async (orgId: string, assignmentId?: string): Promise<Assignment[]> => {
     const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/assignments`, {
+      params: assignmentId ? { github_assignment_id: assignmentId } : {},
       withCredentials: true,
     });
     return res.data;
   };
 
-  const addAssignments = async (orgId: string, data: Partial<Assignments>[]): Promise<void> => {
+  const addAssignments = async (orgId: string, data: AssignmentInput | AssignmentInput[]): Promise<void> => {
     await axios.post(`${baseUrl}/api/supabase/${orgId}/assignments`, data, {
       withCredentials: true,
     });

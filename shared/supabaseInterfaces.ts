@@ -10,16 +10,20 @@ export interface OrganizationInput {
   external_github_org_id: number;
 }
 
-export interface Assignments {
-  id?: string,
-  external_github_assignment_id: string,
+export interface Assignment {
+  id: string,
+  external_github_assignment_id: number,
   organization_id: string,
   name: string,
-  deadline: Date,
   max_points: number,
-  total_students?: number,
-  submissions?: number,
-  accepted_assignments?: number
+  submitted?: number, // how many students have made a submission to this assignment
+}
+
+export interface AssignmentInput {
+  external_github_assignment_id: number,
+  name: string,
+  max_points: number,
+  submitted?: number,
 }
 
 export interface Rosters {
