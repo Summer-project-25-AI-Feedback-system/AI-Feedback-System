@@ -1,36 +1,32 @@
 import { supabase } from "../../utils/supabase";
 
-export async function upsertUser(
+export async function insertUserToDatabase(
   githubId: string,
   username: string,
-  email: string,
-  githubUrl: string
+  profileUrl = ""
 ) {
   try {
-    const result = await supabase
+    const { data, error } = await supabase
       .from("users")
       .upsert(
         {
           github_id: githubId,
           username: username,
-          github_url: githubUrl,
-          email: email,
+          profile_url: profileUrl,
         },
         { onConflict: "github_id" }
       )
       .select()
       .single();
 
-    // console.log("Supabase upsert result:", result);
-
-    if (result.error) {
-      console.error("Supabase error:", result.error);
-      throw result.error;
+    if (error) {
+      console.error("Supabase upsert error:", error);
+      throw error;
     }
 
-    return result.data;
+    return data;
   } catch (err) {
-    console.error("Virhe käyttäjän tallennuksessa (catch):", err);
+    console.error("fail to insert user to database:", err);
     throw err;
   }
 }

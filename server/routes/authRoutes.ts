@@ -10,6 +10,7 @@ import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = Router();
 
+// Authentication routes
 router.get(
   "/login",
   passport.authenticate("github", { scope: ["user:email"] })
@@ -20,8 +21,8 @@ router.get(
   passport.authenticate("github", { failureRedirect: "/login" }),
   handleCallback
 );
-
-router.get("/getCurrentUser", isAuthenticated, getCurrentUser);
+// Session routes
+router.get("/current", isAuthenticated, getCurrentUser);
 
 router.get("/logout", isAuthenticated, logout);
 
