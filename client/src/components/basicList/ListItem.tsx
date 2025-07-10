@@ -1,4 +1,3 @@
-import { data } from "react-router-dom";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type {
   AssignmentInfo,
