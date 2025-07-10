@@ -52,17 +52,11 @@ function generateMarkdownContent(evaluationResult: EvaluationResult): string {
     minute: "2-digit",
     hour12: false, // Use 24-hour format
   });
-  console.log(
-    "evaluationResult.overallRating:",
-    evaluationResult.overallRating
-  );
   return `# Assignment Evaluation
 
 ## Summary
 
 ${evaluationResult.summary}
-
-Total Score: ${evaluationResult.overallRating.toFixed(1)}/5
 
 ## Metadata
 - **Evaluation Date:** ${formattedDate}

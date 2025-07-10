@@ -618,7 +618,7 @@ components:
         updatedAt:
           type: string
 
-    DetailedAssignmentInfo:
+    AssignmentClassroomInfo:
       example:
         id: 12345
         name: "assignment-1"
