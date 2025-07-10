@@ -1,7 +1,4 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
-console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY);
+// import * as dotenv from "dotenv";
 import * as fs from "fs/promises";
 import axios from "axios";
 import * as nodemailer from "nodemailer";
@@ -11,9 +8,12 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 import { createOrUpdateEvaluations } from "./services/supabase/evaluationService";
 import type { AiEvaluation } from "@shared/supabaseInterfaces";
-import { supabase } from "./utils/supabase";
+// import { supabase } from "./utils/supabase";
 
 // Load environment variables from .env file
+// dotenv.config();
+// console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+// console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY);
 
 // OpenAI API response types
 interface OpenAIResponse {

@@ -41,7 +41,7 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
     type: "all",
     per_page: 100,
   });
-
+  console.log("repos from backend:", repos);
   const assignmentMap = new Map<string, AssignmentInfo>();
 
   repos.data.forEach((repo) => {
@@ -72,20 +72,20 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
   return Array.from(assignmentMap.values());
 }
 
-export async function getAssignmentClassroomInfo(org: string): Promise<AssignmentClassroomInfo[]> {
+export async function getAssignmentClassroomInfo(
+  org: string
+): Promise<AssignmentClassroomInfo[]> {
   const octokit = await getOctokit();
 
   // find classroom that matches our org
-  const { data: classrooms} = await octokit.request('GET /classrooms', {
+  const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
-      'X-GitHub-Api-Version': '2022-11-28'
-    }
-  })
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
 
   // match the organization name to the classroom name
-  const matchedClassroom = classrooms.find((c: any) =>
-    c.name.startsWith(org) 
-  );
+  const matchedClassroom = classrooms.find((c: any) => c.name.startsWith(org));
 
   if (!matchedClassroom) {
     throw new Error(`No classroom found for organization: ${org}`);
@@ -94,24 +94,29 @@ export async function getAssignmentClassroomInfo(org: string): Promise<Assignmen
   const classroomId = matchedClassroom.id;
 
   // get all assignments for that classroom
-  const { data: assignments } = await octokit.request('GET /classrooms/{classroom_id}/assignments', {
-    classroom_id: classroomId,
-    headers: {
-      'X-GitHub-Api-Version': '2022-11-28'
+  const { data: assignments } = await octokit.request(
+    "GET /classrooms/{classroom_id}/assignments",
+    {
+      classroom_id: classroomId,
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
     }
-  });
-  
-  const detailedAssignments: AssignmentClassroomInfo[] = assignments.map((assignment: any) => ({
-    id: assignment.id,
-    name: assignment.title ?? 'Untitled Assignment',
-    accepted: assignment.accepted ?? 0,
-    submitted: assignment.submitted ?? 0, // problem with retrieving submission values
-    passing: assignment.passing ?? 0,
-    deadline: assignment.deadline ? new Date(assignment.deadline) : null
-  }));
+  );
+
+  const detailedAssignments: AssignmentClassroomInfo[] = assignments.map(
+    (assignment: any) => ({
+      id: assignment.id,
+      name: assignment.title ?? "Untitled Assignment",
+      accepted: assignment.accepted ?? 0,
+      submitted: assignment.submitted ?? 0, // problem with retrieving submission values
+      passing: assignment.passing ?? 0,
+      deadline: assignment.deadline ? new Date(assignment.deadline) : null,
+    })
+  );
 
   return detailedAssignments;
-} 
+}
 
 export async function getStudentReposForAssignment(
   org: string,

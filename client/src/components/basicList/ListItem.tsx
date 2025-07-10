@@ -1,3 +1,4 @@
+import { data } from "react-router-dom";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type {
   AssignmentInfo,
@@ -20,6 +21,7 @@ export default function ListItem(props: ListItemProps) {
 
   switch (props.type) {
     case "org": {
+      // console.log("orgs props.data in listItems:", props.data);
       const org = props.data;
       className = `grid grid-cols-[40px_1fr_1fr] ${commonClass}`;
       content = (
@@ -37,6 +39,7 @@ export default function ListItem(props: ListItemProps) {
     }
 
     case "assignment": {
+      console.log("assignment props.data in listItems:", props.data);
       const assignment = props.data;
       const assignmentName = assignment.name;
       const amountOfStudents = assignment.amountOfStudents;
@@ -55,8 +58,9 @@ export default function ListItem(props: ListItemProps) {
 
     case "repo": {
       const repo = props.data;
-      const avatar = repo.collaborators[0]?.avatarUrl || "";
-      const students = repo.collaborators[0].name;
+      const firstCollaborator = repo.collaborators?.[0];
+      const avatar = firstCollaborator?.avatarUrl || "";
+      const students = firstCollaborator?.name || "N/A";
       const updatedAt = new Date(repo.updatedAt).toLocaleString();
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
