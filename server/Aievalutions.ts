@@ -10,12 +10,10 @@ import { simpleGit, SimpleGit } from "simple-git";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { createOrUpdateEvaluations } from "./services/supabase/evaluationService";
-import type { AiEvaluations } from "@shared/supabaseInterfaces";
+import type { AiEvaluation } from "@shared/supabaseInterfaces";
 import { supabase } from "./utils/supabase";
 
 // Load environment variables from .env file
-
-
 
 // OpenAI API response types
 interface OpenAIResponse {
@@ -492,7 +490,7 @@ Instructions:
 }
 
 // Add AIModel type
-type AIModel = 'openai' | 'claude' | 'deepseek';
+type AIModel = "openai" | "claude" | "deepseek";
 
 export async function evaluateWithOpenAI(
   xmlContent: string,
@@ -502,25 +500,27 @@ export async function evaluateWithOpenAI(
   rosterStudentId?: string,
   assignmentId?: string
 ): Promise<string> {
-  const selectedModel = model || 'openai';
+  const selectedModel = model || "openai";
   console.log(`Starting evaluation with model: ${selectedModel}`);
-  
+
   const submissionId = repoPath ? path.basename(repoPath, ".xml") : "unknown";
   const prompt = await getPromptFromFile();
-  console.log('Prompt loaded successfully');
-  
+  console.log("Prompt loaded successfully");
+
   const chunks = splitXmlIntoChunks(xmlContent);
   console.log(`Split content into ${chunks.length} chunks`);
   let fullResponse = "";
 
   for (const chunk of chunks) {
     try {
-      console.log(`Processing chunk ${chunks.indexOf(chunk) + 1}/${chunks.length}`);
+      console.log(
+        `Processing chunk ${chunks.indexOf(chunk) + 1}/${chunks.length}`
+      );
       let response: any = null;
-      
+
       switch (selectedModel) {
-        case 'openai':
-          console.log('Sending request to OpenAI (GPT-3.5-turbo)...');
+        case "openai":
+          console.log("Sending request to OpenAI (GPT-3.5-turbo)...");
           let retryCount = 0;
           const maxRetries = 3;
           const baseDelay = 1000;
@@ -552,47 +552,72 @@ export async function evaluateWithOpenAI(
                   timeout: 30000,
                 }
               );
-              
-              if (!response || !response.data || !response.data.choices || !response.data.choices[0] || !response.data.choices[0].message) {
-                throw new Error('Invalid response format from OpenAI API');
+
+              if (
+                !response ||
+                !response.data ||
+                !response.data.choices ||
+                !response.data.choices[0] ||
+                !response.data.choices[0].message
+              ) {
+                throw new Error("Invalid response format from OpenAI API");
               }
-              
+
               fullResponse += response.data.choices[0].message.content;
-              console.log('Received response from OpenAI');
+              console.log("Received response from OpenAI");
               break;
-              
             } catch (error) {
               if (axios.isAxiosError(error)) {
                 const status = error.response?.status;
                 const data = error.response?.data;
-                
+
                 console.log(`OpenAI API error: Status ${status}, Data:`, data);
-                
+
                 // Tarkista onko kyseessä quota-virhe
-                if (status === 429 && data?.error?.code === 'insufficient_quota') {
-                  throw new Error('OpenAI API quota exceeded. Please check your billing and add credits to your account.');
+                if (
+                  status === 429 &&
+                  data?.error?.code === "insufficient_quota"
+                ) {
+                  throw new Error(
+                    "OpenAI API quota exceeded. Please check your billing and add credits to your account."
+                  );
                 }
-                
+
                 // Tarkista onko kyseessä rate limit (ei quota)
-                if (status === 429 && data?.error?.code !== 'insufficient_quota') {
+                if (
+                  status === 429 &&
+                  data?.error?.code !== "insufficient_quota"
+                ) {
                   retryCount++;
                   if (retryCount < maxRetries) {
                     const delay = baseDelay * Math.pow(2, retryCount - 1);
-                    console.log(`Rate limit reached, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
+                    console.log(
+                      `Rate limit reached, waiting ${
+                        delay / 1000
+                      } seconds before retry ${retryCount}/${maxRetries}...`
+                    );
                     await sleep(delay);
                     continue;
                   } else {
-                    throw new Error(`Rate limit exceeded after ${maxRetries} retries. Please try again later.`);
+                    throw new Error(
+                      `Rate limit exceeded after ${maxRetries} retries. Please try again later.`
+                    );
                   }
                 } else if (status === 401) {
-                  throw new Error('OpenAI API key is invalid or missing');
+                  throw new Error("OpenAI API key is invalid or missing");
                 } else if (status === 400) {
-                  throw new Error(`OpenAI API error: ${data?.error?.message || 'Bad request'}`);
-                } else if (typeof status === 'number' && status >= 500) {
+                  throw new Error(
+                    `OpenAI API error: ${data?.error?.message || "Bad request"}`
+                  );
+                } else if (typeof status === "number" && status >= 500) {
                   retryCount++;
                   if (retryCount < maxRetries) {
                     const delay = baseDelay * Math.pow(2, retryCount - 1);
-                    console.log(`Server error ${status}, waiting ${delay/1000} seconds before retry ${retryCount}/${maxRetries}...`);
+                    console.log(
+                      `Server error ${status}, waiting ${
+                        delay / 1000
+                      } seconds before retry ${retryCount}/${maxRetries}...`
+                    );
                     await sleep(delay);
                     continue;
                   }
@@ -603,18 +628,23 @@ export async function evaluateWithOpenAI(
           }
 
           if (!response) {
-            throw new Error('Failed to get response from OpenAI after all retries');
+            throw new Error(
+              "Failed to get response from OpenAI after all retries"
+            );
           }
 
           // Track token usage
           if (response.data && response.data.usage) {
-            await trackTokenUsage(organizationId, response.data.usage.total_tokens);
+            await trackTokenUsage(
+              organizationId,
+              response.data.usage.total_tokens
+            );
             console.log(`Processed ${response.data.usage.total_tokens} tokens`);
           }
           break;
 
-        case 'claude':
-          console.log('Sending request to Claude...');
+        case "claude":
+          console.log("Sending request to Claude...");
           response = await axios.post(
             "https://api.anthropic.com/v1/messages",
             {
@@ -636,17 +666,22 @@ export async function evaluateWithOpenAI(
               },
             }
           );
-          if (response.data && response.data.content && response.data.content[0] && response.data.content[0].text) {
+          if (
+            response.data &&
+            response.data.content &&
+            response.data.content[0] &&
+            response.data.content[0].text
+          ) {
             fullResponse += response.data.content[0].text;
-            console.log('Received response from Claude');
+            console.log("Received response from Claude");
           } else {
-            console.error('Unexpected Claude response format:', response.data);
-            throw new Error('Invalid response format from Claude API');
+            console.error("Unexpected Claude response format:", response.data);
+            throw new Error("Invalid response format from Claude API");
           }
           break;
 
-        case 'deepseek':
-          console.log('Sending request to DeepSeek...');
+        case "deepseek":
+          console.log("Sending request to DeepSeek...");
           response = await axios.post(
             "https://api.deepseek.com/v1/chat/completions",
             {
@@ -671,7 +706,7 @@ export async function evaluateWithOpenAI(
             }
           );
           fullResponse += response.data.choices[0].message.content;
-          console.log('Received response from DeepSeek');
+          console.log("Received response from DeepSeek");
           break;
       }
 
@@ -680,28 +715,28 @@ export async function evaluateWithOpenAI(
     } catch (error) {
       console.error(`Error processing chunk with ${selectedModel}:`, error);
       if (axios.isAxiosError(error)) {
-        console.error('API Error details:', {
+        console.error("API Error details:", {
           status: error.response?.status,
           data: error.response?.data,
-          headers: error.response?.headers
+          headers: error.response?.headers,
         });
       }
       throw error;
     }
   }
 
-  console.log('Evaluation completed successfully');
-  
+  console.log("Evaluation completed successfully");
+
   // LISÄÄ TÄMÄ: Tallenna palaute tietokantaan käyttäen useSupabase hookia
   if (rosterStudentId && assignmentId) {
     try {
-      const evaluationData: AiEvaluations = {
+      const evaluationData: AiEvaluation = {
         roster_student_id: rosterStudentId,
         assignment_id: assignmentId,
         organization_id: organizationId,
         created_at: new Date(),
         ai_model: selectedModel,
-        md_file: fullResponse
+        md_file: fullResponse,
       };
 
       // TÄMÄ RIVI TULOSTAA KONSOLIIN TALLENNETTAVAN DATAN
@@ -713,7 +748,7 @@ export async function evaluateWithOpenAI(
       console.error("❌ Failed to save AI feedback to database:", error);
     }
   }
-  
+
   return fullResponse;
 }
 
@@ -1012,19 +1047,23 @@ async function main() {
     const rosterStudentId = process.argv[6];
 
     if (!xmlFile) {
-      console.error('Please provide XML file name as first argument');
+      console.error("Please provide XML file name as first argument");
       process.exit(1);
     }
 
-    if (model && !['openai', 'claude', 'deepseek'].includes(model)) {
-      console.error('Please specify a valid AI model: openai, claude, or deepseek');
+    if (model && !["openai", "claude", "deepseek"].includes(model)) {
+      console.error(
+        "Please specify a valid AI model: openai, claude, or deepseek"
+      );
       process.exit(1);
     }
 
-    console.log(`Processing file: ${xmlFile} with model: ${model || 'openai (default)'}`);
+    console.log(
+      `Processing file: ${xmlFile} with model: ${model || "openai (default)"}`
+    );
 
     // Check if file exists in output directory
-    const filePath = path.join(process.cwd(), 'output', xmlFile);
+    const filePath = path.join(process.cwd(), "output", xmlFile);
     if (!existsSync(filePath)) {
       console.error(`File not found: ${filePath}`);
       process.exit(1);
@@ -1033,17 +1072,21 @@ async function main() {
     // Tarkista onko tiedosto jo arvioitu tällä mallilla
     const evaluationStatus = await hasBeenEvaluated(filePath);
     if (evaluationStatus.evaluated && !evaluationStatus.needsUpdate) {
-      console.log(`File ${xmlFile} has already been evaluated with model ${model} and is up to date. Skipping...`);
+      console.log(
+        `File ${xmlFile} has already been evaluated with model ${model} and is up to date. Skipping...`
+      );
       process.exit(0);
     }
 
     if (evaluationStatus.evaluated && evaluationStatus.needsUpdate) {
-      console.log(`File ${xmlFile} has been evaluated before but needs update. Proceeding with evaluation...`);
+      console.log(
+        `File ${xmlFile} has been evaluated before but needs update. Proceeding with evaluation...`
+      );
     }
 
     // Read XML file
-    const xml = await fs.readFile(filePath, 'utf-8');
-    console.log('File read successfully, starting evaluation...');
+    const xml = await fs.readFile(filePath, "utf-8");
+    console.log("File read successfully, starting evaluation...");
 
     // Evaluate with selected model
     const feedback = await evaluateWithOpenAI(
@@ -1056,16 +1099,19 @@ async function main() {
     );
 
     // Save feedback with model-specific filename
-    const baseName = path.basename(xmlFile, '.xml');
-    const feedbackPath = path.join(process.cwd(), 'output', `${baseName}_${model}_feedback.md`);
+    const baseName = path.basename(xmlFile, ".xml");
+    const feedbackPath = path.join(
+      process.cwd(),
+      "output",
+      `${baseName}_${model}_feedback.md`
+    );
     await fs.writeFile(feedbackPath, feedback);
     console.log(`Feedback saved to: ${feedbackPath}`);
 
     // Merkitse arviointi tehdyksi tällä mallilla
     await recordEvaluation(`${baseName}_${model}`, "AI");
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     await handleError(error);
   }
 }
