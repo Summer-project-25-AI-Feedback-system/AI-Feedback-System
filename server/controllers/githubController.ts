@@ -3,7 +3,7 @@ import { extractAssignmentName } from "../utils/githubUtils";
 import {
   getOrganizations,
   getOrganization,
-  getAssignments,
+  getListOfAssignments,
   getAssignmentClassroomInfo,
   getStudentReposForAssignment,
   getCommits,
@@ -32,12 +32,12 @@ export async function handleGetAssignments(
   const orgName = req.params.orgName;
 
   if (!orgName) {
-    res.status(400).json({ error: "Organization login not provided" });
+    res.status(400).json({ error: "Organization not provided" });
     return;
   }
 
   try {
-    const assignments = await getAssignments(orgName);
+    const assignments = await getListOfAssignments(orgName);
     res.json(assignments);
   } catch (error: any) {
     console.error("Failed to fetch assignments:", error);
@@ -45,7 +45,10 @@ export async function handleGetAssignments(
   }
 }
 
-export async function handleGetAssignmentClassroomInfo(req: Request, res: Response): Promise<void> {
+export async function handleGetAssignmentClassroomInfo(
+  req: Request,
+  res: Response
+): Promise<void> {
   const orgName = req.params.orgName;
 
   if (!orgName) {
@@ -59,7 +62,9 @@ export async function handleGetAssignmentClassroomInfo(req: Request, res: Respon
     res.json(assignmentClassroomInfo);
   } catch (err) {
     console.warn(`Failed to fetch assignments' classroom info`, err);
-    res.status(500).json({ error: "Failed to fetch assignments' classroom info" });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch assignments' classroom info" });
   }
 }
 
@@ -199,7 +204,7 @@ export async function handleGetAllOrganizationData(
       if (!studentMap.has(student)) {
         studentMap.set(student, {});
       }
-      
+
       studentMap.get(student)![assignment] = null;
     }
 
@@ -214,7 +219,7 @@ export async function handleGetAllOrganizationData(
         })
       ),
     };
-  
+
     res.json(responseData);
   } catch (error) {
     console.error("Failed to get all data:", error);

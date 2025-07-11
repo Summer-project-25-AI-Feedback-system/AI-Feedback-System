@@ -34,20 +34,47 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
   };
 }
 
-export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
+export async function getListOfAssignments(
+  org: string
+): Promise<AssignmentInfo[]> {
   const octokit = await getOctokit();
   const repos = await octokit.rest.repos.listForOrg({
     org: org,
     type: "all",
     per_page: 100,
   });
-  console.log("repos from backend:", repos);
+
+  console.log(
+    "repos from octokit:",
+    repos.data.map((r) => r.name)
+  );
+
   const assignmentMap = new Map<string, AssignmentInfo>();
 
-  repos.data.forEach((repo) => {
-    const baseName = repo.name.replace(/-[a-z0-9]+$/i, "");
-    const updatedAt = repo.updated_at;
+  for (const repo of repos.data) {
+    const name = repo.name;
 
+    // Skip if it's marked as a template
+    if (repo.is_template) {
+      console.log(`Skipping template repo: ${name}`);
+      continue;
+    }
+
+    // Extract student-suffix pattern (must be at least 2 segments)
+    const parts = name.split("-");
+    if (parts.length > 2) {
+      // Consider everything except the last part as the base name
+      const possibleBase = parts.slice(0, -1).join("-");
+
+      // If base repo exists and last part resembles a username (e.g., contains no 'assignment')
+      if (repos.data.find((r) => r.name === possibleBase)) {
+        console.log(`Skipping student repo: ${name}`);
+        continue;
+      }
+    }
+
+    const baseName = name;
+    const updatedAt = repo.updated_at;
     const assignment = assignmentMap.get(baseName);
 
     if (!assignment) {
@@ -67,7 +94,9 @@ export async function getAssignments(org: string): Promise<AssignmentInfo[]> {
         assignment.updatedAt = updatedAt;
       }
     }
-  });
+  }
+
+  console.log("assignments list returns to frontend :", assignmentMap);
 
   return Array.from(assignmentMap.values());
 }

@@ -23,12 +23,12 @@ export default function OrgsPage() {
     github
       .getOrganizations()
       .then((fetchedOrgs) => {
-        setOrgs(fetchedOrgs)
+        setOrgs(fetchedOrgs);
         const orgInputs: OrganizationInput[] = fetchedOrgs.map((org) => ({
           name: org.name,
           external_github_org_id: org.id,
         }));
-        supabase.addOrganizations(orgInputs)
+        supabase.addOrganizations(orgInputs);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
