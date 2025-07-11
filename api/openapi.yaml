@@ -210,7 +210,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/DetailedAssignmentInfo"
+                  $ref: "#/components/schemas/AssignmentClassroomInfo"
         "400":
           description: Bad Request
         "401":
@@ -564,6 +564,217 @@ paths:
                     type: string
                     example: "OpenAI API timeout"
 
+  # =====================
+  # SUPABASE ROUTES START
+  # =====================
+  /api/supabase/organizations:
+    post:
+      summary: Create or update organizations
+      description: |
+        Creates or updates organizations in the database.
+        Requires authenticated user with GitHub ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationInput"
+      responses:
+        "200":
+          description: Organizations created/updated successfully
+        "401":
+          description: Unauthorized or missing GitHub ID
+        "500":
+          description: Internal Server Error
+
+  /api/supabase/{org}/assignments:
+    get:
+      summary: Get assignments for an organization
+      description: |
+        Retrieves assignments for a specific organization.
+        Supports filtering by GitHub assignment ID.
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+        - in: query
+          name: github_assignment_id
+          schema:
+            type: string
+          description: Optional GitHub assignment ID for filtering
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assignment"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Assignment not found
+        "500":
+          description: Internal Server Error
+
+    post:
+      summary: Create or update assignments
+      description: |
+        Creates or updates assignments for an organization.
+        Automatically removes assignments that no longer exist in GitHub.
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AssignmentInput"
+                - type: array
+                  items:
+                    $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "200":
+          description: Assignments created/updated successfully
+        "401":
+          description: Unauthorized
+        "404":
+          description: Organization not found
+        "500":
+          description: Internal Server Error
+
+  /api/supabase/{org}/roster:
+    get:
+      summary: Get organization roster
+      description: Retrieves the roster including students for an organization
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RosterWithStudents"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+    post:
+      summary: Create or update roster
+      description: |
+        Creates or updates a roster including students for an organization.
+        Replaces existing roster data.
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RosterWithStudentsInput"
+      responses:
+        "201":
+          description: Roster created successfully
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+  /api/supabase/{org}/evaluations:
+    get:
+      summary: Get AI evaluations
+      description: |
+        Retrieves AI evaluations for an organization.
+        Supports filtering by GitHub assignment ID and roster student ID.
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+        - in: query
+          name: github_assignment_id
+          schema:
+            type: string
+          description: GitHub assignment ID for filtering
+        - in: query
+          name: roster_student_id
+          schema:
+            type: string
+          description: Roster student ID for filtering
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiEvaluation"
+        "204":
+          description: No evaluations found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+    post:
+      summary: Create or update evaluations
+      description: Creates or updates AI evaluations for an organization
+      parameters:
+        - in: path
+          name: org
+          required: true
+          schema:
+            type: string
+          description: GitHub organization ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AiEvaluationInput"
+                - type: array
+                  items:
+                    $ref: "#/components/schemas/AiEvaluationInput"
+      responses:
+        "200":
+          description: Evaluations created/updated successfully
+        "401":
+          description: Unauthorized
+        "404":
+          description: Assignment not found
+        "500":
+          description: Internal Server Error
+
+  # ===================
+  # SUPABASE ROUTES END
+  # ===================
+
 components:
   securitySchemes:
     cookieAuth:
@@ -760,3 +971,135 @@ components:
                 type: integer
               changes:
                 type: integer
+
+    # Supabase-specific schemas
+    OrganizationInput:
+      type: object
+      properties:
+        name:
+          type: string
+        external_github_org_id:
+          type: integer
+
+    Assignment:
+      type: object
+      properties:
+        id:
+          type: string
+        external_github_assignment_id:
+          type: integer
+        organization_id:
+          type: string
+        name:
+          type: string
+        max_points:
+          type: number
+        submitted:
+          type: number
+          description: Number of students who submitted this assignment
+
+    AssignmentInput:
+      type: object
+      properties:
+        external_github_assignment_id:
+          type: integer
+        name:
+          type: string
+        max_points:
+          type: number
+        submitted:
+          type: number
+
+    RosterWithStudents:
+      type: object
+      properties:
+        id:
+          type: string
+        organization_id:
+          type: string
+        amount_of_students:
+          type: integer
+        roster_students:
+          type: array
+          items:
+            $ref: "#/components/schemas/RosterStudent"
+
+    RosterWithStudentsInput:
+      type: object
+      properties:
+        amount_of_students:
+          type: integer
+        roster_students:
+          type: array
+          items:
+            $ref: "#/components/schemas/RosterStudentInput"
+
+    RosterStudent:
+      type: object
+      properties:
+        id:
+          type: string
+        roster_id:
+          type: string
+        github_roster_identifier:
+          type: string
+        github_username:
+          type: string
+          nullable: true
+        github_user_id:
+          type: string
+          nullable: true
+        github_display_name:
+          type: string
+          nullable: true
+
+    RosterStudentInput:
+      type: object
+      properties:
+        github_roster_identifier:
+          type: string
+        github_username:
+          type: string
+          nullable: true
+        github_user_id:
+          type: string
+          nullable: true
+        github_display_name:
+          type: string
+          nullable: true
+
+    AiEvaluation:
+      type: object
+      properties:
+        id:
+          type: string
+        roster_student_id:
+          type: string
+        assignment_id:
+          type: string
+        organization_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        ai_model:
+          type: string
+        md_file:
+          type: string
+
+    AiEvaluationInput:
+      type: object
+      properties:
+        roster_student_id:
+          type: string
+        assignment_id:
+          type: string
+        organization_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        ai_model:
+          type: string
+        md_file:
+          type: string
