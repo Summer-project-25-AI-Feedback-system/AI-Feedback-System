@@ -151,7 +151,6 @@ export async function getStudentReposForAssignment(
   org: string,
   assignmentPrefix?: string
 ): Promise<RepoInfo[]> {
-  const octokit = await getOctokit();
   console.log(
     `Searching for repositories ${
       assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
@@ -161,11 +160,16 @@ export async function getStudentReposForAssignment(
   const iterator = await buildSearchQuery(org, assignmentPrefix);
 
   for await (const { data: reposPage } of iterator) {
-    const relevantRepos = reposPage.filter(
-      (repo) =>
+    const relevantRepos = reposPage.filter((repo) => {
+      const isFork = repo.fork === true;
+      const nameMatches =
         !assignmentPrefix ||
-        repo.name.toLowerCase().includes(assignmentPrefix.toLowerCase())
-    );
+        repo.name.toLowerCase().startsWith(assignmentPrefix.toLowerCase());
+      const isNotBaseAssignment =
+        repo.name.toLowerCase() !== assignmentPrefix?.toLowerCase(); // <-- Prevent showing the base assignment repo
+
+      return isFork && nameMatches && isNotBaseAssignment;
+    });
 
     const detailPromises = relevantRepos.map((repo) =>
       extractRepositoryDetails(org, repo)
@@ -249,54 +253,6 @@ async function getRepoCollaborators(org: string, repo: string) {
     return [];
   }
 }
-
-// export async function getFileContents(
-//   owner: string,
-//   repo: string,
-//   filePaths: string[]
-// ): Promise<Record<string, string | null>> {
-//   const contents: Record<string, string | null> = {};
-//   console.log(`\nFetching files from repository ${owner}/${repo}:`);
-
-//   for (const filePath of filePaths) {
-//     try {
-//       const response = await octokit.rest.repos.getContent({
-//         owner,
-//         repo,
-//         path: filePath,
-//       });
-
-//       if (
-//         response.data &&
-//         !Array.isArray(response.data) &&
-//         response.data.type === "file" &&
-//         response.data.content
-//       ) {
-//         const content = Buffer.from(response.data.content, "base64").toString(
-//           "utf-8"
-//         );
-//         contents[filePath] = content;
-//         console.log(` - ${filePath}: Downloaded (${content.length} bytes)`);
-//       } else {
-//         console.log(
-//           ` - ${filePath}: Path found, but it's not a file or content is missing.`
-//         );
-//         contents[filePath] = null;
-//       }
-//     } catch (error: any) {
-//       if (error.status === 404) {
-//         console.log(` - ${filePath}: Not found.`);
-//       } else {
-//         console.error(
-//           ` - Error fetching file ${filePath} from ${owner}/${repo}: ${error.status} ${error.message}`
-//         );
-//       }
-//       contents[filePath] = null;
-//     }
-//   }
-
-//   return contents;
-// }
 
 export async function getCommits(
   orgName: string,
@@ -423,15 +379,4 @@ export async function compareCommits(
         changes: file.changes,
       })) ?? [],
   };
-}
-
-export async function getRepos(org: string): Promise<any[]> {
-  const octokit = await getOctokit();
-  const repos = await octokit.rest.repos.listForOrg({
-    org,
-    type: "all",
-    per_page: 100,
-  });
-
-  return repos.data;
 }
