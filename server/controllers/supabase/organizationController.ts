@@ -1,5 +1,8 @@
-import { Request, Response } from 'express';
-import { createOrUpdateOrganizations } from '../../services/supabase/organizationService';
+import { Request, Response } from "express";
+import {
+  createOrUpdateOrganizations,
+  getOrganizationIdByGithubOrg,
+} from "../../services/supabase/organizationService";
 
 export const addOrganizations = async (req: Request, res: Response) => {
   const githubId = (req as any).githubId;
@@ -7,13 +10,30 @@ export const addOrganizations = async (req: Request, res: Response) => {
 
   try {
     await createOrUpdateOrganizations(githubId, organizations);
-    res.status(200).send('Organization(s) created or updated');
+    res.status(200).send("Organization(s) created or updated");
   } catch (error: any) {
     if (error.status === 404) {
       res.status(404).json({ error: error.message });
       return;
-    } 
-    console.error('Unexpected error storing organization(s):', error);
-    res.status(500).json({ error: 'Failed to store organization(s)' });
+    }
+    console.error("Unexpected error storing organization(s):", error);
+    res.status(500).json({ error: "Failed to store organization(s)" });
   }
 };
+
+export async function getOrgIdFromDB(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const githubOrg = req.params.orgNum;
+
+  try {
+    const orgId = await getOrganizationIdByGithubOrg(githubOrg);
+    if (!orgId) res.status(404).json({ error: "Organization not found" });
+
+    res.status(200).json({ organization_id: orgId });
+  } catch (error) {
+    console.error("Failed to fetch organization ID:", error);
+    res.status(500).json({ error: "Failed to retrieve organization ID" });
+  }
+}

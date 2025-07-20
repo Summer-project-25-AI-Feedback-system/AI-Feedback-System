@@ -2,12 +2,19 @@ import express from "express";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { validateOrgAccess } from "../middlewares/validateOrgAccess";
 import { attachGithubId } from "../middlewares/attachGitHubId";
-import { addOrganizations } from "../controllers/supabase/organizationController";
+import {
+  addOrganizations,
+  getOrgIdFromDB,
+} from "../controllers/supabase/organizationController";
 import {
   getAssignments,
   addAssignments,
 } from "../controllers/supabase/assignmentController";
-import { getRoster, addRoster } from "../controllers/supabase/rosterController";
+import {
+  getRoster,
+  addRoster,
+  getRosterStudentIdFromDB,
+} from "../controllers/supabase/rosterController";
 import {
   addEvaluations,
   getEvaluations,
@@ -20,6 +27,9 @@ const router = express.Router();
 router.use(isAuthenticated);
 
 // -- Organization routes --
+
+// get org id
+router.get("/organization-id/:orgNum", getOrgIdFromDB);
 // POST organization
 router.post("/organizations", attachGithubId, addOrganizations);
 
@@ -45,6 +55,9 @@ router.get("/:org/roster", attachGithubId, validateOrgAccess, getRoster);
 // POST roster
 router.post("/:org/roster", attachGithubId, validateOrgAccess, addRoster);
 
+// get roster id
+router.get("/roster-student-id/:account", getRosterStudentIdFromDB);
+
 // -- Evaluation routes --
 // GET evaluation(s)
 router.get(
@@ -60,5 +73,7 @@ router.post(
   validateOrgAccess,
   addEvaluations
 );
+
+// github action self-evaluation from student
 
 export default router;

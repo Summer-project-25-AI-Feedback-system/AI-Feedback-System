@@ -8,9 +8,6 @@ export const validateOrgAccess = async (
 ) => {
   const { org } = req.params;
   const githubId = req.githubId;
-
-  console.log("org:", org);
-  console.log("githubId:", githubId);
   if (!githubId) {
     res.status(401).json({ error: "Missing GitHub ID in request." });
     return;
@@ -30,7 +27,6 @@ export const validateOrgAccess = async (
 
   const userId = userRecord.id;
 
-  console.log("userId:", userId);
   // validating access to organization
   const { data: orgData, error: orgError } = await supabase
     .from("organizations")
