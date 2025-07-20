@@ -380,3 +380,19 @@ export async function compareCommits(
       })) ?? [],
   };
 }
+
+export async function getParentRepoId(orgName: string, repoName: string) {
+  const octokit = await getOctokit();
+
+  try {
+    const { data } = await octokit.repos.get({
+      owner: orgName,
+      repo: repoName,
+    });
+
+    return data.parent?.id ?? null;
+  } catch (error: any) {
+    console.error(`GitHub API error while fetching repo ${repoName}:`, error);
+    return null;
+  }
+}

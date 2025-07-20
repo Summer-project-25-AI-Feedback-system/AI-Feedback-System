@@ -32,25 +32,3 @@ export const addRoster = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to add roster" });
   }
 };
-
-export async function getRosterStudentIdFromDB(
-  req: Request,
-  res: Response
-): Promise<void> {
-  const account = req.params.account;
-  if (!account) {
-    res.status(400).json({ error: "Missing parameters" });
-    return;
-  }
-
-  try {
-    const studentId = await fetchRosterStudentId(account as string);
-
-    if (!studentId) res.status(404).json({ error: "Roster student not found" });
-
-    res.json({ roster_student_id: studentId });
-  } catch (err) {
-    console.error("Error fetching roster student:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-}

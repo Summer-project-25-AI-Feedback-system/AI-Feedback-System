@@ -18,7 +18,10 @@ router.use(isAuthenticated);
 
 router.get("/orgs", handleGetOrganizations);
 router.get("/orgs/:orgName/assignments", handleGetAssignments);
-router.get("/orgs/:orgName/assignmentClassroomInfo", handleGetAssignmentClassroomInfo);
+router.get(
+  "/orgs/:orgName/assignmentClassroomInfo",
+  handleGetAssignmentClassroomInfo
+);
 router.get(
   "/orgs/:orgName/assignments/:assignmentName/repos",
   handleGetStudentReposForAssignment
@@ -36,5 +39,6 @@ router.get(
 // Reporting route
 router.get("/org-report", handleGetAllOrganizationData);
 
+// router.get("/get-parent-id/:orgName/:repoName", handelGetParentRepoId);
 
 export default router;

@@ -10,14 +10,11 @@ import {
   getAssignments,
   addAssignments,
 } from "../controllers/supabase/assignmentController";
-import {
-  getRoster,
-  addRoster,
-  getRosterStudentIdFromDB,
-} from "../controllers/supabase/rosterController";
+import { getRoster, addRoster } from "../controllers/supabase/rosterController";
 import {
   addEvaluations,
   getEvaluations,
+  addSelfEvaluation,
 } from "../controllers/supabase/evaluationController";
 
 const router = express.Router();
@@ -49,14 +46,17 @@ router.post(
   addAssignments
 );
 
+// get parent repo's uuid from supabase
+// router.get(
+//   "/orgs/:orgName/parent-repo-id/:assignmentName/:account",
+//   handelGetParentRepoId
+// );
+
 // -- Roster routes (includes roster students) --
 // GET roster
 router.get("/:org/roster", attachGithubId, validateOrgAccess, getRoster);
 // POST roster
 router.post("/:org/roster", attachGithubId, validateOrgAccess, addRoster);
-
-// get roster id
-router.get("/roster-student-id/:account", getRosterStudentIdFromDB);
 
 // -- Evaluation routes --
 // GET evaluation(s)
@@ -75,5 +75,11 @@ router.post(
 );
 
 // github action self-evaluation from student
+router.post(
+  "/self-evaluation",
+  attachGithubId,
+  validateOrgAccess,
+  addSelfEvaluation
+);
 
 export default router;
