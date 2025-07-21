@@ -61,7 +61,7 @@ export interface RosterWithStudentsInput extends RosterInput {
 }
 
 export interface AiEvaluation {
-  // id: string,
+  id: string,
   roster_student_id: string;
   assignment_id: string;
   organization_id: string;

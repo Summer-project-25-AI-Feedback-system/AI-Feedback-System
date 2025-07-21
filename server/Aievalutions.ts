@@ -7,7 +7,7 @@ import { simpleGit, SimpleGit } from "simple-git";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { createOrUpdateEvaluations } from "./services/supabase/evaluationService";
-import type { AiEvaluation } from "@shared/supabaseInterfaces";
+import type { AiEvaluationInput } from "@shared/supabaseInterfaces";
 // import { supabase } from "./utils/supabase";
 
 // Load environment variables from .env file
@@ -730,7 +730,7 @@ export async function evaluateWithOpenAI(
   // LISÄÄ TÄMÄ: Tallenna palaute tietokantaan käyttäen useSupabase hookia
   if (rosterStudentId && assignmentId) {
     try {
-      const evaluationData: AiEvaluation = {
+      const evaluationData: AiEvaluationInput = {
         roster_student_id: rosterStudentId,
         assignment_id: assignmentId,
         organization_id: organizationId,
