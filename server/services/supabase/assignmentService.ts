@@ -82,3 +82,21 @@ export const createOrUpdateAssignments = async (
 
   if (error) throw error;
 };
+
+export async function handleGetAssignmentId(
+  organizationUuId: string,
+  assignmentId: string
+): Promise<string | null> {
+  const { data: assignment, error: assignmentError } = await supabase
+    .from("assignments")
+    .select("id")
+    .eq("organization_id", organizationUuId)
+    .eq("external_github_assignment_id", assignmentId)
+    .single();
+
+  if (assignmentError || !assignment) {
+    console.error("Failed to fetch assignment:", assignmentError);
+    return null;
+  }
+  return assignment.id;
+}

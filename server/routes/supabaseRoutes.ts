@@ -76,7 +76,7 @@ router.post(
 
 // github action self-evaluation from student
 router.post(
-  "/self-evaluation",
+  "/:org/self-evaluation",
   attachGithubId,
   validateOrgAccess,
   addSelfEvaluation

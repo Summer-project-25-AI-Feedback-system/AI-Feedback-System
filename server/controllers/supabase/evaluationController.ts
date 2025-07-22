@@ -9,6 +9,7 @@ import type {
   GithubReqBody,
   AiEvaluationInput,
 } from "../../../shared/supabaseInterfaces";
+import { handleGetAssignmentId } from "../../services/supabase/assignmentService";
 
 export const getEvaluations = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
@@ -79,6 +80,7 @@ export async function addSelfEvaluation(
       res.status(404).json({ error: "Student not found." });
       return;
     }
+
     const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
 
     if (!parentRepoId) {
@@ -86,15 +88,28 @@ export async function addSelfEvaluation(
       return;
     }
 
+    const assignmentId = await handleGetAssignmentId(
+      organizationUuId,
+      parentRepoId
+    );
+
+    if (!assignmentId) {
+      res.status(404).json({ error: "Assignment not found in database." });
+      return;
+    }
+
+    console.log("rosterStudentId:", rosterStudentId);
+    console.log("parentRepoId:", parentRepoId);
     // Now create the evaluation with the rosterStudentId
     const evaluationData: AiEvaluationInput = {
       roster_student_id: rosterStudentId,
-      assignment_id: parentRepoId,
+      assignment_id: assignmentId,
       organization_id: organizationUuId,
       created_at: new Date(),
       ai_model: "gpt-4",
       md_file: feedback,
     };
+    console.log("evaluationData:", evaluationData);
 
     await createOrUpdateEvaluations(organizationUuId, evaluationData);
     res.status(200).send("Self-Evaluation created by student.");
