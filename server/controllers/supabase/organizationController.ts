@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import {
   createOrUpdateOrganizations,
-  getOrganizationIdByGithubOrg,
+  getOrganizationIdByGithubOrgId,
 } from "../../services/supabase/organizationService";
 
 export const addOrganizations = async (req: Request, res: Response) => {
@@ -28,7 +28,7 @@ export async function getOrgIdFromDB(
   const githubOrg = req.params.orgNum;
 
   try {
-    const orgId = await getOrganizationIdByGithubOrg(githubOrg);
+    const orgId = await getOrganizationIdByGithubOrgId(githubOrg);
     if (!orgId) res.status(404).json({ error: "Organization not found" });
 
     res.status(200).json({ organization_id: orgId });

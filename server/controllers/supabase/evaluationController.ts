@@ -59,51 +59,15 @@ export async function addSelfEvaluation(
   req: Request,
   res: Response
 ): Promise<void> {
-  const organizationUuId = (req as any).organizationId;
-  const body: GithubReqBody = req.body;
-  console.log("organizationId:", organizationUuId);
-  console.log("body:", body);
-  const { githubUsername, orgName, repoName, feedback } = req.body;
-
-  if (!githubUsername || !orgName || !repoName) {
-    res
-      .status(400)
-      .json({ error: "Missing parameters to add self evaluation" });
-    return;
-  }
-
   try {
-    // Directly call the service function
-    const rosterStudentId = await fetchRosterStudentId(githubUsername);
+    const organizationUuId = (req as any).organizationId;
+    const assignmentUuId = (req as any).assignmentId;
+    const rosterStudentUuId = (req as any).rosterStudentId;
+    const feedback = (req as any).feedback;
 
-    if (!rosterStudentId) {
-      res.status(404).json({ error: "Student not found." });
-      return;
-    }
-
-    const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
-
-    if (!parentRepoId) {
-      res.status(404).json({ error: "Parent repository not found." });
-      return;
-    }
-
-    const assignmentId = await handleGetAssignmentId(
-      organizationUuId,
-      parentRepoId
-    );
-
-    if (!assignmentId) {
-      res.status(404).json({ error: "Assignment not found in database." });
-      return;
-    }
-
-    console.log("rosterStudentId:", rosterStudentId);
-    console.log("parentRepoId:", parentRepoId);
-    // Now create the evaluation with the rosterStudentId
     const evaluationData: AiEvaluationInput = {
-      roster_student_id: rosterStudentId,
-      assignment_id: assignmentId,
+      roster_student_id: rosterStudentUuId,
+      assignment_id: assignmentUuId,
       organization_id: organizationUuId,
       created_at: new Date(),
       ai_model: "gpt-4",

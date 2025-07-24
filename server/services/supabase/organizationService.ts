@@ -70,7 +70,7 @@ export const createOrUpdateOrganizations = async (
   if (error) throw error;
 };
 
-export async function getOrganizationIdByGithubOrg(
+export async function getOrganizationIdByGithubOrgId(
   githubOrg: string
 ): Promise<any> {
   const { data, error } = await supabase
