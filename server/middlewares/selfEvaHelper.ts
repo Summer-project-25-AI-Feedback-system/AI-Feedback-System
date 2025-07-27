@@ -14,7 +14,7 @@ export const isEvaluated = async (
   const { githubUsername, orgName, orgId, repoName, feedback }: GithubReqBody =
     req.body;
 
-  if (!githubUsername || !orgName || !orgId || !repoName || !feedback) {
+  if (!githubUsername || !orgName || !orgId || !repoName) {
     res.status(400).json({ error: "Missing parameters for evaluation check" });
     return;
   }
@@ -62,16 +62,19 @@ export const isEvaluated = async (
     if (evaluation) {
       res.status(409).json({
         error: "Evaluation already exists, please contact with professor.",
+        exists: true,
       });
       return;
     }
 
-    (req as any).evaluationData = {
-      organizationUuId,
-      assignmentUuId,
-      rosterStudentUuId,
-      feedback,
-    };
+    if (feedback) {
+      (req as any).evaluationData = {
+        organizationUuId,
+        assignmentUuId,
+        rosterStudentUuId,
+        feedback,
+      };
+    }
 
     next();
   } catch (err) {

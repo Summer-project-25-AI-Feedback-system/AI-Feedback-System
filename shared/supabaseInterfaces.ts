@@ -84,5 +84,5 @@ export interface GithubReqBody {
   orgName: string;
   orgId: string;
   repoName: string;
-  feedback: string;
+  feedback?: string;
 }
