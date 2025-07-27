@@ -11,21 +11,22 @@ export const isEvaluated = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { githubUsername, orgName, repoName, feedback }: GithubReqBody =
+  const { githubUsername, orgName, orgId, repoName, feedback }: GithubReqBody =
     req.body;
 
-  if (!githubUsername || !orgName || !repoName || !feedback) {
+  if (!githubUsername || !orgName || !orgId || !repoName || !feedback) {
     res.status(400).json({ error: "Missing parameters for evaluation check" });
     return;
   }
 
   try {
-    const organizationUuId = await getOrganizationIdByGithubOrgId("210959740");
+    const organizationUuId = await getOrganizationIdByGithubOrgId(orgId);
 
     if (!organizationUuId) {
       res.status(404).json({ error: "Organization not found." });
       return;
     }
+    // const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
     const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
 
     if (!parentRepoId) {
@@ -51,9 +52,11 @@ export const isEvaluated = async (
     const { data: evaluation } = await supabase
       .from("ai_evaluations")
       .select("id")
-      .eq("roster_student_id", rosterStudentUuId)
-      .eq("assignment_id", assignmentUuId)
-      .eq("organization_id", organizationUuId)
+      .match({
+        roster_student_id: rosterStudentUuId,
+        assignment_id: assignmentUuId,
+        organization_id: organizationUuId,
+      })
       .single();
 
     if (evaluation) {
@@ -63,11 +66,13 @@ export const isEvaluated = async (
       return;
     }
 
-    (req as any).organizationId = organizationUuId;
-    (req as any).assignmentId = assignmentUuId;
-    (req as any).rosterStudentId = rosterStudentUuId;
-    (req as any).feedback = feedback;
-    console.log("req:", req);
+    (req as any).evaluationData = {
+      organizationUuId,
+      assignmentUuId,
+      rosterStudentUuId,
+      feedback,
+    };
+
     next();
   } catch (err) {
     console.error("Error checking evaluation existence:", err);

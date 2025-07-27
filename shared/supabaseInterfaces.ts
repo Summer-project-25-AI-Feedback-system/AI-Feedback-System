@@ -82,6 +82,7 @@ export interface AiEvaluationInput {
 export interface GithubReqBody {
   githubUsername: string;
   orgName: string;
+  orgId: string;
   repoName: string;
   feedback: string;
 }

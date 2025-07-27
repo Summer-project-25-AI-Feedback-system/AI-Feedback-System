@@ -3,13 +3,7 @@ import {
   fetchEvaluations,
   createOrUpdateEvaluations,
 } from "../../services/supabase/evaluationService";
-import { fetchRosterStudentId } from "../../services/supabase/rosterService";
-import { getParentRepoId } from "../../services/github/githubService";
-import type {
-  GithubReqBody,
-  AiEvaluationInput,
-} from "../../../shared/supabaseInterfaces";
-import { handleGetAssignmentId } from "../../services/supabase/assignmentService";
+import type { AiEvaluationInput } from "../../../shared/supabaseInterfaces";
 
 export const getEvaluations = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
@@ -60,10 +54,9 @@ export async function addSelfEvaluation(
   res: Response
 ): Promise<void> {
   try {
-    const organizationUuId = (req as any).organizationId;
-    const assignmentUuId = (req as any).assignmentId;
-    const rosterStudentUuId = (req as any).rosterStudentId;
-    const feedback = (req as any).feedback;
+    const { organizationUuId, assignmentUuId, rosterStudentUuId, feedback } = (
+      req as any
+    ).evaluationData;
 
     const evaluationData: AiEvaluationInput = {
       roster_student_id: rosterStudentUuId,
