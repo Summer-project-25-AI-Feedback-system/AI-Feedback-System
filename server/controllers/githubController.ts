@@ -10,8 +10,8 @@ import {
   getRepoTree,
   getFileContents,
   compareCommits,
+  getParentRepoId,
 } from "../services/github/githubService";
-
 export async function handleGetOrganizations(
   req: Request,
   res: Response
@@ -226,3 +226,30 @@ export async function handleGetAllOrganizationData(
     res.status(500).json({ error: "Failed to generate all data" });
   }
 }
+
+// export async function handelGetParentRepoId(
+//   req: Request,
+//   res: Response
+// ): Promise<void> {
+//   const { orgName, repoName } = req.params;
+
+//   if (!orgName || !repoName) {
+//     res
+//       .status(400)
+//       .json({ error: "Missing orgName, assignmentName or account" });
+//     return;
+//   }
+
+//   try {
+//     const repoId = await getParentRepoId(orgName, repoName);
+//     if (!repoId) {
+//       res.status(404).json({ error: "Parent repository not found" });
+//       return;
+//     }
+
+//     res.status(200).json({ parent_repo_id: repoId });
+//   } catch (error) {
+//     console.error("Error fetching parent repo ID:", error);
+//     res.status(500).json({ error: "Failed to fetch parent repo ID" });
+//   }
+// }

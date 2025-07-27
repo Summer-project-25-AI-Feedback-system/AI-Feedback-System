@@ -1,31 +1,41 @@
-import { RosterWithStudents, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
+import {
+  RosterWithStudents,
+  RosterWithStudentsInput,
+} from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
-export const fetchRoster = async (organizationId: string): Promise<RosterWithStudents | null> => {
+export const fetchRoster = async (
+  organizationId: string
+): Promise<RosterWithStudents | null> => {
   const { data, error } = await supabase
-    .from('rosters')
-    .select(`
+    .from("rosters")
+    .select(
+      `
       *,
       roster_students(*)
-    `)
-    .eq('organization_id', organizationId)
-    .single(); 
+    `
+    )
+    .eq("organization_id", organizationId)
+    .single();
 
-  if (error && error.code !== 'PGRST116') throw error; // code 116 = no rows
+  if (error && error.code !== "PGRST116") throw error; // code 116 = no rows
 
   return data;
 };
 
 // TODO: add functionality so if deleting old roster students succeeds but adding new ones doesn't, then nothing works at all and so on
-export const createOrUpdateRoster = async (organizationId: string, rosterData: RosterWithStudentsInput) => { 
+export const createOrUpdateRoster = async (
+  organizationId: string,
+  rosterData: RosterWithStudentsInput
+) => {
   const rosterCore = {
     organization_id: organizationId,
     amount_of_students: rosterData.amount_of_students,
   };
 
   const { data: rosterResult, error: rosterError } = await supabase
-    .from('rosters')
-    .upsert(rosterCore, { onConflict: 'organization_id'}) 
+    .from("rosters")
+    .upsert(rosterCore, { onConflict: "organization_id" })
     .select()
     .single();
 
@@ -35,9 +45,9 @@ export const createOrUpdateRoster = async (organizationId: string, rosterData: R
 
   if (rosterData.roster_students && rosterData.roster_students.length > 0) {
     const { error: deleteError } = await supabase
-      .from('roster_students')
+      .from("roster_students")
       .delete()
-      .eq('roster_id', rosterId);
+      .eq("roster_id", rosterId);
 
     if (deleteError) throw deleteError;
 
@@ -50,9 +60,26 @@ export const createOrUpdateRoster = async (organizationId: string, rosterData: R
     }));
 
     const { error: studentError } = await supabase
-      .from('roster_students')
+      .from("roster_students")
       .insert(studentRecords);
 
     if (studentError) throw studentError;
   }
 };
+
+export async function fetchRosterStudentId(
+  account: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("roster_students")
+    .select("id")
+    .eq("github_username", account)
+    .single();
+
+  if (error || !data) {
+    console.error("Roster id fetch error:", error);
+    return null;
+  }
+
+  return data.id;
+}

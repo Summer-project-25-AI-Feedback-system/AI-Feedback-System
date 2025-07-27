@@ -78,3 +78,11 @@ export interface AiEvaluationInput {
   ai_model: string;
   md_file: string;
 }
+
+export interface GithubReqBody {
+  githubUsername: string;
+  orgName: string;
+  orgId: string;
+  repoName: string;
+  feedback?: string;
+}
