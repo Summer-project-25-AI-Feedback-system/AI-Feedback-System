@@ -2,8 +2,10 @@ import { Request, Response } from "express";
 import {
   fetchEvaluations,
   createOrUpdateEvaluations,
+  checkEvaluationExistsService,
 } from "../../services/supabase/evaluationService";
 import type { AiEvaluationInput } from "../../../shared/supabaseInterfaces";
+import { GithubReqBody } from "../../../shared/supabaseInterfaces";
 
 export const getEvaluations = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
@@ -48,6 +50,32 @@ export const addEvaluations = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to store evaluation(s)" });
   }
 };
+export async function checkEvaluationExists(req: Request, res: Response) {
+  const { githubUsername, orgName, orgId, repoName }: GithubReqBody = req.body;
+
+  try {
+    const result = await checkEvaluationExistsService({
+      githubUsername,
+      orgName,
+      orgId,
+      repoName,
+    });
+
+    res.status(200).json(result); // returns { exists: true | false }
+  } catch (err: any) {
+    console.error("Check evaluation error:", err.message);
+    if (
+      err.message.includes("Organization not found") ||
+      err.message.includes("Parent repo not found") ||
+      err.message.includes("Assignment not found") ||
+      err.message.includes("Student not found")
+    ) {
+      res.status(404).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+}
 
 export async function addSelfEvaluation(
   req: Request,
@@ -74,10 +102,4 @@ export async function addSelfEvaluation(
     console.error("Error creating self-evaluation:", error);
     res.status(500).json({ error: "Failed to store evaluation" });
   }
-  // try {
-  //   await handleAddSelfEvaluation(organizationId, body);
-  //   res.status(200).send("Self-Evaluation created by student.");
-  // } catch (error) {
-  //   res.status(500).json({ error: "Failed to store evaluation(s)" });
-  // }
 }

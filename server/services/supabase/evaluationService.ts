@@ -1,5 +1,10 @@
 import { AiEvaluation, AiEvaluationInput } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
+import { getParentRepoId } from "../github/githubService";
+import { handleGetAssignmentId } from "../supabase/assignmentService";
+import { getOrganizationIdByGithubOrgId } from "../supabase/organizationService";
+import { fetchRosterStudentId } from "../supabase/rosterService";
+import type { GithubReqBody } from "../../../shared/supabaseInterfaces";
 
 export const fetchEvaluations = async (
   organizationId: string,
@@ -94,4 +99,38 @@ export const createOrUpdateEvaluations = async (
     console.error("Supabase error:", error);
     throw new Error(`Failed to store evaluation: ${error.message}`);
   }
+};
+
+export const checkEvaluationExistsService = async ({
+  githubUsername,
+  orgName,
+  orgId,
+  repoName,
+}: GithubReqBody): Promise<{ exists: boolean }> => {
+  const organizationUuId = await getOrganizationIdByGithubOrgId(orgId);
+  if (!organizationUuId) throw new Error("Organization not found.");
+
+  const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
+  if (!parentRepoId) throw new Error("Parent repo not found.");
+
+  const assignmentUuId = await handleGetAssignmentId(
+    organizationUuId,
+    parentRepoId
+  );
+  if (!assignmentUuId) throw new Error("Assignment not found.");
+
+  const rosterStudentUuId = await fetchRosterStudentId(githubUsername);
+  if (!rosterStudentUuId) throw new Error("Student not found.");
+
+  const { data: evaluation } = await supabase
+    .from("ai_evaluations")
+    .select("id")
+    .match({
+      roster_student_id: rosterStudentUuId,
+      assignment_id: assignmentUuId,
+      organization_id: organizationUuId,
+    })
+    .single();
+
+  return { exists: !!evaluation };
 };

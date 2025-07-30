@@ -15,12 +15,14 @@ import {
   addEvaluations,
   getEvaluations,
   addSelfEvaluation,
+  checkEvaluationExists,
 } from "../controllers/supabase/evaluationController";
 import { isEvaluated } from "../middlewares/selfEvaHelper";
 
 const router = express.Router();
 
 // github action self-evaluation from student
+router.post("/check-evaluation", checkEvaluationExists);
 router.post("/self-evaluation", isEvaluated, addSelfEvaluation);
 
 // the given org in the URL is the organization ID from github
