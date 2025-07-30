@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
+echo ""
+echo "----> 🔐 Logging in to GitHub Container Registry... <----"
+echo "$GITHUB_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
+
 echo ""
 echo "----> 🗑️ Removing stopped containers... <----"
 docker container prune -f

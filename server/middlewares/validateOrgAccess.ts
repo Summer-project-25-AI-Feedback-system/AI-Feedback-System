@@ -31,7 +31,8 @@ export const validateOrgAccess = async (
   const { data: orgData, error: orgError } = await supabase
     .from("organizations")
     .select("id")
-    .eq("name", org)
+    // .eq("name", org)
+    .eq("external_github_org_id", org)
     .eq("owner_id", userId)
     .single();
 

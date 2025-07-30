@@ -26,7 +26,6 @@ export const isEvaluated = async (
       res.status(404).json({ error: "Organization not found." });
       return;
     }
-    // const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
     const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
 
     if (!parentRepoId) {
