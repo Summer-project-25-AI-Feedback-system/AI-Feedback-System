@@ -60,7 +60,7 @@ export const isEvaluated = async (
 
     if (evaluation) {
       res.status(409).json({
-        error: "Evaluation already exists, please contact with professor.",
+        error: "Evaluation already exists, please contact your professor.",
         exists: true,
       });
       return;
