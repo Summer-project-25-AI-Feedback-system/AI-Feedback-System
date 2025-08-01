@@ -19,7 +19,10 @@ export function verifyGitHubOIDC(
   audience: string = "api.afs.com"
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction) => {
+    console.log("🛡️ Verifying GitHub OIDC token");
     const authHeader = req.headers.authorization;
+    console.log("🔐 Auth Header:", authHeader);
+    console.log("🔐 all Headers:", req.headers);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res
