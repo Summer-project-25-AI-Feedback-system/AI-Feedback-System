@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-if [ -f .env ]; then
-  export $(grep -v '^#' .env | xargs)
+if [ -f ./server/.env ]; then
+  export $(grep -v '^#' ./server/.env | xargs)
 fi
 
 echo ""
