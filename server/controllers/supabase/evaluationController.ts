@@ -50,6 +50,7 @@ export const addEvaluations = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to store evaluation(s)" });
   }
 };
+
 export async function checkEvaluationExists(req: Request, res: Response) {
   const { githubUsername, orgName, orgId, repoName }: GithubReqBody = req.body;
 
