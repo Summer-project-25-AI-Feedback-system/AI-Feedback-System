@@ -22,7 +22,6 @@ export function verifyGitHubOIDC(
     console.log("🛡️ Verifying GitHub OIDC token");
     const authHeader = req.headers.authorization;
     console.log("🔐 Auth Header:", authHeader);
-    console.log("🔐 all Headers:", req.headers);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res
