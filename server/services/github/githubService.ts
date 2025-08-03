@@ -11,14 +11,36 @@ import {
 export async function getOrganizations(): Promise<OrgInfo[]> {
   const octokit = await getOctokit();
   const response = await octokit.rest.orgs.listForAuthenticatedUser();
-  return response.data.map(
-    (org): OrgInfo => ({
-      id: org.id,
-      name: org.login,
-      description: org.description,
-      avatarUrl: org.avatar_url,
-    })
-  );
+
+  if (!response) {
+    throw new Error(`Error fetching organizations`);
+  } 
+
+  const { data: classrooms } = await octokit.request("GET /classrooms", {
+    headers: {
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+
+  if (!classrooms) {
+    throw new Error(`Error fetching classrooms`);
+  } 
+
+  const filteredOrgs: OrgInfo[] = [];
+
+  for (const org of response.data) {
+      const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
+      if (hasClassroom) {
+        filteredOrgs.push({
+          id: org.id,
+          name: org.login,
+          description: org.description,
+          avatarUrl: org.avatar_url,
+        });
+      }
+  }
+    
+  return filteredOrgs;
 }
 
 export async function getOrganization(orgName: string): Promise<OrgInfo> {
