@@ -48,6 +48,26 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 
   const { data: org } = await octokit.rest.orgs.get({ org: orgName });
 
+  if (!org) {
+    throw new Error(`Error fetching organization`);
+  } 
+
+  const { data: classrooms } = await octokit.request("GET /classrooms", {
+    headers: {
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+
+  if (!classrooms) {
+    throw new Error(`Error fetching classrooms`);
+  } 
+
+  const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
+
+  if (!hasClassroom) {
+    throw new Error(`No classroom found for organization: ${org.login}`);
+  }
+
   return {
     id: org.id,
     name: org.login,
