@@ -737,6 +737,7 @@ export async function evaluateWithOpenAI(
         created_at: new Date(),
         ai_model: selectedModel,
         md_file: fullResponse,
+        total_points: 5 // TODO: change to display real total points given for said assignment
       };
 
       // TÄMÄ RIVI TULOSTAA KONSOLIIN TALLENNETTAVAN DATAN

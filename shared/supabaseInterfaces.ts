@@ -68,6 +68,7 @@ export interface AiEvaluation {
   created_at: Date;
   ai_model: string;
   md_file: string;
+  total_points: number;
 }
 
 export interface AiEvaluationInput {
@@ -77,6 +78,7 @@ export interface AiEvaluationInput {
   created_at: Date;
   ai_model: string;
   md_file: string;
+  total_points: number;
 }
 
 export interface GithubReqBody {
