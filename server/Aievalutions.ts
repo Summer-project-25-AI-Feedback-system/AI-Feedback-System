@@ -464,12 +464,16 @@ async function recordEvaluation(
 // Funktio promptin hakemiseen tiedostosta
 async function getPromptFromFile(): Promise<string> {
   const promptPath = path.resolve(__dirname, "prompt.txt");
+  const alwaysIncludedInstruction = `
+    INSTRUCTION: At the beginning of your response, write the total rating in this format: "Total points: X", where X is a number between 0 and 5.
+  `;
   try {
-    return await fs.readFile(promptPath, "utf-8");
+    const filePrompt = await fs.readFile(promptPath, "utf-8");
+    return alwaysIncludedInstruction + filePrompt;
   } catch (error) {
     console.warn("Prompt file not found, using default prompt.");
     // Palauta oletusprompt jos tiedostoa ei löydy
-    return `
+    return alwaysIncludedInstruction + `
 You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
 
 1. Syntax and Validity (0-10): Is the code syntactically correct and does it run/compile without errors?
@@ -729,6 +733,9 @@ export async function evaluateWithOpenAI(
 
   // LISÄÄ TÄMÄ: Tallenna palaute tietokantaan käyttäen useSupabase hookia
   if (rosterStudentId && assignmentId) {
+    const totalPointsMatch = fullResponse.match(/Total points:\s*(\d(?:\.\d+)?)/i);
+    const totalPoints = totalPointsMatch ? parseFloat(totalPointsMatch[1]) : null;
+    console.log("Total points returned to supabase: " + totalPoints) // should not return null
     try {
       const evaluationData: AiEvaluationInput = {
         roster_student_id: rosterStudentId,
@@ -737,7 +744,7 @@ export async function evaluateWithOpenAI(
         created_at: new Date(),
         ai_model: selectedModel,
         md_file: fullResponse,
-        total_points: 5 // TODO: change to display real total points given for said assignment
+        total_points: totalPoints
       };
 
       // TÄMÄ RIVI TULOSTAA KONSOLIIN TALLENNETTAVAN DATAN
