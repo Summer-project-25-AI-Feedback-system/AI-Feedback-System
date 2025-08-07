@@ -9,6 +9,7 @@ import {
   handleGetAllOrganizationData,
   handleGetCommits,
   handleCompareCommits,
+  handleGetOrganizationIdByName,
 } from "../controllers/githubController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
@@ -17,6 +18,7 @@ const router = Router();
 router.use(isAuthenticated);
 
 router.get("/orgs", handleGetOrganizations);
+router.get("/orgs/:orgName/getOrgId", handleGetOrganizationIdByName);
 router.get("/orgs/:orgName/assignments", handleGetAssignments);
 router.get(
   "/orgs/:orgName/assignmentClassroomInfo",

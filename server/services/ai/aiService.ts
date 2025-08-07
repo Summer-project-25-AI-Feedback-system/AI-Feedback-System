@@ -37,6 +37,7 @@ export async function runAIEvolution(
       assignmentName: assignmentName,
     },
   };
+  console.log("evaluationResult:", evaluationResult);
   const markdownContent = generateMarkdownContent(evaluationResult);
   return markdownContent;
 }
