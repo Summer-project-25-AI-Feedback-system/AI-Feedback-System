@@ -12,6 +12,7 @@ import MetadataTab from "./MetadataTab";
 import DiffTab from "./DiffTab";
 import FeedbackTab from "./FeedbackTab";
 import Spinner from "../../components/Spinner";
+import { stripMarkdown } from "../../utils/markdownUtils";
 
 import { getInitialFeedback } from "../../utils/feedbackUtils";
 
@@ -113,7 +114,7 @@ export default function RepoDetailPage() {
           const latest = evaluations[0]; // assuming most recent
           setFeedbackData((prev) => ({
             ...prev,
-            feedback: latest.md_file,
+            feedback: stripMarkdown(latest.md_file),
             grade: latest.grade || "",
           }));
         }
