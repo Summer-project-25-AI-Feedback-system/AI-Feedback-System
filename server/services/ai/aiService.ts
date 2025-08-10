@@ -1,7 +1,6 @@
 import {
   evaluateWithOpenAI,
   parseAIFeedback,
-  calculateOverallRating,
   EvaluationResult,
 } from "../../Aievalutions";
 import { fetchXmlFromRepoUrl } from "./repomixHelper";
@@ -23,13 +22,14 @@ export async function runAIEvolution(
   assignmentName: string
 ) {
   const xml = Buffer.from(xmlBase64, "base64").toString("utf-8");
-  const feedback = await evaluateWithOpenAI(xml, organizationId);
-  const parsedFeedback = await parseAIFeedback(feedback);
-  const overallRating = await calculateOverallRating(parsedFeedback.criteria);
+  const {fullResponse, evaluationData} = await evaluateWithOpenAI(xml, organizationId);
+  const {criteria, summary, totalScore, maxScore} = await parseAIFeedback(fullResponse);
+  
   const evaluationResult: EvaluationResult = {
-    overallRating,
-    criteria: parsedFeedback.criteria,
-    summary: parsedFeedback.summary,
+    totalScore,
+    maxScore,
+    criteria: criteria,
+    summary: summary,
     metadata: {
       evaluationDate: new Date().toISOString(),
       submissionId: `submission-${Date.now()}`,
@@ -38,7 +38,7 @@ export async function runAIEvolution(
     },
   };
   const markdownContent = generateMarkdownContent(evaluationResult);
-  return markdownContent;
+  return {markdownContent, evaluationData};
 }
 
 function generateMarkdownContent(evaluationResult: EvaluationResult): string {

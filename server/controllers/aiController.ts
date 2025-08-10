@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { runRepomix, runAIEvolution } from "../services/ai/aiService";
+import { createOrUpdateEvaluations } from "services/supabase/evaluationService";
 
 export async function handleRunRepomix(
   req: Request,
@@ -42,12 +43,17 @@ export async function handleRunAIEvolution(
   }
 
   try {
-    const markdownContent = await runAIEvolution(
+    const {markdownContent, evaluationData} = await runAIEvolution(
       xml,
       organizationId,
       repoName,
       assignmentName
     );
+
+    if (evaluationData && organizationId) {
+      await createOrUpdateEvaluations(organizationId, evaluationData)
+    }
+
     res.json({ markdownContent });
   } catch (error) {
     console.error("AIEvolution error:", error);

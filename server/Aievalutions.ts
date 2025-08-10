@@ -6,7 +6,6 @@ import path from "path";
 import { simpleGit, SimpleGit } from "simple-git";
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { createOrUpdateEvaluations } from "./services/supabase/evaluationService";
 import type { AiEvaluationInput } from "@shared/supabaseInterfaces";
 // import { supabase } from "./utils/supabase";
 
@@ -464,13 +463,26 @@ async function recordEvaluation(
 // Funktio promptin hakemiseen tiedostosta
 async function getPromptFromFile(): Promise<string> {
   const promptPath = path.resolve(__dirname, "prompt.txt");
+  const alwaysIncludedInstruction = `
+    Use the category point ranges in the rubric to determine the maximum possible score. Sum the awarded points from all categories to calculate the total points awarded. 
+    Always format the first bullet exactly as: Score: (total_points_awarded)/(maximum_possible_points). 
+    Example:
+      If the rubric is:
+      Syntax (0–10) → 8 points awarded
+      Structure (0–15) → 13 points awarded
+      Readability (0–20) → 18 points awarded
+      Language (0–10) → 9 points awarded
+      Best Practices (0–15) → 14 points awarded
+    Then the maximum possible score is 10+15+20+10+15 = 70 and the first bullet should be: Score: 62/70
+    The following are your instructions:
+  `;
   try {
-    return await fs.readFile(promptPath, "utf-8");
+    const filePrompt = fs.readFile(promptPath, "utf-8");
+    return alwaysIncludedInstruction + filePrompt;
   } catch (error) {
     console.warn("Prompt file not found, using default prompt.");
-    // Palauta oletusprompt jos tiedostoa ei löydy
-    return `
-You are a information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
+    return alwaysIncludedInstruction + `
+You are an information technlogy teacher evaluating a student's project or code. Your goal is to provide constructive, concise, and actionable feedback that helps the student learn and improve. Analyze the following and rate it according to the following criteria:
 
 1. Syntax and Validity (0-10): Is the code syntactically correct and does it run/compile without errors?
 2. Structure and Organization (0-20): Is the code logically organized and are functions, classes, modules, and other language features used appropriately?
@@ -499,7 +511,7 @@ export async function evaluateWithOpenAI(
   model?: AIModel,
   rosterStudentId?: string,
   assignmentId?: string
-): Promise<string> {
+): Promise<{fullResponse: string, evaluationData?: AiEvaluationInput}> {
   const selectedModel = model || "openai";
   console.log(`Starting evaluation with model: ${selectedModel}`);
 
@@ -727,30 +739,25 @@ export async function evaluateWithOpenAI(
 
   console.log("Evaluation completed successfully");
 
-  // LISÄÄ TÄMÄ: Tallenna palaute tietokantaan käyttäen useSupabase hookia
   if (rosterStudentId && assignmentId) {
-    try {
-      const evaluationData: AiEvaluationInput = {
-        roster_student_id: rosterStudentId,
-        assignment_id: assignmentId,
-        organization_id: organizationId,
-        created_at: new Date(),
-        ai_model: selectedModel,
-        md_file: fullResponse,
-        total_points: 5 // TODO: change to display real total points given for said assignment
-      };
+    const totalScoreMatches = fullResponse.match(/Score:\s*(\d+(?:\.\d+)?)/i);
+    const totalScore = totalScoreMatches ? parseFloat(totalScoreMatches[1]) : null;
+    
+    const evaluationData: AiEvaluationInput = {
+      roster_student_id: rosterStudentId,
+      assignment_id: assignmentId,
+      organization_id: organizationId,
+      created_at: new Date(),
+      ai_model: selectedModel,
+      md_file: fullResponse,
+      total_score: totalScore 
+    };
 
-      // TÄMÄ RIVI TULOSTAA KONSOLIIN TALLENNETTAVAN DATAN
-      console.log("Tallennetaan Supabaseen:", evaluationData);
-
-      await createOrUpdateEvaluations(organizationId, evaluationData);
-      console.log("✅ AI feedback saved to database successfully");
-    } catch (error) {
-      console.error("❌ Failed to save AI feedback to database:", error);
-    }
+    console.log("final response from evaluateWithOpenAI:", evaluationData);
+    return {fullResponse, evaluationData};
   }
 
-  return fullResponse;
+  return {fullResponse};
 }
 
 // Modify email sending function for Gmail
@@ -866,7 +873,8 @@ interface EvaluationCriteria {
 }
 
 export interface EvaluationResult {
-  overallRating: number;
+  totalScore: number;
+  maxScore: number;
   criteria: EvaluationCriteria[];
   summary: string;
   metadata: {
@@ -877,7 +885,7 @@ export interface EvaluationResult {
   };
 }
 
-export async function calculateOverallRating(
+/* export async function calculateOverallRating(
   criteria: EvaluationCriteria[]
 ): Promise<number> {
   const totalScore = criteria.reduce(
@@ -890,7 +898,7 @@ export async function calculateOverallRating(
   );
   // Muunnetaan 100-pistejärjestelmästä 5-pistejärjestelmään
   return (totalScore / maxScore) * 5;
-}
+} */
 
 async function saveEvaluationToMarkdown(
   evaluationResult: EvaluationResult,
@@ -914,7 +922,7 @@ async function saveEvaluationToMarkdown(
 
 ${evaluationResult.summary}
 
-Total Score: ${evaluationResult.overallRating.toFixed(1)}/5
+Total Score: ${evaluationResult.totalScore.toFixed(1)}/${evaluationResult.maxScore.toFixed(1)}
 
 ## Metadata
 - **Evaluation Date:** ${formattedDate}
@@ -936,6 +944,8 @@ Total Score: ${evaluationResult.overallRating.toFixed(1)}/5
 interface ParsedFeedback {
   criteria: EvaluationCriteria[];
   summary: string;
+  totalScore: number;
+  maxScore: number;
 }
 
 export async function parseAIFeedback(
@@ -1004,15 +1014,20 @@ export async function parseAIFeedback(
     });
   }
 
-  // Poistetaan kaikki Overall Rating -rivit yhteenvedosta
   const summary = feedback
     .replace(/Overall Rating: \d+\/5\n/g, "")
     .replace(/Overall Rating: \d+\/5/g, "")
     .trim();
 
+  const scoreMatch = feedback.match(/Score:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/i);
+  const totalScore = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+  const maxScore   = scoreMatch ? parseFloat(scoreMatch[2]) : 0;
+
   return {
     criteria,
     summary,
+    totalScore,
+    maxScore
   };
 }
 
@@ -1090,7 +1105,7 @@ async function main() {
     console.log("File read successfully, starting evaluation...");
 
     // Evaluate with selected model
-    const feedback = await evaluateWithOpenAI(
+    const {fullResponse} = await evaluateWithOpenAI(
       xml,
       organizationId,
       filePath,
@@ -1106,7 +1121,7 @@ async function main() {
       "output",
       `${baseName}_${model}_feedback.md`
     );
-    await fs.writeFile(feedbackPath, feedback);
+    await fs.writeFile(feedbackPath, fullResponse);
     console.log(`Feedback saved to: ${feedbackPath}`);
 
     // Merkitse arviointi tehdyksi tällä mallilla
