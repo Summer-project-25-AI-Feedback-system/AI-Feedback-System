@@ -11,6 +11,7 @@ import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 import AnalyticsPage from "./pages/analyticsPage/AnalyticsPage";
 import PromptEditor from "./components/PromptEditor";
 import { SupabaseProvider } from "./context/supabase/SupabaseProvider";
+import ForceEvaluation from "./components/ForceEvaluation";
 
 function App() {
   return (
@@ -19,10 +20,11 @@ function App() {
         <UserProvider>
           <BrowserRouter>
             <Routes>
-              {/* Public route */}
+              {/* Public routes */}
               <Route path="/prompt" element={<PromptEditor />} />
+              <Route path="/force-evaluation" element={<ForceEvaluation />} />
 
-              {/* dedicated routes */}
+              {/* Protected routes */}
               <Route element={<MainLayout />}>
                 <Route index element={<LoginPage />} />
                 <Route path="orgs">
