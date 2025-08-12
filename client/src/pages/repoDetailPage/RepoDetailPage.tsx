@@ -179,6 +179,7 @@ export default function RepoDetailPage() {
           <FeedbackTab
             isEditing={isEditing}
             feedbackData={feedbackData}
+            feedbackLoading={feedbackLoading} // ✅ Pass down
             onFeedbackChange={handleFeedbackTextChange}
             onGradeChange={(newGrade) =>
               setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
@@ -198,6 +199,7 @@ export default function RepoDetailPage() {
       repo,
       isEditing,
       feedbackData,
+      feedbackLoading,
     ]
   );
 
