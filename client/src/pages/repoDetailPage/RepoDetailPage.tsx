@@ -4,6 +4,7 @@ import type { RepoInfo, CommitInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import { useGitHub } from "../../context/useGitHub";
+import { useSupabase } from "../../context/supabase/useSupabase";
 import Tabs from "../../components/Tabs";
 import CodeTab from "./CodeTab";
 import CommitsTab from "./CommitsTab";
@@ -11,6 +12,7 @@ import MetadataTab from "./MetadataTab";
 import DiffTab from "./DiffTab";
 import FeedbackTab from "./FeedbackTab";
 import Spinner from "../../components/Spinner";
+import { stripMarkdown } from "../../utils/markdownUtils";
 
 import { getInitialFeedback } from "../../utils/feedbackUtils";
 
@@ -21,10 +23,13 @@ export default function RepoDetailPage() {
   const repoFromState = location.state as RepoInfo | undefined;
   const { orgName, assignmentName, repoName } = useParams();
   const github = useGitHub();
+  const supabase = useSupabase();
+  const [orgId, setOrgId] = useState<string | null>(null);
 
   const [repo, setRepo] = useState<RepoInfo | null>(repoFromState ?? null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(true); // Add loading state for feedback
 
   const [files, setFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -96,6 +101,46 @@ export default function RepoDetailPage() {
   useEffect(() => {
     console.log("repo:", repo);
   }, [repo]);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      if (!repo || !orgId || !assignmentName || !supabase) return;
+
+      try {
+        setFeedbackLoading(true);
+
+        const evaluations = await supabase.getEvaluations(orgId);
+        if (evaluations.length > 0) {
+          const latest = evaluations[0]; // assuming most recent
+          setFeedbackData((prev) => ({
+            ...prev,
+            feedback: stripMarkdown(latest.md_file),
+            grade: latest.grade || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch feedback:", error);
+      } finally {
+        setFeedbackLoading(false);
+      }
+    };
+
+    fetchFeedback();
+  }, [repo, orgId, assignmentName, supabase]);
+
+  useEffect(() => {
+    const fetchOrgId = async () => {
+      if (!orgName || !github) return;
+      try {
+        const id = await github.getOrgIdByName(orgName);
+        setOrgId(id);
+      } catch (error) {
+        console.error("Failed to fetch org ID:", error);
+      }
+    };
+
+    fetchOrgId();
+  }, [orgName, github]);
 
   const tabs = useMemo(
     () => [

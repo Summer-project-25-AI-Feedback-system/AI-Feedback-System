@@ -43,6 +43,12 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   return filteredOrgs;
 }
 
+export async function getOrganizationIdByName(orgName: string) {
+  const octokit = await getOctokit();
+  const response = await octokit.rest.orgs.get({ org: orgName });
+  return response.data.id;
+}
+
 export async function getOrganization(orgName: string): Promise<OrgInfo> {
   const octokit = await getOctokit();
 

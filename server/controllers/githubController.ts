@@ -11,6 +11,7 @@ import {
   getFileContents,
   compareCommits,
   getParentRepoId,
+  getOrganizationIdByName,
 } from "../services/github/githubService";
 
 export async function handleGetOrganizations(
@@ -23,6 +24,25 @@ export async function handleGetOrganizations(
   } catch (error) {
     console.error("Failed to fetch organizations:", error);
     res.status(500).json({ error: "Failed to fetch organizations" });
+  }
+}
+
+export async function handleGetOrganizationIdByName(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const orgName = req.params.orgName;
+  if (!orgName) {
+    res.status(400).json({ error: "Organization name not provided" });
+    return;
+  }
+
+  try {
+    const orgId = await getOrganizationIdByName(orgName);
+    res.json(orgId);
+  } catch (error) {
+    console.error("Failed to fetch organizations ID:", error);
+    res.status(500).json({ error: "Failed to fetch organizations ID." });
   }
 }
 
@@ -53,7 +73,7 @@ export async function handleGetAssignmentClassroomInfo(
   const orgName = req.params.orgName;
 
   if (!orgName) {
-    res.status(400).json({ error: "Organization login not provided" });
+    res.status(400).json({ error: "Organization name not provided" });
     return;
   }
 
