@@ -21,7 +21,7 @@ interface EvaluationResult {
   error?: string;
 }
 
-export default function ForceEvaluation(): JSX.Element {
+export default function ForceEvaluation(): React.JSX.Element {
   const [repoUrl, setRepoUrl] = useState("");
   const [organizationId, setOrganizationId] = useState("");
   const [assignmentName, setAssignmentName] = useState("");
@@ -193,7 +193,7 @@ export default function ForceEvaluation(): JSX.Element {
 
     // Normalisoi ja laske arvosana
     const normalizedScore = Math.min(100, Math.max(0, score));
-    const rating = (normalizedScore / 20).toFixed(1);
+    const rating = Number((normalizedScore / 20).toFixed(1));
 
     return `# AI Code Evaluation Report
 
@@ -201,7 +201,7 @@ export default function ForceEvaluation(): JSX.Element {
 ## Assignment: ${assignmentName}
 ## Analysis Date: ${new Date().toLocaleDateString()}
 
-### Overall Rating: ${rating}/5 ⭐
+### Overall Rating: ${rating.toFixed(1)}/5 ⭐
 
 ### Strengths:
 ${strengths.length > 0 ? strengths.map(s => `- ✅ **${s}**`).join("\n") : "- ✅ Repository analyzed"}
