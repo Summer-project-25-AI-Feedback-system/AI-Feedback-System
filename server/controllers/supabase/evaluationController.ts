@@ -87,7 +87,7 @@ export async function addSelfEvaluation(
       req as any
     ).evaluationData;
 
-    const evaluationData: AiEvaluationInput = {
+    const evaluationData: any = {
       roster_student_id: rosterStudentUuId,
       assignment_id: assignmentUuId,
       organization_id: organizationUuId,
