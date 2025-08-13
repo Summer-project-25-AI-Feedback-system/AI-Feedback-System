@@ -14,7 +14,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 
   if (!response) {
     throw new Error(`Error fetching organizations`);
-  } 
+  }
 
   const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
@@ -24,22 +24,24 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 
   if (!classrooms) {
     throw new Error(`Error fetching classrooms`);
-  } 
+  }
 
   const filteredOrgs: OrgInfo[] = [];
 
   for (const org of response.data) {
-      const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
-      if (hasClassroom) {
-        filteredOrgs.push({
-          id: org.id,
-          name: org.login,
-          description: org.description,
-          avatarUrl: org.avatar_url,
-        });
-      }
+    const hasClassroom = classrooms.find((c: any) =>
+      c.name.startsWith(org.login)
+    );
+    if (hasClassroom) {
+      filteredOrgs.push({
+        id: org.id,
+        name: org.login,
+        description: org.description,
+        avatarUrl: org.avatar_url,
+      });
+    }
   }
-    
+
   return filteredOrgs;
 }
 
@@ -56,7 +58,7 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 
   if (!org) {
     throw new Error(`Error fetching organization`);
-  } 
+  }
 
   const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
@@ -66,9 +68,11 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 
   if (!classrooms) {
     throw new Error(`Error fetching classrooms`);
-  } 
+  }
 
-  const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
+  const hasClassroom = classrooms.find((c: any) =>
+    c.name.startsWith(org.login)
+  );
 
   if (!hasClassroom) {
     throw new Error(`No classroom found for organization: ${org.login}`);
@@ -81,73 +85,172 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
     avatarUrl: org.avatar_url,
   };
 }
-
 export async function getListOfAssignments(
   org: string
 ): Promise<AssignmentInfo[]> {
   const octokit = await getOctokit();
-  const repos = await octokit.rest.repos.listForOrg({
-    org: org,
-    type: "all",
-    per_page: 100,
+
+  // Find the classroom that corresponds to the organization name
+  const { data: classrooms } = await octokit.request("GET /classrooms", {
+    headers: {
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
   });
 
-  console.log(
-    "repos from octokit:",
-    repos.data.map((r) => r.name)
-  );
+  const matchedClassroom = classrooms.find((c: any) => c.name.startsWith(org));
 
-  const assignmentMap = new Map<string, AssignmentInfo>();
-
-  for (const repo of repos.data) {
-    const name = repo.name;
-
-    // Skip if it's marked as a template
-    if (repo.is_template) {
-      console.log(`Skipping template repo: ${name}`);
-      continue;
-    }
-
-    // Extract student-suffix pattern (must be at least 2 segments)
-    const parts = name.split("-");
-    if (parts.length > 2) {
-      // Consider everything except the last part as the base name
-      const possibleBase = parts.slice(0, -1).join("-");
-
-      // If base repo exists and last part resembles a username (e.g., contains no 'assignment')
-      if (repos.data.find((r) => r.name === possibleBase)) {
-        console.log(`Skipping student repo: ${name}`);
-        continue;
-      }
-    }
-
-    const baseName = name;
-    const updatedAt = repo.updated_at;
-    const assignment = assignmentMap.get(baseName);
-
-    if (!assignment) {
-      assignmentMap.set(baseName, {
-        id: repo.id,
-        name: baseName,
-        amountOfStudents: 1,
-        updatedAt: updatedAt ?? "",
-      });
-    } else {
-      assignment.amountOfStudents++;
-      if (
-        updatedAt &&
-        (!assignment.updatedAt ||
-          new Date(updatedAt) > new Date(assignment.updatedAt))
-      ) {
-        assignment.updatedAt = updatedAt;
-      }
-    }
+  if (!matchedClassroom) {
+    console.warn(`No classroom found for organization: ${org}`);
+    return [];
   }
 
-  console.log("assignments list returns to frontend :", assignmentMap);
+  const classroomId = matchedClassroom.id;
 
-  return Array.from(assignmentMap.values());
+  // Get all assignments for that classroom using the dedicated API endpoint
+  const { data: assignments } = await octokit.request(
+    "GET /classrooms/{classroom_id}/assignments",
+    {
+      classroom_id: classroomId,
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    }
+  );
+
+  console.log(
+    `Found ${assignments.length} assignments for classroom ID ${classroomId}.`
+  );
+  console.log(
+    "Assignments from Classroom API:",
+    assignments.map((a: any) => a.title)
+  );
+
+  const assignmentInfoPromises = assignments.map(async (assignment: any) => {
+    // For each assignment, get the list of accepted student repos
+    const { data: acceptedAssignments } = await octokit.request(
+      "GET /assignments/{assignment_id}/accepted_assignments",
+      {
+        assignment_id: assignment.id,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
+
+    let mostRecentUpdate: string | null = assignment.updated_at;
+
+    // Iterate through all student repos to find the most recent commit date
+    for (const acceptedAssignment of acceptedAssignments) {
+      try {
+        const repoName = acceptedAssignment.repository.full_name.split("/")[1];
+        const lastCommit = await octokit.rest.repos.listCommits({
+          owner: org,
+          repo: repoName,
+          per_page: 1,
+        });
+
+        if (lastCommit.data.length > 0) {
+          const commitDate = lastCommit.data[0].commit.author?.date;
+          if (
+            commitDate &&
+            (!mostRecentUpdate ||
+              new Date(commitDate) > new Date(mostRecentUpdate))
+          ) {
+            mostRecentUpdate = commitDate;
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching commits for repo ${acceptedAssignment.repository.full_name}:`,
+          error
+        );
+      }
+    }
+
+    return {
+      id: assignment.id,
+      name: assignment.title ?? "Untitled Assignment",
+      amountOfStudents: acceptedAssignments.length,
+      updatedAt: mostRecentUpdate ?? "",
+    };
+  });
+
+  const assignmentsWithStudents = await Promise.all(assignmentInfoPromises);
+
+  console.log(
+    "Refactored assignments list returns to frontend:",
+    assignmentsWithStudents
+  );
+
+  return assignmentsWithStudents;
 }
+
+// export async function getListOfAssignments(
+//   org: string
+// ): Promise<AssignmentInfo[]> {
+//   const octokit = await getOctokit();
+//   const repos = await octokit.rest.repos.listForOrg({
+//     org: org,
+//     type: "all",
+//     per_page: 100,
+//   });
+
+//   console.log(
+//     "repos from octokit:",
+//     repos.data.map((r) => r.name)
+//   );
+
+//   const assignmentMap = new Map<string, AssignmentInfo>();
+
+//   for (const repo of repos.data) {
+//     const name = repo.name;
+
+//     // Skip if it's marked as a template
+//     if (repo.is_template) {
+//       console.log(`Skipping template repo: ${name}`);
+//       continue;
+//     }
+
+//     // Extract student-suffix pattern (must be at least 2 segments)
+//     const parts = name.split("-");
+//     if (parts.length > 2) {
+//       // Consider everything except the last part as the base name
+//       const possibleBase = parts.slice(0, -1).join("-");
+
+//       // If base repo exists and last part resembles a username (e.g., contains no 'assignment')
+//       if (repos.data.find((r) => r.name === possibleBase)) {
+//         console.log(`Skipping student repo: ${name}`);
+//         continue;
+//       }
+//     }
+
+//     const baseName = name;
+//     const updatedAt = repo.updated_at;
+//     const assignment = assignmentMap.get(baseName);
+
+//     if (!assignment) {
+//       assignmentMap.set(baseName, {
+//         id: repo.id,
+//         name: baseName,
+//         amountOfStudents: 1,
+//         updatedAt: updatedAt ?? "",
+//       });
+//     } else {
+//       assignment.amountOfStudents++;
+//       if (
+//         updatedAt &&
+//         (!assignment.updatedAt ||
+//           new Date(updatedAt) > new Date(assignment.updatedAt))
+//       ) {
+//         assignment.updatedAt = updatedAt;
+//       }
+//     }
+//   }
+
+//   console.log("assignments list returns to frontend :", assignmentMap);
+
+//   return Array.from(assignmentMap.values());
+// }
 
 export async function getAssignmentClassroomInfo(
   org: string
