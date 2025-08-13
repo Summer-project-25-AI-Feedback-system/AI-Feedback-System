@@ -11,7 +11,7 @@ import SpecificUserSubmissionScreen from "./pages/SpecificUserSubmissionScreen";
 import AnalyticsPage from "./pages/analyticsPage/AnalyticsPage";
 import PromptEditor from "./components/PromptEditor";
 import { SupabaseProvider } from "./context/supabase/SupabaseProvider";
-import ForceEvaluation from "./components/ForceEvaluation";
+import ForceEvaluation from "./pages/forceEvalauationPage/ForceEvaluation";
 
 function App() {
   return (
