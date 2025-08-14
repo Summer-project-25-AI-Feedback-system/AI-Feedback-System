@@ -85,6 +85,7 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
     avatarUrl: org.avatar_url,
   };
 }
+
 export async function getListOfAssignments(
   org: string
 ): Promise<AssignmentInfo[]> {
@@ -300,44 +301,125 @@ export async function getAssignmentClassroomInfo(
 
 export async function getStudentReposForAssignment(
   org: string,
-  assignmentPrefix?: string
+  assignmentName?: string
 ): Promise<RepoInfo[]> {
+  const octokit = await getOctokit();
   console.log(
-    `Searching for repositories ${
-      assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
-    }under organization ${org}...`
+    `Fetching student repositories for assignment: ${assignmentName} under organization: ${org}...`
   );
-  const repositories: any[] = [];
-  const iterator = await buildSearchQuery(org, assignmentPrefix);
 
-  for await (const { data: reposPage } of iterator) {
-    const relevantRepos = reposPage.filter((repo) => {
-      const isFork = repo.fork === true;
-      const nameMatches =
-        !assignmentPrefix ||
-        repo.name.toLowerCase().startsWith(assignmentPrefix.toLowerCase());
-      const isNotBaseAssignment =
-        repo.name.toLowerCase() !== assignmentPrefix?.toLowerCase(); // <-- Prevent showing the base assignment repo
-
-      return isFork && nameMatches && isNotBaseAssignment;
+  try {
+    // 1. Find the classroom that corresponds to the organization
+    const { data: classrooms } = await octokit.request("GET /classrooms", {
+      headers: { "X-GitHub-Api-Version": "2022-11-28" },
     });
 
-    const detailPromises = relevantRepos.map((repo) =>
-      extractRepositoryDetails(org, repo)
+    const matchedClassroom = classrooms.find((c: any) =>
+      c.name.startsWith(org)
+    );
+    if (!matchedClassroom) {
+      console.warn(`No classroom found for organization: ${org}`);
+      return [];
+    }
+    const classroomId = matchedClassroom.id;
+
+    // 2. Find the specific assignment by its name (title)
+    const { data: assignments } = await octokit.request(
+      "GET /classrooms/{classroom_id}/assignments",
+      {
+        classroom_id: classroomId,
+        headers: { "X-GitHub-Api-Version": "2022-11-28" },
+      }
+    );
+    const matchedAssignment = assignments.find(
+      (a: any) => a.title === assignmentName
+    );
+    if (!matchedAssignment) {
+      console.warn(
+        `No assignment with the name "${assignmentName}" found in classroom.`
+      );
+      return [];
+    }
+    const assignmentId = matchedAssignment.id;
+
+    // 3. Use the assignment ID to fetch all accepted student repositories
+    const { data: acceptedAssignments } = await octokit.request(
+      "GET /assignments/{assignment_id}/accepted_assignments",
+      {
+        assignment_id: assignmentId,
+        headers: { "X-GitHub-Api-Version": "2022-11-28" },
+      }
     );
 
-    const detailResults = await Promise.allSettled(detailPromises);
+    console.log(`Found ${acceptedAssignments.length} accepted repositories.`);
 
-    detailResults.forEach((result) => {
-      if (result.status === "fulfilled") {
-        repositories.push(result.value);
-      } else {
-        console.warn("Repo detail fetch failed:", result.reason);
+    // 4. Extract repository details, including the latest commit
+    const detailPromises = acceptedAssignments.map(
+      async (acceptedAssignment: any) => {
+        const repo = acceptedAssignment.repository;
+
+        try {
+          const lastCommit = await octokit.rest.repos.listCommits({
+            owner: org,
+            repo: repo.name,
+            per_page: 1,
+          });
+
+          const lastCommitMessage =
+            lastCommit.data.length > 0
+              ? lastCommit.data[0].commit.message
+              : undefined;
+          const lastCommitDate =
+            lastCommit.data.length > 0
+              ? lastCommit.data[0].commit.author?.date
+              : undefined;
+
+          // Construct and return the RepoInfo object
+          return {
+            id: repo.node_id,
+            name: repo.name,
+            owner: repo.owner?.login || "unknown",
+            avatarUrl: repo.owner?.avatar_url ?? "",
+            url: repo.html_url,
+            description: repo.description ?? undefined,
+            defaultBranch: repo.default_branch,
+            createdAt: repo.created_at,
+            updatedAt: repo.updated_at,
+            lastPush: repo.pushed_at,
+            lastCommitMessage,
+            lastCommitDate,
+            collaborators: [], // This could be fetched in a separate step if needed
+          };
+        } catch (error) {
+          console.warn(
+            `Could not fetch last commit for repo ${repo.name}:`,
+            error
+          );
+          return {
+            id: repo.node_id,
+            name: repo.name,
+            owner: repo.owner?.login || "unknown",
+            avatarUrl: repo.owner?.avatar_url ?? "",
+            url: repo.html_url,
+            description: repo.description ?? undefined,
+            defaultBranch: repo.default_branch,
+            createdAt: repo.created_at,
+            updatedAt: repo.updated_at,
+            lastPush: repo.pushed_at,
+            lastCommitMessage: undefined,
+            lastCommitDate: undefined,
+            collaborators: [],
+          };
+        }
       }
-    });
+    );
+
+    const repositories = await Promise.all(detailPromises);
+    return repositories;
+  } catch (error) {
+    console.error(`Error fetching student repositories:`, error);
+    return [];
   }
-  console.log(`Found ${repositories.length} matching repositories.`);
-  return repositories;
 }
 
 async function buildSearchQuery(org: string, assignmentPrefix?: string) {

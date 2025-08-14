@@ -13,8 +13,10 @@ import type { SortOption } from "../../utils/sortingUtils";
 import Spinner from "../../components/Spinner";
 
 export default function ReposPage() {
-  const { orgName } = useParams<{ orgName: string }>();
-  const { assignmentName } = useParams<{ assignmentName: string }>();
+  const { orgName, assignmentName } = useParams<{
+    orgName: string;
+    assignmentName: string;
+  }>();
   const github = useGitHub();
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
