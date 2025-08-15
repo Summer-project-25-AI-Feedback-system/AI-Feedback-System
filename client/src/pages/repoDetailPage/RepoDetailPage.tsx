@@ -79,13 +79,13 @@ export default function RepoDetailPage() {
   }, [repo, github, orgName]);
 
   useEffect(() => {
-    if (!selectedFile || !repo || !github) return;
+    if (!selectedFile || !repo || !github || !orgName) return;
 
     setFileLoading(true);
     setFileContent(null);
 
     github
-      .getFileContents(repo.owner, repo.name, selectedFile)
+      .getFileContents(orgName, repo.name, selectedFile)
       .then((content) => {
         setFileContent(content);
       })
@@ -96,7 +96,7 @@ export default function RepoDetailPage() {
       .finally(() => {
         setFileLoading(false);
       });
-  }, [selectedFile, repo, github]);
+  }, [selectedFile, repo, github, orgName]);
 
   useEffect(() => {
     console.log("repo:", repo);
@@ -179,7 +179,7 @@ export default function RepoDetailPage() {
           <FeedbackTab
             isEditing={isEditing}
             feedbackData={feedbackData}
-            feedbackLoading={feedbackLoading} // ✅ Pass down
+            feedbackLoading={feedbackLoading}
             onFeedbackChange={handleFeedbackTextChange}
             onGradeChange={(newGrade) =>
               setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
