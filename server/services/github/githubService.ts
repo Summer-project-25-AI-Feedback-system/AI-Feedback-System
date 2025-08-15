@@ -292,6 +292,14 @@ export async function getStudentReposForAssignment(
       async (acceptedAssignment: any) => {
         const repo = acceptedAssignment.repository;
 
+        const { data: fullRepoData } = await octokit.rest.repos.get({
+          owner: org,
+          repo: repo.name,
+        });
+
+        // ✅ Use the owner from the full repo data, as it's guaranteed to be correct
+        const owner = fullRepoData.owner?.login || "unknown";
+
         // Fetch the list of collaborators
         const collaborators = await getRepoCollaborators(org, repo.name);
 
@@ -324,8 +332,8 @@ export async function getStudentReposForAssignment(
           url: repo.html_url,
           description: repo.description ?? undefined,
           defaultBranch: repo.default_branch,
-          createdAt: repo.created_at,
-          updatedAt: repo.updated_at,
+          createdAt: fullRepoData.created_at, // ✅ Correct date from full API response
+          updatedAt: fullRepoData.updated_at, // ✅ Correct date from full API response
           lastPush: repo.pushed_at,
           lastCommitMessage,
           lastCommitDate,
