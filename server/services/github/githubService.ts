@@ -1,5 +1,6 @@
 import { getOctokit } from "./octokitClient";
 import {
+  Collaborator,
   OrgInfo,
   AssignmentInfo,
   RepoInfo,
@@ -186,73 +187,6 @@ export async function getListOfAssignments(
   return assignmentsWithStudents;
 }
 
-// export async function getListOfAssignments(
-//   org: string
-// ): Promise<AssignmentInfo[]> {
-//   const octokit = await getOctokit();
-//   const repos = await octokit.rest.repos.listForOrg({
-//     org: org,
-//     type: "all",
-//     per_page: 100,
-//   });
-
-//   console.log(
-//     "repos from octokit:",
-//     repos.data.map((r) => r.name)
-//   );
-
-//   const assignmentMap = new Map<string, AssignmentInfo>();
-
-//   for (const repo of repos.data) {
-//     const name = repo.name;
-
-//     // Skip if it's marked as a template
-//     if (repo.is_template) {
-//       console.log(`Skipping template repo: ${name}`);
-//       continue;
-//     }
-
-//     // Extract student-suffix pattern (must be at least 2 segments)
-//     const parts = name.split("-");
-//     if (parts.length > 2) {
-//       // Consider everything except the last part as the base name
-//       const possibleBase = parts.slice(0, -1).join("-");
-
-//       // If base repo exists and last part resembles a username (e.g., contains no 'assignment')
-//       if (repos.data.find((r) => r.name === possibleBase)) {
-//         console.log(`Skipping student repo: ${name}`);
-//         continue;
-//       }
-//     }
-
-//     const baseName = name;
-//     const updatedAt = repo.updated_at;
-//     const assignment = assignmentMap.get(baseName);
-
-//     if (!assignment) {
-//       assignmentMap.set(baseName, {
-//         id: repo.id,
-//         name: baseName,
-//         amountOfStudents: 1,
-//         updatedAt: updatedAt ?? "",
-//       });
-//     } else {
-//       assignment.amountOfStudents++;
-//       if (
-//         updatedAt &&
-//         (!assignment.updatedAt ||
-//           new Date(updatedAt) > new Date(assignment.updatedAt))
-//       ) {
-//         assignment.updatedAt = updatedAt;
-//       }
-//     }
-//   }
-
-//   console.log("assignments list returns to frontend :", assignmentMap);
-
-//   return Array.from(assignmentMap.values());
-// }
-
 export async function getAssignmentClassroomInfo(
   org: string
 ): Promise<AssignmentClassroomInfo[]> {
@@ -358,6 +292,11 @@ export async function getStudentReposForAssignment(
       async (acceptedAssignment: any) => {
         const repo = acceptedAssignment.repository;
 
+        // Fetch the list of collaborators
+        const collaborators = await getRepoCollaborators(org, repo.name);
+
+        let lastCommitMessage;
+        let lastCommitDate;
         try {
           const lastCommit = await octokit.rest.repos.listCommits({
             owner: org,
@@ -365,52 +304,33 @@ export async function getStudentReposForAssignment(
             per_page: 1,
           });
 
-          const lastCommitMessage =
-            lastCommit.data.length > 0
-              ? lastCommit.data[0].commit.message
-              : undefined;
-          const lastCommitDate =
-            lastCommit.data.length > 0
-              ? lastCommit.data[0].commit.author?.date
-              : undefined;
-
-          // Construct and return the RepoInfo object
-          return {
-            id: repo.node_id,
-            name: repo.name,
-            owner: repo.owner?.login || "unknown",
-            avatarUrl: repo.owner?.avatar_url ?? "",
-            url: repo.html_url,
-            description: repo.description ?? undefined,
-            defaultBranch: repo.default_branch,
-            createdAt: repo.created_at,
-            updatedAt: repo.updated_at,
-            lastPush: repo.pushed_at,
-            lastCommitMessage,
-            lastCommitDate,
-            collaborators: [], // This could be fetched in a separate step if needed
-          };
+          if (lastCommit.data.length > 0) {
+            lastCommitMessage = lastCommit.data[0].commit.message;
+            lastCommitDate = lastCommit.data[0].commit.author?.date;
+          }
         } catch (error) {
           console.warn(
             `Could not fetch last commit for repo ${repo.name}:`,
             error
           );
-          return {
-            id: repo.node_id,
-            name: repo.name,
-            owner: repo.owner?.login || "unknown",
-            avatarUrl: repo.owner?.avatar_url ?? "",
-            url: repo.html_url,
-            description: repo.description ?? undefined,
-            defaultBranch: repo.default_branch,
-            createdAt: repo.created_at,
-            updatedAt: repo.updated_at,
-            lastPush: repo.pushed_at,
-            lastCommitMessage: undefined,
-            lastCommitDate: undefined,
-            collaborators: [],
-          };
         }
+
+        // Construct and return the RepoInfo object
+        return {
+          id: repo.node_id,
+          name: repo.name,
+          owner: repo.owner?.login || "unknown",
+          avatarUrl: repo.owner?.avatar_url ?? "",
+          url: repo.html_url,
+          description: repo.description ?? undefined,
+          defaultBranch: repo.default_branch,
+          createdAt: repo.created_at,
+          updatedAt: repo.updated_at,
+          lastPush: repo.pushed_at,
+          lastCommitMessage,
+          lastCommitDate,
+          collaborators,
+        };
       }
     );
 
@@ -422,44 +342,47 @@ export async function getStudentReposForAssignment(
   }
 }
 
-async function buildSearchQuery(org: string, assignmentPrefix?: string) {
-  const octokit = await getOctokit();
-  const query =
-    `fork:true org:${org}` +
-    (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
+// async function buildSearchQuery(org: string, assignmentPrefix?: string) {
+//   const octokit = await getOctokit();
+//   const query =
+//     `fork:true org:${org}` +
+//     (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
 
-  return octokit.paginate.iterator(octokit.rest.search.repos, {
-    q: query,
-    per_page: 100,
-  });
-}
+//   return octokit.paginate.iterator(octokit.rest.search.repos, {
+//     q: query,
+//     per_page: 100,
+//   });
+// }
 
-async function extractRepositoryDetails(org: string, repo: any) {
-  const octokit = await getOctokit();
-  const lastCommit = await octokit.rest.repos.getCommit({
-    owner: org,
-    repo: repo.name,
-    ref: repo.default_branch,
-  });
+// async function extractRepositoryDetails(org: string, repo: any) {
+//   const octokit = await getOctokit();
+//   const lastCommit = await octokit.rest.repos.getCommit({
+//     owner: org,
+//     repo: repo.name,
+//     ref: repo.default_branch,
+//   });
 
-  return {
-    id: repo.node_id,
-    name: repo.name,
-    owner: repo.owner?.login || "unknown",
-    avatarUrl: repo.owner?.avatar_url ?? "",
-    url: repo.html_url,
-    description: repo.description ?? undefined,
-    defaultBranch: repo.default_branch,
-    createdAt: repo.created_at,
-    updatedAt: repo.updated_at,
-    lastPush: repo.pushed_at,
-    lastCommitMessage: lastCommit.data.commit.message,
-    lastCommitDate: lastCommit.data.commit.committer?.date,
-    collaborators: await getRepoCollaborators(org, repo.name),
-  };
-}
+//   return {
+//     id: repo.node_id,
+//     name: repo.name,
+//     owner: repo.owner?.login || "unknown",
+//     avatarUrl: repo.owner?.avatar_url ?? "",
+//     url: repo.html_url,
+//     description: repo.description ?? undefined,
+//     defaultBranch: repo.default_branch,
+//     createdAt: repo.created_at,
+//     updatedAt: repo.updated_at,
+//     lastPush: repo.pushed_at,
+//     lastCommitMessage: lastCommit.data.commit.message,
+//     lastCommitDate: lastCommit.data.commit.committer?.date,
+//     collaborators: await getRepoCollaborators(org, repo.name),
+//   };
+// }
 
-async function getRepoCollaborators(org: string, repo: string) {
+async function getRepoCollaborators(
+  org: string,
+  repo: string
+): Promise<Collaborator[]> {
   const octokit = await getOctokit();
   try {
     const response = await octokit.rest.repos.listCollaborators({
