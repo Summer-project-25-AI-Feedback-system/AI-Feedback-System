@@ -1,9 +1,11 @@
+import { parseAIFeedbackCommonIssues } from "../../utils/parseAIFeedbackCommonIssues";
 import {
   evaluateWithOpenAI,
   parseAIFeedback,
   EvaluationResult,
 } from "../../Aievalutions";
 import { fetchXmlFromRepoUrl } from "./repomixHelper";
+import { CommonIssues } from "@shared/supabaseInterfaces";
 
 export async function runRepomix(repoUrl: string) {
   const { xml, repoName } = await fetchXmlFromRepoUrl(repoUrl);
@@ -28,7 +30,7 @@ export async function runAIEvolution(
   const evaluationResult: EvaluationResult = {
     totalScore,
     maxScore,
-    criteria: criteria,
+    criteria: criteria, 
     summary: summary,
     metadata: {
       evaluationDate: new Date().toISOString(),
@@ -37,8 +39,15 @@ export async function runAIEvolution(
       assignmentName: assignmentName,
     },
   };
+
   const markdownContent = generateMarkdownContent(evaluationResult);
-  return {markdownContent, evaluationData};
+
+  let commonIssues: CommonIssues[] | null = null;
+  if (evaluationData) {
+    commonIssues = await parseAIFeedbackCommonIssues(evaluationData.md_file)
+  }
+
+  return {markdownContent, evaluationData, commonIssues};
 }
 
 function generateMarkdownContent(evaluationResult: EvaluationResult): string {

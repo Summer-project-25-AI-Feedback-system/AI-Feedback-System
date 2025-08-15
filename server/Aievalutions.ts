@@ -474,6 +474,26 @@ async function getPromptFromFile(): Promise<string> {
       Language (0–10) → 9 points awarded
       Best Practices (0–15) → 14 points awarded
     Then the maximum possible score is 10+15+20+10+15 = 70 and the first bullet should be: Score: 62/70
+
+    Additionally:
+    - After evaluating according to the rubric, scan the feedback and the code for any of the following possible common issues:
+      1. Missing comments/documentation
+      2. Poor or unclear variable naming
+      3. Inconsistent indentation
+      4. Excessive code duplication
+      5. Overly long functions
+      6. Syntax errors
+      7. Logical errors
+      8. Not handling edge cases/boundary checks
+      9. Missing required functionality
+      10. Hard-coded values
+      11. Lack of error handling
+      12. Inefficient algorithms
+      13. Not following naming conventions
+    - If any of these issues exist, list only the top three most relevant and impactful issues.
+    - If no issues are detected, write exactly: "no common issues found".
+    - Keep this "common issues" as the last point in the evaluation no matter what the rubix may be.
+
     The following are your instructions:
   `;
   try {
@@ -753,7 +773,6 @@ export async function evaluateWithOpenAI(
       total_score: totalScore 
     };
 
-    console.log("final response from evaluateWithOpenAI:", evaluationData);
     return {fullResponse, evaluationData};
   }
 
