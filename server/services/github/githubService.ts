@@ -342,43 +342,6 @@ export async function getStudentReposForAssignment(
   }
 }
 
-// async function buildSearchQuery(org: string, assignmentPrefix?: string) {
-//   const octokit = await getOctokit();
-//   const query =
-//     `fork:true org:${org}` +
-//     (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
-
-//   return octokit.paginate.iterator(octokit.rest.search.repos, {
-//     q: query,
-//     per_page: 100,
-//   });
-// }
-
-// async function extractRepositoryDetails(org: string, repo: any) {
-//   const octokit = await getOctokit();
-//   const lastCommit = await octokit.rest.repos.getCommit({
-//     owner: org,
-//     repo: repo.name,
-//     ref: repo.default_branch,
-//   });
-
-//   return {
-//     id: repo.node_id,
-//     name: repo.name,
-//     owner: repo.owner?.login || "unknown",
-//     avatarUrl: repo.owner?.avatar_url ?? "",
-//     url: repo.html_url,
-//     description: repo.description ?? undefined,
-//     defaultBranch: repo.default_branch,
-//     createdAt: repo.created_at,
-//     updatedAt: repo.updated_at,
-//     lastPush: repo.pushed_at,
-//     lastCommitMessage: lastCommit.data.commit.message,
-//     lastCommitDate: lastCommit.data.commit.committer?.date,
-//     collaborators: await getRepoCollaborators(org, repo.name),
-//   };
-// }
-
 async function getRepoCollaborators(
   org: string,
   repo: string
@@ -415,31 +378,37 @@ export async function getCommits(
   repoName: string
 ): Promise<CommitInfo[]> {
   const octokit = await getOctokit();
-  const response = await octokit.rest.repos.listCommits({
-    owner: orgName,
-    repo: repoName,
-    per_page: 100,
-  });
 
-  return response.data.map((commit: any) => ({
-    sha: commit.sha,
-    html_url: commit.html_url,
-    commit: {
-      message: commit.commit.message,
-      author: {
-        name: commit.commit.author?.name ?? "",
-        email: commit.commit.author?.email ?? "",
-        date: commit.commit.author?.date ?? "",
+  try {
+    const response = await octokit.rest.repos.listCommits({
+      owner: orgName,
+      repo: repoName,
+      per_page: 100,
+    });
+
+    return response.data.map((commit: any) => ({
+      sha: commit.sha,
+      html_url: commit.html_url,
+      commit: {
+        message: commit.commit.message,
+        author: {
+          name: commit.commit.author?.name ?? "",
+          email: commit.commit.author?.email ?? "",
+          date: commit.commit.author?.date ?? "",
+        },
       },
-    },
-    author: commit.author
-      ? {
-          login: commit.author.login,
-          avatar_url: commit.author.avatar_url,
-          html_url: commit.author.html_url,
-        }
-      : null,
-  }));
+      author: commit.author
+        ? {
+            login: commit.author.login,
+            avatar_url: commit.author.avatar_url,
+            html_url: commit.author.html_url,
+          }
+        : null,
+    }));
+  } catch (error) {
+    console.error(`Failed to fetch commits: ${error}`);
+    throw error;
+  }
 }
 
 export async function getRepoTree(
@@ -447,22 +416,28 @@ export async function getRepoTree(
   repoName: string
 ): Promise<string[]> {
   const octokit = await getOctokit();
-  const { data: refData } = await octokit.rest.git.getRef({
-    owner: orgName,
-    repo: repoName,
-    ref: "heads/main",
-  });
 
-  const { data: treeData } = await octokit.rest.git.getTree({
-    owner: orgName,
-    repo: repoName,
-    tree_sha: refData.object.sha,
-    recursive: "true",
-  });
+  try {
+    const { data: refData } = await octokit.rest.git.getRef({
+      owner: orgName,
+      repo: repoName,
+      ref: "heads/main",
+    });
 
-  return treeData.tree
-    .filter((item: any) => item.type === "blob" && item.path)
-    .map((item: any) => item.path!);
+    const { data: treeData } = await octokit.rest.git.getTree({
+      owner: orgName,
+      repo: repoName,
+      tree_sha: refData.object.sha,
+      recursive: "true",
+    });
+
+    return treeData.tree
+      .filter((item: any) => item.type === "blob" && item.path)
+      .map((item: any) => item.path!);
+  } catch (error) {
+    console.error(`Failed to fetch repository tree: ${error}`);
+    throw error;
+  }
 }
 
 export async function getFileContents(

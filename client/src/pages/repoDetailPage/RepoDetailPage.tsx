@@ -69,14 +69,14 @@ export default function RepoDetailPage() {
 
   // Fetch initial data
   useEffect(() => {
-    if (repo) {
+    if (repo && orgName) {
       // Load commits
-      github?.getCommits(repo.owner, repo.name).then(setCommits);
+      github?.getCommits(orgName, repo.name).then(setCommits);
 
       // Load file tree
-      github?.getRepoTree(repo.owner, repo.name).then(setFiles);
+      github?.getRepoTree(orgName, repo.name).then(setFiles);
     }
-  }, [repo, github]);
+  }, [repo, github, orgName]);
 
   useEffect(() => {
     if (!selectedFile || !repo || !github) return;
