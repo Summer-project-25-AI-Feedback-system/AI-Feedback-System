@@ -9,6 +9,7 @@ import Spinner from "../../components/Spinner";
 
 interface DiffTabProps {
   repo: RepoInfo;
+  orgName: string;
 }
 
 interface FileDiff {
@@ -17,19 +18,19 @@ interface FileDiff {
   patch?: string;
 }
 
-export default function DiffTab({ repo }: DiffTabProps) {
+export default function DiffTab({ repo, orgName }: DiffTabProps) {
   const github = useGitHub();
   const [diff, setDiff] = useState<FileDiff[] | null>(null);
 
   useEffect(() => {
-    if (repo) {
+    if (repo && orgName) {
       // Compare last two commits
       github
-        ?.getCommits(repo.owner, repo.name)
+        ?.getCommits(orgName, repo.name)
         .then((commits: CommitInfo[]) => {
           if (commits.length > 1) {
             return github?.compareCommits(
-              repo.owner,
+              orgName,
               repo.name,
               commits[1].sha,
               commits[0].sha
@@ -38,10 +39,19 @@ export default function DiffTab({ repo }: DiffTabProps) {
           return null;
         })
         .then((comparison: CompareCommitsInfo | null) => {
-          setDiff(comparison?.files || null);
+          const diffFiles = comparison?.files?.map((file) => ({
+            filename: file.filename,
+            status: file.status,
+            patch: file.patch,
+          }));
+          setDiff(diffFiles || null);
+        })
+        .catch((error) => {
+          console.error("Error fetching diff:", error);
+          setDiff(null);
         });
     }
-  }, [repo, github]);
+  }, [repo, github, orgName]);
 
   return (
     <div className="p-4">

@@ -1,5 +1,6 @@
 import { getOctokit } from "./octokitClient";
 import {
+  Collaborator,
   OrgInfo,
   AssignmentInfo,
   RepoInfo,
@@ -14,7 +15,7 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 
   if (!response) {
     throw new Error(`Error fetching organizations`);
-  } 
+  }
 
   const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
@@ -24,22 +25,24 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
 
   if (!classrooms) {
     throw new Error(`Error fetching classrooms`);
-  } 
+  }
 
   const filteredOrgs: OrgInfo[] = [];
 
   for (const org of response.data) {
-      const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
-      if (hasClassroom) {
-        filteredOrgs.push({
-          id: org.id,
-          name: org.login,
-          description: org.description,
-          avatarUrl: org.avatar_url,
-        });
-      }
+    const hasClassroom = classrooms.find((c: any) =>
+      c.name.startsWith(org.login)
+    );
+    if (hasClassroom) {
+      filteredOrgs.push({
+        id: org.id,
+        name: org.login,
+        description: org.description,
+        avatarUrl: org.avatar_url,
+      });
+    }
   }
-    
+
   return filteredOrgs;
 }
 
@@ -56,7 +59,7 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 
   if (!org) {
     throw new Error(`Error fetching organization`);
-  } 
+  }
 
   const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
@@ -66,9 +69,11 @@ export async function getOrganization(orgName: string): Promise<OrgInfo> {
 
   if (!classrooms) {
     throw new Error(`Error fetching classrooms`);
-  } 
+  }
 
-  const hasClassroom = classrooms.find((c: any) => c.name.startsWith(org.login));
+  const hasClassroom = classrooms.find((c: any) =>
+    c.name.startsWith(org.login)
+  );
 
   if (!hasClassroom) {
     throw new Error(`No classroom found for organization: ${org.login}`);
@@ -86,67 +91,100 @@ export async function getListOfAssignments(
   org: string
 ): Promise<AssignmentInfo[]> {
   const octokit = await getOctokit();
-  const repos = await octokit.rest.repos.listForOrg({
-    org: org,
-    type: "all",
-    per_page: 100,
+
+  // Find the classroom that corresponds to the organization name
+  const { data: classrooms } = await octokit.request("GET /classrooms", {
+    headers: {
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
   });
 
-  console.log(
-    "repos from octokit:",
-    repos.data.map((r) => r.name)
-  );
+  const matchedClassroom = classrooms.find((c: any) => c.name.startsWith(org));
 
-  const assignmentMap = new Map<string, AssignmentInfo>();
-
-  for (const repo of repos.data) {
-    const name = repo.name;
-
-    // Skip if it's marked as a template
-    if (repo.is_template) {
-      console.log(`Skipping template repo: ${name}`);
-      continue;
-    }
-
-    // Extract student-suffix pattern (must be at least 2 segments)
-    const parts = name.split("-");
-    if (parts.length > 2) {
-      // Consider everything except the last part as the base name
-      const possibleBase = parts.slice(0, -1).join("-");
-
-      // If base repo exists and last part resembles a username (e.g., contains no 'assignment')
-      if (repos.data.find((r) => r.name === possibleBase)) {
-        console.log(`Skipping student repo: ${name}`);
-        continue;
-      }
-    }
-
-    const baseName = name;
-    const updatedAt = repo.updated_at;
-    const assignment = assignmentMap.get(baseName);
-
-    if (!assignment) {
-      assignmentMap.set(baseName, {
-        id: repo.id,
-        name: baseName,
-        amountOfStudents: 1,
-        updatedAt: updatedAt ?? "",
-      });
-    } else {
-      assignment.amountOfStudents++;
-      if (
-        updatedAt &&
-        (!assignment.updatedAt ||
-          new Date(updatedAt) > new Date(assignment.updatedAt))
-      ) {
-        assignment.updatedAt = updatedAt;
-      }
-    }
+  if (!matchedClassroom) {
+    console.warn(`No classroom found for organization: ${org}`);
+    return [];
   }
 
-  console.log("assignments list returns to frontend :", assignmentMap);
+  const classroomId = matchedClassroom.id;
 
-  return Array.from(assignmentMap.values());
+  // Get all assignments for that classroom using the dedicated API endpoint
+  const { data: assignments } = await octokit.request(
+    "GET /classrooms/{classroom_id}/assignments",
+    {
+      classroom_id: classroomId,
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    }
+  );
+
+  console.log(
+    `Found ${assignments.length} assignments for classroom ID ${classroomId}.`
+  );
+  console.log(
+    "Assignments from Classroom API:",
+    assignments.map((a: any) => a.title)
+  );
+
+  const assignmentInfoPromises = assignments.map(async (assignment: any) => {
+    // For each assignment, get the list of accepted student repos
+    const { data: acceptedAssignments } = await octokit.request(
+      "GET /assignments/{assignment_id}/accepted_assignments",
+      {
+        assignment_id: assignment.id,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
+
+    let mostRecentUpdate: string | null = assignment.updated_at;
+
+    // Iterate through all student repos to find the most recent commit date
+    for (const acceptedAssignment of acceptedAssignments) {
+      try {
+        const repoName = acceptedAssignment.repository.full_name.split("/")[1];
+        const lastCommit = await octokit.rest.repos.listCommits({
+          owner: org,
+          repo: repoName,
+          per_page: 1,
+        });
+
+        if (lastCommit.data.length > 0) {
+          const commitDate = lastCommit.data[0].commit.author?.date;
+          if (
+            commitDate &&
+            (!mostRecentUpdate ||
+              new Date(commitDate) > new Date(mostRecentUpdate))
+          ) {
+            mostRecentUpdate = commitDate;
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching commits for repo ${acceptedAssignment.repository.full_name}:`,
+          error
+        );
+      }
+    }
+
+    return {
+      id: assignment.id,
+      name: assignment.title ?? "Untitled Assignment",
+      amountOfStudents: acceptedAssignments.length,
+      updatedAt: mostRecentUpdate ?? "",
+    };
+  });
+
+  const assignmentsWithStudents = await Promise.all(assignmentInfoPromises);
+
+  console.log(
+    "Refactored assignments list returns to frontend:",
+    assignmentsWithStudents
+  );
+
+  return assignmentsWithStudents;
 }
 
 export async function getAssignmentClassroomInfo(
@@ -197,84 +235,125 @@ export async function getAssignmentClassroomInfo(
 
 export async function getStudentReposForAssignment(
   org: string,
-  assignmentPrefix?: string
+  assignmentName?: string
 ): Promise<RepoInfo[]> {
+  const octokit = await getOctokit();
   console.log(
-    `Searching for repositories ${
-      assignmentPrefix ? `with prefix '${assignmentPrefix}' ` : ""
-    }under organization ${org}...`
+    `Fetching student repositories for assignment: ${assignmentName} under organization: ${org}...`
   );
-  const repositories: any[] = [];
-  const iterator = await buildSearchQuery(org, assignmentPrefix);
 
-  for await (const { data: reposPage } of iterator) {
-    const relevantRepos = reposPage.filter((repo) => {
-      const isFork = repo.fork === true;
-      const nameMatches =
-        !assignmentPrefix ||
-        repo.name.toLowerCase().startsWith(assignmentPrefix.toLowerCase());
-      const isNotBaseAssignment =
-        repo.name.toLowerCase() !== assignmentPrefix?.toLowerCase(); // <-- Prevent showing the base assignment repo
-
-      return isFork && nameMatches && isNotBaseAssignment;
+  try {
+    // 1. Find the classroom that corresponds to the organization
+    const { data: classrooms } = await octokit.request("GET /classrooms", {
+      headers: { "X-GitHub-Api-Version": "2022-11-28" },
     });
 
-    const detailPromises = relevantRepos.map((repo) =>
-      extractRepositoryDetails(org, repo)
+    const matchedClassroom = classrooms.find((c: any) =>
+      c.name.startsWith(org)
+    );
+    if (!matchedClassroom) {
+      console.warn(`No classroom found for organization: ${org}`);
+      return [];
+    }
+    const classroomId = matchedClassroom.id;
+
+    // 2. Find the specific assignment by its name (title)
+    const { data: assignments } = await octokit.request(
+      "GET /classrooms/{classroom_id}/assignments",
+      {
+        classroom_id: classroomId,
+        headers: { "X-GitHub-Api-Version": "2022-11-28" },
+      }
+    );
+    const matchedAssignment = assignments.find(
+      (a: any) => a.title === assignmentName
+    );
+    if (!matchedAssignment) {
+      console.warn(
+        `No assignment with the name "${assignmentName}" found in classroom.`
+      );
+      return [];
+    }
+    const assignmentId = matchedAssignment.id;
+
+    // 3. Use the assignment ID to fetch all accepted student repositories
+    const { data: acceptedAssignments } = await octokit.request(
+      "GET /assignments/{assignment_id}/accepted_assignments",
+      {
+        assignment_id: assignmentId,
+        headers: { "X-GitHub-Api-Version": "2022-11-28" },
+      }
     );
 
-    const detailResults = await Promise.allSettled(detailPromises);
+    console.log(`Found ${acceptedAssignments.length} accepted repositories.`);
 
-    detailResults.forEach((result) => {
-      if (result.status === "fulfilled") {
-        repositories.push(result.value);
-      } else {
-        console.warn("Repo detail fetch failed:", result.reason);
+    // 4. Extract repository details, including the latest commit
+    const detailPromises = acceptedAssignments.map(
+      async (acceptedAssignment: any) => {
+        const repo = acceptedAssignment.repository;
+
+        const { data: fullRepoData } = await octokit.rest.repos.get({
+          owner: org,
+          repo: repo.name,
+        });
+
+        // ✅ Use the owner from the full repo data, as it's guaranteed to be correct
+        const owner = fullRepoData.owner?.login || "unknown";
+
+        // Fetch the list of collaborators
+        const collaborators = await getRepoCollaborators(org, repo.name);
+
+        let lastCommitMessage;
+        let lastCommitDate;
+        try {
+          const lastCommit = await octokit.rest.repos.listCommits({
+            owner: org,
+            repo: repo.name,
+            per_page: 1,
+          });
+
+          if (lastCommit.data.length > 0) {
+            lastCommitMessage = lastCommit.data[0].commit.message;
+            lastCommitDate = lastCommit.data[0].commit.author?.date;
+          }
+        } catch (error) {
+          console.warn(
+            `Could not fetch last commit for repo ${repo.name}:`,
+            error
+          );
+        }
+
+        // Construct and return the RepoInfo object
+        return {
+          id: repo.node_id,
+          name: repo.name,
+          owner: repo.owner?.login || "unknown",
+          avatarUrl: repo.owner?.avatar_url ?? "",
+          url: repo.html_url,
+          description: repo.description ?? undefined,
+          defaultBranch: repo.default_branch,
+          createdAt: fullRepoData.created_at, // ✅ Correct date from full API response
+          updatedAt: fullRepoData.updated_at, // ✅ Correct date from full API response
+          lastPush: repo.pushed_at,
+          lastCommitMessage,
+          lastCommitDate,
+          collaborators,
+        };
       }
-    });
+    );
+
+    const repositories = await Promise.all(detailPromises);
+    return repositories;
+  } catch (error) {
+    console.error(`Error fetching student repositories:`, error);
+    return [];
   }
-  console.log(`Found ${repositories.length} matching repositories.`);
-  return repositories;
 }
 
-async function buildSearchQuery(org: string, assignmentPrefix?: string) {
-  const octokit = await getOctokit();
-  const query =
-    `fork:true org:${org}` +
-    (assignmentPrefix ? ` ${assignmentPrefix} in:name` : "");
-
-  return octokit.paginate.iterator(octokit.rest.search.repos, {
-    q: query,
-    per_page: 100,
-  });
-}
-
-async function extractRepositoryDetails(org: string, repo: any) {
-  const octokit = await getOctokit();
-  const lastCommit = await octokit.rest.repos.getCommit({
-    owner: org,
-    repo: repo.name,
-    ref: repo.default_branch,
-  });
-
-  return {
-    id: repo.node_id,
-    name: repo.name,
-    owner: repo.owner?.login || "unknown",
-    avatarUrl: repo.owner?.avatar_url ?? "",
-    url: repo.html_url,
-    description: repo.description ?? undefined,
-    defaultBranch: repo.default_branch,
-    createdAt: repo.created_at,
-    updatedAt: repo.updated_at,
-    lastPush: repo.pushed_at,
-    lastCommitMessage: lastCommit.data.commit.message,
-    lastCommitDate: lastCommit.data.commit.committer?.date,
-    collaborators: await getRepoCollaborators(org, repo.name),
-  };
-}
-
-async function getRepoCollaborators(org: string, repo: string) {
+async function getRepoCollaborators(
+  org: string,
+  repo: string
+): Promise<Collaborator[]> {
   const octokit = await getOctokit();
   try {
     const response = await octokit.rest.repos.listCollaborators({
@@ -307,31 +386,37 @@ export async function getCommits(
   repoName: string
 ): Promise<CommitInfo[]> {
   const octokit = await getOctokit();
-  const response = await octokit.rest.repos.listCommits({
-    owner: orgName,
-    repo: repoName,
-    per_page: 100,
-  });
 
-  return response.data.map((commit: any) => ({
-    sha: commit.sha,
-    html_url: commit.html_url,
-    commit: {
-      message: commit.commit.message,
-      author: {
-        name: commit.commit.author?.name ?? "",
-        email: commit.commit.author?.email ?? "",
-        date: commit.commit.author?.date ?? "",
+  try {
+    const response = await octokit.rest.repos.listCommits({
+      owner: orgName,
+      repo: repoName,
+      per_page: 100,
+    });
+
+    return response.data.map((commit: any) => ({
+      sha: commit.sha,
+      html_url: commit.html_url,
+      commit: {
+        message: commit.commit.message,
+        author: {
+          name: commit.commit.author?.name ?? "",
+          email: commit.commit.author?.email ?? "",
+          date: commit.commit.author?.date ?? "",
+        },
       },
-    },
-    author: commit.author
-      ? {
-          login: commit.author.login,
-          avatar_url: commit.author.avatar_url,
-          html_url: commit.author.html_url,
-        }
-      : null,
-  }));
+      author: commit.author
+        ? {
+            login: commit.author.login,
+            avatar_url: commit.author.avatar_url,
+            html_url: commit.author.html_url,
+          }
+        : null,
+    }));
+  } catch (error) {
+    console.error(`Failed to fetch commits: ${error}`);
+    throw error;
+  }
 }
 
 export async function getRepoTree(
@@ -339,22 +424,28 @@ export async function getRepoTree(
   repoName: string
 ): Promise<string[]> {
   const octokit = await getOctokit();
-  const { data: refData } = await octokit.rest.git.getRef({
-    owner: orgName,
-    repo: repoName,
-    ref: "heads/main",
-  });
 
-  const { data: treeData } = await octokit.rest.git.getTree({
-    owner: orgName,
-    repo: repoName,
-    tree_sha: refData.object.sha,
-    recursive: "true",
-  });
+  try {
+    const { data: refData } = await octokit.rest.git.getRef({
+      owner: orgName,
+      repo: repoName,
+      ref: "heads/main",
+    });
 
-  return treeData.tree
-    .filter((item: any) => item.type === "blob" && item.path)
-    .map((item: any) => item.path!);
+    const { data: treeData } = await octokit.rest.git.getTree({
+      owner: orgName,
+      repo: repoName,
+      tree_sha: refData.object.sha,
+      recursive: "true",
+    });
+
+    return treeData.tree
+      .filter((item: any) => item.type === "blob" && item.path)
+      .map((item: any) => item.path!);
+  } catch (error) {
+    console.error(`Failed to fetch repository tree: ${error}`);
+    throw error;
+  }
 }
 
 export async function getFileContents(
@@ -387,46 +478,51 @@ export async function compareCommits(
   head: string
 ): Promise<CompareCommitsInfo> {
   const octokit = await getOctokit();
-  const response = await octokit.rest.repos.compareCommits({
-    owner: orgName,
-    repo: repoName,
-    base,
-    head,
-  });
+  try {
+    const response = await octokit.rest.repos.compareCommits({
+      owner: orgName,
+      repo: repoName,
+      base,
+      head,
+    });
 
-  return {
-    status: response.data.status ?? "",
-    ahead_by: response.data.ahead_by ?? 0,
-    behind_by: response.data.behind_by ?? 0,
-    total_commits: response.data.total_commits ?? 0,
-    commits: response.data.commits.map((commit: any) => ({
-      sha: commit.sha,
-      html_url: commit.html_url,
-      commit: {
-        message: commit.commit.message,
-        author: {
-          name: commit.commit.author?.name ?? "",
-          email: commit.commit.author?.email ?? "",
-          date: commit.commit.author?.date ?? "",
+    return {
+      status: response.data.status ?? "",
+      ahead_by: response.data.ahead_by ?? 0,
+      behind_by: response.data.behind_by ?? 0,
+      total_commits: response.data.total_commits ?? 0,
+      commits: response.data.commits.map((commit: any) => ({
+        sha: commit.sha,
+        html_url: commit.html_url,
+        commit: {
+          message: commit.commit.message,
+          author: {
+            name: commit.commit.author?.name ?? "",
+            email: commit.commit.author?.email ?? "",
+            date: commit.commit.author?.date ?? "",
+          },
         },
-      },
-      author: commit.author
-        ? {
-            login: commit.author.login,
-            avatar_url: commit.author.avatar_url,
-            html_url: commit.author.html_url,
-          }
-        : null,
-    })),
-    files:
-      response.data.files?.map((file: any) => ({
-        filename: file.filename,
-        status: file.status,
-        additions: file.additions,
-        deletions: file.deletions,
-        changes: file.changes,
-      })) ?? [],
-  };
+        author: commit.author
+          ? {
+              login: commit.author.login,
+              avatar_url: commit.author.avatar_url,
+              html_url: commit.author.html_url,
+            }
+          : null,
+      })),
+      files:
+        response.data.files?.map((file: any) => ({
+          filename: file.filename,
+          status: file.status,
+          additions: file.additions,
+          deletions: file.deletions,
+          changes: file.changes,
+        })) ?? [],
+    };
+  } catch (error) {
+    console.error(`Error comparing commits:`, error);
+    throw error;
+  }
 }
 
 export async function getParentRepoId(orgName: string, repoName: string) {

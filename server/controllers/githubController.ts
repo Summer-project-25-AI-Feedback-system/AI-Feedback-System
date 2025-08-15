@@ -93,8 +93,7 @@ export async function handleGetStudentReposForAssignment(
   req: Request,
   res: Response
 ): Promise<void> {
-  const orgName = req.params.orgName;
-  const assignmentName = req.params.assignmentName;
+  const { orgName, assignmentName } = req.params;
 
   if (!orgName) {
     res.status(400).json({ error: "Missing organization or assignment name" });

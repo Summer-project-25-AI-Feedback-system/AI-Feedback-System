@@ -69,23 +69,23 @@ export default function RepoDetailPage() {
 
   // Fetch initial data
   useEffect(() => {
-    if (repo) {
+    if (repo && orgName) {
       // Load commits
-      github?.getCommits(repo.owner, repo.name).then(setCommits);
+      github?.getCommits(orgName, repo.name).then(setCommits);
 
       // Load file tree
-      github?.getRepoTree(repo.owner, repo.name).then(setFiles);
+      github?.getRepoTree(orgName, repo.name).then(setFiles);
     }
-  }, [repo, github]);
+  }, [repo, github, orgName]);
 
   useEffect(() => {
-    if (!selectedFile || !repo || !github) return;
+    if (!selectedFile || !repo || !github || !orgName) return;
 
     setFileLoading(true);
     setFileContent(null);
 
     github
-      .getFileContents(repo.owner, repo.name, selectedFile)
+      .getFileContents(orgName, repo.name, selectedFile)
       .then((content) => {
         setFileContent(content);
       })
@@ -96,7 +96,7 @@ export default function RepoDetailPage() {
       .finally(() => {
         setFileLoading(false);
       });
-  }, [selectedFile, repo, github]);
+  }, [selectedFile, repo, github, orgName]);
 
   useEffect(() => {
     console.log("repo:", repo);
@@ -165,7 +165,11 @@ export default function RepoDetailPage() {
       {
         id: "diff",
         label: "Diff",
-        content: repo ? <DiffTab repo={repo} /> : <div>No repo found</div>,
+        content: repo ? (
+          <DiffTab repo={repo} orgName={orgName!} />
+        ) : (
+          <div>No repo found</div>
+        ),
       },
       {
         id: "metadata",
@@ -179,7 +183,7 @@ export default function RepoDetailPage() {
           <FeedbackTab
             isEditing={isEditing}
             feedbackData={feedbackData}
-            feedbackLoading={feedbackLoading} // ✅ Pass down
+            feedbackLoading={feedbackLoading}
             onFeedbackChange={handleFeedbackTextChange}
             onGradeChange={(newGrade) =>
               setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
