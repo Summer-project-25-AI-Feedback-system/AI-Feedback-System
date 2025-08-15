@@ -165,7 +165,11 @@ export default function RepoDetailPage() {
       {
         id: "diff",
         label: "Diff",
-        content: repo ? <DiffTab repo={repo} /> : <div>No repo found</div>,
+        content: repo ? (
+          <DiffTab repo={repo} orgName={orgName!} />
+        ) : (
+          <div>No repo found</div>
+        ),
       },
       {
         id: "metadata",

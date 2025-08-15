@@ -470,46 +470,51 @@ export async function compareCommits(
   head: string
 ): Promise<CompareCommitsInfo> {
   const octokit = await getOctokit();
-  const response = await octokit.rest.repos.compareCommits({
-    owner: orgName,
-    repo: repoName,
-    base,
-    head,
-  });
+  try {
+    const response = await octokit.rest.repos.compareCommits({
+      owner: orgName,
+      repo: repoName,
+      base,
+      head,
+    });
 
-  return {
-    status: response.data.status ?? "",
-    ahead_by: response.data.ahead_by ?? 0,
-    behind_by: response.data.behind_by ?? 0,
-    total_commits: response.data.total_commits ?? 0,
-    commits: response.data.commits.map((commit: any) => ({
-      sha: commit.sha,
-      html_url: commit.html_url,
-      commit: {
-        message: commit.commit.message,
-        author: {
-          name: commit.commit.author?.name ?? "",
-          email: commit.commit.author?.email ?? "",
-          date: commit.commit.author?.date ?? "",
+    return {
+      status: response.data.status ?? "",
+      ahead_by: response.data.ahead_by ?? 0,
+      behind_by: response.data.behind_by ?? 0,
+      total_commits: response.data.total_commits ?? 0,
+      commits: response.data.commits.map((commit: any) => ({
+        sha: commit.sha,
+        html_url: commit.html_url,
+        commit: {
+          message: commit.commit.message,
+          author: {
+            name: commit.commit.author?.name ?? "",
+            email: commit.commit.author?.email ?? "",
+            date: commit.commit.author?.date ?? "",
+          },
         },
-      },
-      author: commit.author
-        ? {
-            login: commit.author.login,
-            avatar_url: commit.author.avatar_url,
-            html_url: commit.author.html_url,
-          }
-        : null,
-    })),
-    files:
-      response.data.files?.map((file: any) => ({
-        filename: file.filename,
-        status: file.status,
-        additions: file.additions,
-        deletions: file.deletions,
-        changes: file.changes,
-      })) ?? [],
-  };
+        author: commit.author
+          ? {
+              login: commit.author.login,
+              avatar_url: commit.author.avatar_url,
+              html_url: commit.author.html_url,
+            }
+          : null,
+      })),
+      files:
+        response.data.files?.map((file: any) => ({
+          filename: file.filename,
+          status: file.status,
+          additions: file.additions,
+          deletions: file.deletions,
+          changes: file.changes,
+        })) ?? [],
+    };
+  } catch (error) {
+    console.error(`Error comparing commits:`, error);
+    throw error;
+  }
 }
 
 export async function getParentRepoId(orgName: string, repoName: string) {
