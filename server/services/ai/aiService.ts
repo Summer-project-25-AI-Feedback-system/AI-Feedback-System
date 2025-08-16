@@ -5,7 +5,7 @@ import {
   EvaluationResult,
 } from "../../Aievalutions";
 import { fetchXmlFromRepoUrl } from "./repomixHelper";
-import { CommonIssues } from "@shared/supabaseInterfaces";
+import { CommonIssuesInput } from "@shared/supabaseInterfaces";
 
 export async function runRepomix(repoUrl: string) {
   const { xml, repoName } = await fetchXmlFromRepoUrl(repoUrl);
@@ -42,7 +42,7 @@ export async function runAIEvolution(
 
   const markdownContent = generateMarkdownContent(evaluationResult);
 
-  let commonIssues: CommonIssues[] | null = null;
+  let commonIssues: CommonIssuesInput[] | null = null;
   if (evaluationData) {
     commonIssues = await parseAIFeedbackCommonIssues(evaluationData.md_file)
   }

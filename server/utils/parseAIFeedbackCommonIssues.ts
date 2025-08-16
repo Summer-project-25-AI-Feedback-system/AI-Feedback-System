@@ -1,10 +1,10 @@
-import { CommonIssues } from "@shared/supabaseInterfaces";
+import { CommonIssuesInput } from "@shared/supabaseInterfaces";
 
 export async function parseAIFeedbackCommonIssues(
   feedback: string
-): Promise<CommonIssues[] | null> {
+): Promise<CommonIssuesInput[] | null> {
 
-  const issues: CommonIssues[] = [];
+  const issues: CommonIssuesInput[] = [];
 
   const issuePatterns: { [key: string]: RegExp } = {
   "Missing comments": /\bMissing (Comments|Documentation)\b/i,

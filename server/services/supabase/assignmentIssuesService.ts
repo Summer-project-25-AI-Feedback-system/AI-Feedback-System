@@ -1,15 +1,20 @@
-import { CommonIssues } from "@shared/supabaseInterfaces";
+import { AssignmentCommonIssues, CommonIssuesInput } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
-// we get the common issues from the common issue table
-export const fetchAssignmentCommonIssues = async (
+export const fetchAssignmentIssues = async (
+  organizationId: string
+): Promise<AssignmentCommonIssues[]> => {
+  const { data, error } = await supabase.rpc(
+    "get_org_assignment_common_issues",
+    { org_id: organizationId }
+  );
 
- ) => {
-
+  if (error) throw error;
+  return data;
 }
 
 export const addOrUpdateAssignmentCommonIssues = async (
-  commonIssues: CommonIssues[],
+  commonIssues: CommonIssuesInput[],
   assignmentId: string
 ) => {
   const names = commonIssues.map(i => i.name);
