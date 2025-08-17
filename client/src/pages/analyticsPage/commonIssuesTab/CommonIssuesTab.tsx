@@ -1,9 +1,9 @@
-import type { AssignmentFeedbacks } from "src/types/AssignmentFeedback";
 import CommonIssuesCollapsible from "./CommonIssuesCollapsible";
 import Spinner from "../../../components/Spinner";
+import type { AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
 type CommonIssuesTabProps = {
-  assignmentFeedbacks: AssignmentFeedbacks;
+  assignmentFeedbacks: AssignmentWithIssues[];
 };
 
 export default function CommonIssuesTab({ assignmentFeedbacks }: CommonIssuesTabProps) {

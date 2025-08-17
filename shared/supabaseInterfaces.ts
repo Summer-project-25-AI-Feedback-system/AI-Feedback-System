@@ -81,18 +81,30 @@ export interface AiEvaluationInput {
   total_score: number | null;
 }
 
-export interface CommonIssues {
+/*export interface CommonIssues {
   id: string;
   name: string;
-}
+} */
 
 export interface CommonIssuesInput {
   name: string;
 }
 
-export interface AssignmentCommonIssues extends CommonIssues {
+/*export interface AssignmentCommonIssues extends CommonIssues {
   assignment_id: string;
   count: number;
+}*/
+
+export interface AssignmentIssue {
+  issue_id: string;
+  name: string;
+  count: number;
+}
+
+export interface AssignmentWithIssues {
+  assignment_id: string;
+  assignment_name: string;
+  issues: AssignmentIssue[];
 }
 
 export interface GithubReqBody {

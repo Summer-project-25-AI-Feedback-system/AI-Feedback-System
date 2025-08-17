@@ -1,9 +1,9 @@
-import { AssignmentCommonIssues, CommonIssuesInput } from "@shared/supabaseInterfaces";
+import { AssignmentWithIssues, CommonIssuesInput } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
 export const fetchAssignmentIssues = async (
   organizationId: string
-): Promise<AssignmentCommonIssues[]> => {
+): Promise<AssignmentWithIssues[]> => {
   const { data, error } = await supabase.rpc(
     "get_org_assignment_common_issues",
     { org_id: organizationId }

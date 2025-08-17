@@ -1,20 +1,13 @@
-import type { SingleAssignmentFeedback } from 'src/types/AssignmentFeedback';
 import { Bar } from 'react-chartjs-2';
+import type { AssignmentWithIssues } from '@shared/supabaseInterfaces';
 
 type CommonIssuesChartProps = {
-  assignment: SingleAssignmentFeedback;
+  assignment: AssignmentWithIssues;
 };
 
 export default function CommonIssuesChart({ assignment }: CommonIssuesChartProps) {
-  const allIssues: string[] = assignment.issues;
-
-  const issueCounts = allIssues.reduce<Record<string, number>>((acc, issue) => {
-    acc[issue] = (acc[issue] || 0) + 1;
-    return acc;
-  }, {});
-
-  const labels = Object.keys(issueCounts);
-  const dataValues = Object.values(issueCounts);
+  const labels = assignment.issues.map(issue => issue.name);
+  const dataValues = assignment.issues.map(issue => issue.count);
 
   const data = {
     labels,

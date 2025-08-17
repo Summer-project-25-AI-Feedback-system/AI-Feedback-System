@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import CommonIssuesCard from "./CommonIssuesCard";
-import type { SingleAssignmentFeedback } from "src/types/AssignmentFeedback";
 import CommonIssuesChart from "./CommonIssuesChart";
+import type { AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
 type CommonIssuesCollapsibleProps = {
-  assignment: SingleAssignmentFeedback;
+  assignment: AssignmentWithIssues;
 };
 
 export default function CommonIssuesCollapsible({ assignment }: CommonIssuesCollapsibleProps) {
@@ -17,7 +17,7 @@ export default function CommonIssuesCollapsible({ assignment }: CommonIssuesColl
         onClick={() => setIsOpen((prev) => !prev)}
         className="w-full flex justify-between items-center text-left font-semibold text-gray-700 p-3 text-lg"
       >
-        <span>{assignment.assignmentName}</span>
+        <span>{assignment.assignment_name}</span>
         {isOpen ? <FaChevronUp size={15} /> : <FaChevronDown size={15} />}
       </button>
 

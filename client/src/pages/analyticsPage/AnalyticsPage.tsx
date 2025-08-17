@@ -9,6 +9,8 @@ import Spinner from "../../components/Spinner";
 import CommonIssuesTab from "./commonIssuesTab/CommonIssuesTab";
 import Tabs from "../../components/Tabs";
 import AveragePointsTab from "./averageAssignmentPointsTab/AveragePointsTab";
+import { useSupabase } from "../../context/supabase/useSupabase";
+import type { AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
 // delete this later
 // const mockOrgData = {
@@ -104,7 +106,9 @@ const mockAssignmentData = [
 export default function AnalyticsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const github = useGitHub();
+  const supabase = useSupabase();
   const [orgData, setOrgData] = useState<OrgReport | null>(null);
+  const [assignmentIssues, setAssignmentIssues] = useState<AssignmentWithIssues[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -114,16 +118,22 @@ export default function AnalyticsPage() {
     const fetchOrgData = async () => {
       if (!orgName) return;
       try {
-        const data = await github.getAllOrganizationData(orgName);
-        setOrgData(data);
+        github.getAllOrganizationData(orgName)
+          .then((fetchedOrgData) => {
+            setOrgData(fetchedOrgData)
+            supabase.getAssignmentIssues(fetchedOrgData.orgId)
+              .then((fetchedAssignmentIssues) => {
+                setAssignmentIssues(fetchedAssignmentIssues)
+              })
+          })
       } catch (error) {
-        console.error("Failed to fetch org data:", error);
+        console.error("Failed to fetch information for analytics page: ", error);
       } finally {
         setLoading(false);
       }
     };
     fetchOrgData();
-  }, [orgName, github]);
+  }, [orgName, github, supabase]);
 
   function onTabChange(tabId: string) {
     const assignment = searchParams.get("assignment");
@@ -151,7 +161,13 @@ export default function AnalyticsPage() {
       {
         id: "common-issues",
         label: "Common Issues",
-        content: <CommonIssuesTab assignmentFeedbacks={mockAssignmentData} />,
+        content: assignmentIssues ? (
+        <CommonIssuesTab assignmentFeedbacks={assignmentIssues} />
+        ) : (
+          <div className="p-4 text-gray-500">
+            <Spinner />
+          </div>
+        ),
       },
       {
         id: "missing-submissions",
@@ -159,7 +175,7 @@ export default function AnalyticsPage() {
         content: <MissingSubmissionsList orgData={orgData} />,
       },
     ];
-  }, [orgData]);
+  }, [orgData, assignmentIssues]);
 
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">

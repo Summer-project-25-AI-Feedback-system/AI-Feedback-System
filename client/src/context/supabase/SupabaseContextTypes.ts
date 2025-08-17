@@ -5,7 +5,8 @@ import type {
   AiEvaluation,
   RosterWithStudents,
   RosterWithStudentsInput,
-  AiEvaluationInput
+  AiEvaluationInput,
+  AssignmentWithIssues
 } from "@shared/supabaseInterfaces";
 
 export interface SupabaseContextType {
@@ -19,4 +20,6 @@ export interface SupabaseContextType {
 
   getEvaluations: (orgId: string) => Promise<AiEvaluation[]>;
   addEvaluations: (orgId: string, data: AiEvaluationInput | AiEvaluationInput[]) => Promise<void>;
+
+  getAssignmentIssues: (orgId: string) => Promise<AssignmentWithIssues[]>;
 }

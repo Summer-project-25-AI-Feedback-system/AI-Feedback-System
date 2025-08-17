@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { OrganizationInput, Assignment, AssignmentInput, RosterWithStudents, RosterWithStudentsInput, AiEvaluation, AiEvaluationInput } from "@shared/supabaseInterfaces";
+import type { OrganizationInput, Assignment, AssignmentInput, RosterWithStudents, RosterWithStudentsInput, AiEvaluation, AiEvaluationInput, AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -56,6 +56,13 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
     });
   };
 
+  const getAssignmentIssues = async (orgId: string): Promise<AssignmentWithIssues[]> => {
+    const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/assignment-issues`, {
+      withCredentials: true,
+    });
+    return res.data;
+  };
+
   const contextValue: SupabaseContextType = useMemo(
     () => ({
       addOrganizations,
@@ -65,6 +72,7 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
       addRoster,
       getEvaluations,
       addEvaluations,
+      getAssignmentIssues
     }),
     []
   );
