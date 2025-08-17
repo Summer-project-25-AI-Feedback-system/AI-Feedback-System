@@ -83,6 +83,20 @@ export const createOrUpdateAssignments = async (
   if (error) throw error;
 };
 
+export const createOrUpdateAssignmentMaxScore = async (
+  assignmentId: string,
+  maxScore: number
+) => {
+  const { error } = await supabase
+    .from("assignments")
+    .update({ max_points: maxScore })
+    .eq("id", assignmentId);
+
+  if (error) {
+    throw new Error(`Failed to upsert assignment max points: ${error.message}`);
+  }
+}
+
 export async function handleGetAssignmentId(
   organizationUuId: string,
   assignmentId: string

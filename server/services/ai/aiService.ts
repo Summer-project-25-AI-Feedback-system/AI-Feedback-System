@@ -47,7 +47,7 @@ export async function runAIEvolution(
     commonIssues = await parseAIFeedbackCommonIssues(evaluationData.md_file)
   }
 
-  return {markdownContent, evaluationData, commonIssues};
+  return {markdownContent, evaluationData, commonIssues, maxScore};
 }
 
 function generateMarkdownContent(evaluationResult: EvaluationResult): string {

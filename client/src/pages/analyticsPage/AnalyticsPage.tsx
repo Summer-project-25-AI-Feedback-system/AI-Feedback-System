@@ -12,96 +12,12 @@ import AveragePointsTab from "./averageAssignmentPointsTab/AveragePointsTab";
 import { useSupabase } from "../../context/supabase/useSupabase";
 import type { AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
-// delete this later
-// const mockOrgData = {
-//   org: "Mock University",
-//   orgId: 2,
-//   assignments: ["intro-to-data", "java-assignment", "css-intro-assignment"],
-//   submissions: [
-//     {
-//       student: "astronautie",
-//       grades: {
-//         "intro-to-data": 20,
-//         "java-assignment": 10,
-//         "css-intro-assignment": null,
-//       },
-//     },
-//     {
-//       student: "FuzzyKala",
-//       grades: {
-//         "intro-to-data": 18,
-//         "java-assignment": null,
-//         "css-intro-assignment": null,
-//       },
-//     },
-//     {
-//       student: "vima20",
-//       grades: {
-//         "intro-to-data": 20,
-//         "java-assignment": 10,
-//         "css-intro-assignment": 30,
-//       },
-//     },
-//     {
-//       student: "nonRoster",
-//       grades: {
-//         "intro-to-data": null,
-//         "java-assignment": 15,
-//         "css-intro-assignment": 25,
-//       },
-//     },
-//   ],
-// };
-
 // TODO: get this from github with real values (preferably with the OrgData and not separately)
 const maxPointsPerAssignment = {
   "intro-to-data": 20,
   "java-assignment": 15,
   "css-intro-assignment": 30,
 };
-
-// TODO: get the real issues from the database(?)
-const mockAssignmentData = [
-  {
-    assignmentName: "Assignment 1",
-    issues: [
-      "Repeating code",
-      "Another issue",
-      "Another issue",
-      "Poor Naming",
-      "Poor Naming",
-      "Poor Naming",
-      "Poor Naming",
-    ],
-  },
-  {
-    assignmentName: "Assignment 2",
-    issues: [
-      "Bad logic",
-      "Poor Naming",
-      "Poor Naming",
-      "Poor Naming",
-      "Repeating Code",
-      "No imports",
-      "No imports",
-    ],
-  },
-  {
-    assignmentName: "Assignment 3",
-    issues: [
-      "Bad logic",
-      "Poor naming",
-      "Bad logic",
-      "Poor naming",
-      "Poor naming",
-      "Repeating code",
-    ],
-  },
-  {
-    assignmentName: "Assignment 4",
-    issues: ["Bad logic", "Poor naming", "Poor naming"],
-  },
-];
 
 export default function AnalyticsPage() {
   const { orgName } = useParams<{ orgName: string }>();
