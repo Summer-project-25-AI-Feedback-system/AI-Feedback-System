@@ -103,24 +103,34 @@ export const createOrUpdateEvaluations = async (
 
 export const checkEvaluationExistsService = async ({
   githubUsername,
-  orgName,
+  // orgName,
   orgId,
-  repoName,
+  // repoName,
+  assignmentName,
 }: GithubReqBody): Promise<{ exists: boolean }> => {
   const organizationUuId = await getOrganizationIdByGithubOrgId(orgId);
   if (!organizationUuId) throw new Error("Organization not found.");
 
-  const parentRepoId = (await getParentRepoId(orgName, repoName))?.toString();
-  if (!parentRepoId) throw new Error("Parent repo not found.");
-
-  const assignmentUuId = await handleGetAssignmentId(
-    organizationUuId,
-    parentRepoId
-  );
-  if (!assignmentUuId) throw new Error("Assignment not found.");
-
   const rosterStudentUuId = await fetchRosterStudentId(githubUsername);
   if (!rosterStudentUuId) throw new Error("Student not found.");
+
+  const { data: assignment, error: assignmentError } = await supabase
+    .from("assignments")
+    .select("id")
+    .eq("name", assignmentName)
+    .eq("organization_id", organizationUuId)
+    .single();
+
+  if (assignmentError || !assignment) {
+    console.error("Failed to fetch assignment:", assignmentError);
+    throw new Error("Assignment not found.");
+  }
+  const assignmentUuId = assignment.id;
+
+  console.log("Querying for evaluation with:");
+  console.log(`- roster_student_id: ${rosterStudentUuId}`);
+  console.log(`- assignment_id: ${assignmentUuId}`);
+  console.log(`- organization_id: ${organizationUuId}`);
 
   const { data: evaluation } = await supabase
     .from("ai_evaluations")

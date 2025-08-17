@@ -100,3 +100,22 @@ export async function handleGetAssignmentId(
   }
   return assignment.id;
 }
+
+export async function handleGetAssignmentIdByName(
+  organizationId: string,
+  assignmentName: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("assignments")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("name", assignmentName)
+    .single();
+
+  if (error) {
+    console.error("Error fetching assignment ID by name:", error);
+    return null;
+  }
+
+  return data?.id;
+}

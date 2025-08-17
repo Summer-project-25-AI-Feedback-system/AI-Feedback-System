@@ -87,11 +87,14 @@ export interface CompareCommitsInfo {
   behind_by: number;
   total_commits: number;
   commits: CommitInfo[];
-  files: {
-    filename: string;
-    status: string;
-    additions: number;
-    deletions: number;
-    changes: number;
-  }[];
+  files: FileComparison[];
+}
+
+export interface FileComparison {
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  patch?: string;
 }

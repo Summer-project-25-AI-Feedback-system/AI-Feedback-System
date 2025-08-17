@@ -52,7 +52,13 @@ export const addEvaluations = async (req: Request, res: Response) => {
 };
 
 export async function checkEvaluationExists(req: Request, res: Response) {
-  const { githubUsername, orgName, orgId, repoName }: GithubReqBody = req.body;
+  const {
+    githubUsername,
+    orgName,
+    orgId,
+    repoName,
+    assignmentName,
+  }: GithubReqBody = req.body;
 
   try {
     const result = await checkEvaluationExistsService({
@@ -60,6 +66,7 @@ export async function checkEvaluationExists(req: Request, res: Response) {
       orgName,
       orgId,
       repoName,
+      assignmentName,
     });
 
     res.status(200).json(result); // returns { exists: true | false }
