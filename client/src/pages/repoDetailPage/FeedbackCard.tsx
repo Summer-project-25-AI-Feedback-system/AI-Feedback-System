@@ -30,7 +30,7 @@ export default function FeedbackCard({
     (acc, file) => acc + file.issues.length,
     0
   );
-
+  console.log("feedbackData:", feedbackData);
   return (
     <div className="flex flex-col space-y-2 p-4 border rounded-md">
       <h2 className="text-lg font-semibold text-center">AI Feedback</h2>

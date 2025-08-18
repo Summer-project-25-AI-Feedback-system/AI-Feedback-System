@@ -17,6 +17,7 @@ import { stripMarkdown } from "../../utils/markdownUtils";
 import { getInitialFeedback } from "../../utils/feedbackUtils";
 
 import type { AssignmentFeedback } from "@shared/aiInterfaces";
+import type { AiEvaluation } from "@shared/supabaseInterfaces";
 
 export default function RepoDetailPage() {
   const location = useLocation();
@@ -109,13 +110,15 @@ export default function RepoDetailPage() {
       try {
         setFeedbackLoading(true);
 
-        const evaluations = await supabase.getEvaluations(orgId);
+        const evaluations: AiEvaluation[] = await supabase.getEvaluations(
+          orgId
+        );
         if (evaluations.length > 0) {
           const latest = evaluations[0]; // assuming most recent
           setFeedbackData((prev) => ({
             ...prev,
             feedback: stripMarkdown(latest.md_file),
-            grade: latest.grade || "",
+            grade: latest.total_score || "",
           }));
         }
       } catch (error) {
@@ -204,6 +207,7 @@ export default function RepoDetailPage() {
       isEditing,
       feedbackData,
       feedbackLoading,
+      orgName,
     ]
   );
 

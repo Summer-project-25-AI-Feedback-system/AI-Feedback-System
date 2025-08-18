@@ -68,7 +68,7 @@ export interface AiEvaluation {
   created_at: Date;
   ai_model: string;
   md_file: string;
-  grade?: string;
+  total_score: string;
 }
 
 export interface AiEvaluationInput {
