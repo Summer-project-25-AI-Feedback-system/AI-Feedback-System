@@ -20,6 +20,7 @@ import {
 import { isEvaluated } from "../middlewares/selfEvaHelper";
 import { verifyGitHubOIDC } from "../middlewares/verifyGitHubOIDC";
 import { getAssignmentIssuesForOrg } from "../controllers/supabase/assignmentIssuesController";
+import { getAllAnalyticsData } from "../controllers/supabase/analyticsInfoController";
 const router = express.Router();
 
 // github action self-evaluation from students
@@ -82,6 +83,11 @@ router.post(
 // -- Assignment issue routes --
 // GET assignment issues
 router.get("/:org/assignment-issues", attachGithubId, validateOrgAccess, getAssignmentIssuesForOrg)
+
+// -- Analytics data route --
+// GET analytics data
+router.get("/:org/analytics-data", attachGithubId, validateOrgAccess, getAllAnalyticsData)
+
 
 export default router;
 

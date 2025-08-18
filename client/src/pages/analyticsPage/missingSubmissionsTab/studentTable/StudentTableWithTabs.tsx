@@ -1,43 +1,44 @@
 import { useSearchParams } from "react-router-dom";
-import type { OrgReport } from "src/types/OrgReport";
 import StudentTable from "./StudentTable";
 import Tabs from "../../../../components/Tabs";
-import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
+import type { AnalyticsResponse, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 
 type StudentTableWithTabsProps = {
   roster: RosterWithStudentsInput;
-  orgData: OrgReport;
+  analyticsData: AnalyticsResponse;
   selectedTab: string;
+  orgId: number;
   orgName?: string;
 };
 
-export default function StudentTableWithTabs({ roster, orgData, selectedTab, orgName }: StudentTableWithTabsProps) {
+export default function StudentTableWithTabs({ roster, analyticsData, selectedTab, orgName, orgId }: StudentTableWithTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleTabChange = (tabId: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("assignment", tabId); 
-    console.log(orgName + " " + orgData)
+    console.log(orgName + " " + analyticsData)
     setSearchParams(params);
   };
 
-  const allAssignments = orgData.assignments;
+  const allAssignments = analyticsData.assignments;
 
   const tabs = [
     {
       id: "all",
       label: "All Submissions",
-      content: <StudentTable roster={roster} orgData={orgData} orgName={orgName}/>
+      content: <StudentTable roster={roster} analyticsData={analyticsData} orgName={orgName} orgId={orgId}/>
     },
-    ...allAssignments.map((assignmentName) => ({
-      id: assignmentName,
-      label: assignmentName,
+    ...allAssignments.map((assignment) => ({
+      id: assignment.id,
+      label: assignment.name,
       content: (
         <StudentTable
           roster={roster}
-          orgData={orgData}
-          assignmentFilter={[assignmentName]}
+          analyticsData={analyticsData}
+          assignmentFilter={[assignment.id]}
           orgName={orgName}
+          orgId={orgId}
         />
       )
     }))

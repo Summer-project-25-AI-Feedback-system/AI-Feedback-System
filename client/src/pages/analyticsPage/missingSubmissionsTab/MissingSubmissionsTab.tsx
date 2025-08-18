@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import UploadStudentRosterCSVButton from "./UploadStudentRosterCSVButton";
 import Subtext from "./Subtext";
-import type { OrgReport } from "src/types/OrgReport";
 import { useParams, useSearchParams } from "react-router-dom";
 import StudentTableWithTabs from "./studentTable/StudentTableWithTabs";
 import { useSupabase } from "../../../context/supabase/useSupabase";
-import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
+import type { AnalyticsResponse, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 import Spinner from "../../../components/Spinner";
 import { mapToRosterWithStudentInputType } from "../../../utils/mappings/mapToRosterWithStudentInputType";
 
 type MissingSubmissionsTabProps = {
-  orgData: OrgReport;
+  analyticsData: AnalyticsResponse;
+  orgId: number;
 };
 
-export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTabProps) {
+export default function MissingSubmissionsTab({ analyticsData, orgId }: MissingSubmissionsTabProps) {
   const [roster, setRoster] = useState<RosterWithStudentsInput | null>(null);
   const { orgName } = useParams<{ orgName: string }>();
   const [loading, setLoading] = useState(true);
@@ -22,8 +22,8 @@ export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTab
   const supabase = useSupabase();
   
   useEffect(() => {
-    if (orgData.orgId) {
-      const stringId = String(orgData.orgId)
+    if (orgId) {
+      const stringId = String(orgId)
       supabase.getRoster(stringId)
       .then((fetchedRoster) => { 
         if (fetchedRoster) {
@@ -40,7 +40,7 @@ export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTab
         setLoading(false)
       })
     }
-  }, [orgData, supabase]); 
+  }, [orgId, supabase]); 
 
   return (
     <div>
@@ -49,16 +49,16 @@ export default function MissingSubmissionsTab({ orgData }: MissingSubmissionsTab
       ) : !roster || roster.roster_students.length === 0 ? (
         <div className="flex flex-col gap-y-6 items-center">
             <Subtext text={`Note: GitHub’s API does not currently support fetching student rosters. To view missing submissions, please upload a roster manually. You can download your class roster from GitHub Classroom under the "Students" section.`} />
-            <UploadStudentRosterCSVButton text="Upload Student Roster CSV" onUpload={setRoster} orgId={orgData.orgId}/>
+            <UploadStudentRosterCSVButton text="Upload Student Roster CSV" onUpload={setRoster} orgId={orgId}/>
         </div>
       ) : (
         <div className="flex flex-col gap-y-2">
           <div className="flex justify-between items-center">
             <Subtext text="Note: Student names and GitHub usernames are only visible once at least one assignment has been accepted by the student before the latest CSV upload."/>
-            <UploadStudentRosterCSVButton text="Update Student Roster CSV" onUpload={setRoster} orgId={orgData.orgId}/>
+            <UploadStudentRosterCSVButton text="Update Student Roster CSV" onUpload={setRoster} orgId={orgId}/>
           </div>
           {roster?.roster_students && roster.roster_students.length > 0 && (
-            <StudentTableWithTabs roster={roster!} orgData={orgData} selectedTab={selectedAssignment} orgName={orgName}/>
+            <StudentTableWithTabs roster={roster!} analyticsData={analyticsData} selectedTab={selectedAssignment} orgName={orgName} orgId={orgId}/>
           )}
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import type { OrgReport } from "src/types/OrgReport";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import MissingSubmissionsList from "./missingSubmissionsTab/MissingSubmissionsTab";
@@ -10,21 +9,15 @@ import CommonIssuesTab from "./commonIssuesTab/CommonIssuesTab";
 import Tabs from "../../components/Tabs";
 import AveragePointsTab from "./averageAssignmentPointsTab/AveragePointsTab";
 import { useSupabase } from "../../context/supabase/useSupabase";
-import type { AssignmentWithIssues } from "@shared/supabaseInterfaces";
-
-// TODO: get this from github with real values (preferably with the OrgData and not separately)
-const maxPointsPerAssignment = {
-  "intro-to-data": 20,
-  "java-assignment": 15,
-  "css-intro-assignment": 30,
-};
+import type { AnalyticsResponse, AssignmentWithIssues } from "@shared/supabaseInterfaces";
 
 export default function AnalyticsPage() {
   const { orgName } = useParams<{ orgName: string }>();
   const github = useGitHub();
   const supabase = useSupabase();
-  const [orgData, setOrgData] = useState<OrgReport | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsResponse | null>(null);
   const [assignmentIssues, setAssignmentIssues] = useState<AssignmentWithIssues[] | null>(null);
+  const [orgId, setOrgId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -34,10 +27,16 @@ export default function AnalyticsPage() {
     const fetchOrgData = async () => {
       if (!orgName) return;
       try {
-        github.getAllOrganizationData(orgName)
+        github.getOrganization(orgName)
           .then((fetchedOrgData) => {
-            setOrgData(fetchedOrgData)
-            supabase.getAssignmentIssues(fetchedOrgData.orgId)
+            console.log("the organization data id in analytics: " + fetchedOrgData.id)
+            setOrgId(fetchedOrgData.id)
+            supabase.getAnalyticsData(fetchedOrgData.id)
+              .then((fetchedAnalyticsData) => {
+                console.log("the analytics data id in analytics (from supabase): " + fetchedOrgData.id)
+                setAnalyticsData(fetchedAnalyticsData)
+              })
+            supabase.getAssignmentIssues(fetchedOrgData.id)
               .then((fetchedAssignmentIssues) => {
                 setAssignmentIssues(fetchedAssignmentIssues)
               })
@@ -62,15 +61,14 @@ export default function AnalyticsPage() {
   }
 
   const tabs = useMemo(() => {
-    if (!orgData) return [];
+    if (!analyticsData) return [];
     return [
       {
         id: "average-points",
         label: "Average Assignment Points",
         content: (
           <AveragePointsTab
-            orgData={orgData}
-            maxPointsPerAssignment={maxPointsPerAssignment}
+            analyticsData={analyticsData}
           />
         ),
       },
@@ -80,18 +78,20 @@ export default function AnalyticsPage() {
         content: assignmentIssues ? (
         <CommonIssuesTab assignmentFeedbacks={assignmentIssues} />
         ) : (
-          <div className="p-4 text-gray-500">
             <Spinner />
-          </div>
         ),
       },
       {
         id: "missing-submissions",
         label: "Missing Submissions",
-        content: <MissingSubmissionsList orgData={orgData} />,
+        content: orgId !== null ? (
+          <MissingSubmissionsList analyticsData={analyticsData} orgId={orgId}/>
+        ) : (
+          <Spinner />
+        )
       },
     ];
-  }, [orgData, assignmentIssues]);
+  }, [analyticsData, assignmentIssues, orgId]);
 
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
@@ -105,8 +105,8 @@ export default function AnalyticsPage() {
         <div>
           {loading ? (
             <Spinner />
-          ) : !orgData ? (
-            <div className="p-4">No organization data found.</div>
+          ) : !analyticsData ? (
+            <Spinner />
           ) : (
             <Tabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
           )}

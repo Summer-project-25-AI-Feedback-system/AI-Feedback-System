@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import axios from "axios";
 import SupabaseContext from "./SupabaseContext";
 import type { SupabaseContextType } from "./SupabaseContextTypes";
-import type { OrganizationInput, Assignment, AssignmentInput, RosterWithStudents, RosterWithStudentsInput, AiEvaluation, AiEvaluationInput, AssignmentWithIssues } from "@shared/supabaseInterfaces";
+import type { OrganizationInput, Assignment, AssignmentInput, RosterWithStudents, RosterWithStudentsInput, AiEvaluation, AiEvaluationInput, AssignmentWithIssues, AnalyticsResponse } from "@shared/supabaseInterfaces";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -56,8 +56,15 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
     });
   };
 
-  const getAssignmentIssues = async (orgId: string): Promise<AssignmentWithIssues[]> => {
+  const getAssignmentIssues = async (orgId: number): Promise<AssignmentWithIssues[]> => {
     const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/assignment-issues`, {
+      withCredentials: true,
+    });
+    return res.data;
+  };
+
+  const getAnalyticsData = async (orgId: number): Promise<AnalyticsResponse> => {
+    const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/analytics-data`, {
       withCredentials: true,
     });
     return res.data;
@@ -72,7 +79,8 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
       addRoster,
       getEvaluations,
       addEvaluations,
-      getAssignmentIssues
+      getAssignmentIssues,
+      getAnalyticsData
     }),
     []
   );

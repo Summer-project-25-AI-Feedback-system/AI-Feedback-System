@@ -1,4 +1,4 @@
-import { Assignment, AssignmentInput } from "@shared/supabaseInterfaces";
+import { Assignment, AssignmentInput, AssignmentMaxScoreInfo } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
 
 export const fetchAssignments = async (
@@ -96,6 +96,35 @@ export const createOrUpdateAssignmentMaxScore = async (
     throw new Error(`Failed to upsert assignment max points: ${error.message}`);
   }
 }
+
+/* export const fetchAssignmentMaxScores = async (
+  externalOrganizationId: number,
+ ): Promise<AssignmentMaxScoreInfo[]> => {
+  const { data: orgData, error: orgError } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("external_github_org_id", externalOrganizationId)
+    .single();
+  
+  if (orgError) {
+    throw new Error(`Failed to fetch organization: ${orgError.message}`);
+  }
+  
+  if (!orgData) {
+    throw new Error("Organization not found");
+  }
+
+  const { data, error } = await supabase
+    .from("assignments")
+    .select("id, name, max_points")
+    .eq("organization_id", orgData.id);
+
+  if (error) {
+    throw new Error(`Failed to fetch assignment max points: ${error.message}`);
+  }
+
+  return data ?? [];
+} */
 
 export async function handleGetAssignmentId(
   organizationUuId: string,

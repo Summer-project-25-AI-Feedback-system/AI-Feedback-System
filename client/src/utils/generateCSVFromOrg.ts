@@ -10,8 +10,7 @@ Willie Wonka        willie                23234             Error               
 
 */
 
-import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
-import type { OrgReport } from "src/types/OrgReport";
+import type { AnalyticsResponse, AnalyticsSubmission, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
 
 function downloadCSV(csvContent: string, filename: string = "report.csv") {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -25,45 +24,57 @@ function downloadCSV(csvContent: string, filename: string = "report.csv") {
   document.body.removeChild(link);
 }
 
-export function generateCSVFromOrg(orgData: OrgReport, roster: RosterWithStudentsInput) {
-  const assignmentNames = orgData.assignments;
+export function generateCSVFromOrg(analyticsData: AnalyticsResponse, roster: RosterWithStudentsInput, orgName: string) {
+  const assignmentNames = analyticsData.assignments.map((a) => a.name);
   const headerRow = ["Name", "GitHub Username", "Roster Identifier", ...assignmentNames, "Total Points"]; 
-  const submissionMap = new Map(
-    orgData.submissions.map((s) => [s.student, s.grades])
-  );
+  
   const csvLines: string[][] = [
     ["Overview of Student Points and Submissions"], // title row
     headerRow, // header row
   ];
-  const students = roster.roster_students;
-  if (Array.isArray(students)) {
-    for (const student of students) {
-      if (!student.github_roster_identifier) continue;
-      const scores = student.github_username? submissionMap.get(student.github_username) || {} : {};
-      const row: (string | number)[] = [
-        student.github_display_name || "N/A",
-        student.github_username || "N/A",
-        student.github_roster_identifier || "N/A",
-      ];
-      let total = 0;
-      let count = 0;
-      for (const assignment of assignmentNames) {
-        const points = scores[assignment];
-        if (typeof points === "number") {
-          row.push(points);
-          total += points;
-          count++;
-        } else if (points === "Error") {
-          row.push("Error");
-        } else {
-          row.push("N/A");
-        }
+
+  const students = roster.roster_students ?? [];
+
+  for (const student of students) {
+    if (!student.github_roster_identifier) continue;
+  
+  const submission: AnalyticsSubmission | undefined = analyticsData.submissions.find(
+      (s) => s.student === student.github_username || s.student === student.github_display_name
+    );
+
+    const row: (string | number)[] = [
+      student.github_display_name || "N/A",
+      student.github_username || "N/A",
+      student.github_roster_identifier || "N/A",
+    ];
+
+    let total = 0;
+    let count = 0;
+
+    for (const assignment of analyticsData.assignments) {
+      const gradeEntry = submission?.grades.find((g) => g.assignmentId === assignment.id);
+
+      if (!gradeEntry || gradeEntry.evaluations.length === 0) {
+        row.push("N/A");
+        continue;
       }
-      row.push(count > 0 ? total : "N/A");
-      csvLines.push(row.map(String));
+
+      const scores = gradeEntry.evaluations.map((ev) => ev.total_score ?? null).filter((s) => s !== null) as number[];
+
+      if (scores.length === 0) {
+        row.push("Error"); 
+      } else {
+        const points = Math.max(...scores); 
+        row.push(points);
+        total += points;
+        count++;
+      }
     }
+
+    row.push(count > 0 ? total : "N/A");
+    csvLines.push(row.map(String));
   }
 
   const csvContent = csvLines.map((row) => row.join(";")).join("\n");
-  downloadCSV(csvContent, `${orgData.org}_assignments_overview.csv`);
+  downloadCSV(csvContent, `${orgName}_assignments_overview.csv`);
 } 
