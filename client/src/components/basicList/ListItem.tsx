@@ -1,12 +1,8 @@
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type {
-  AssignmentInfo,
-  OrgInfo,
-  RepoInfo,
-} from "@shared/githubInterfaces";
-
+import type { AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
+import type { OrganizationInput } from "@shared/supabaseInterfaces";
 type ListItemProps =
-  | { type: "org"; data: OrgInfo; onClick?: () => void }
+  | { type: "org"; data: OrganizationInput; onClick?: () => void }
   | { type: "assignment"; data: AssignmentInfo; onClick?: () => void }
   | { type: "repo"; data: RepoInfo; onClick?: () => void }
   | { type: "submission"; data: StudentSubmissionInfo; onClick?: () => void };
@@ -22,15 +18,17 @@ export default function ListItem(props: ListItemProps) {
     case "org": {
       // console.log("orgs props.data in listItems:", props.data);
       const org = props.data;
-      className = `grid grid-cols-[40px_1fr_1fr] ${commonClass}`;
+      className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
         <>
           <img
-            src={org.avatarUrl}
+            src={org.avatar_url}
             alt={org.name}
             className="w-6 h-6 rounded-full"
           />
+
           <p className="text-left">{org.name}</p>
+          <p className="text-left">{org.submission_limit}</p>
           <p className="text-left">{org.description || "No description"}</p>
         </>
       );

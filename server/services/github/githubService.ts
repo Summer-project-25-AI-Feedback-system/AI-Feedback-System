@@ -11,7 +11,12 @@ import {
 
 export async function getOrganizations(): Promise<OrgInfo[]> {
   const octokit = await getOctokit();
-  const response = await octokit.rest.orgs.listForAuthenticatedUser();
+  const response = await octokit.rest.orgs.listForAuthenticatedUser({
+    // ✅ Add a request object to specify a timeout
+    request: {
+      timeout: 30000,
+    },
+  });
 
   if (!response) {
     throw new Error(`Error fetching organizations`);
@@ -20,6 +25,10 @@ export async function getOrganizations(): Promise<OrgInfo[]> {
   const { data: classrooms } = await octokit.request("GET /classrooms", {
     headers: {
       "X-GitHub-Api-Version": "2022-11-28",
+    },
+    // ✅ Add a request object to specify a timeout
+    request: {
+      timeout: 30000,
     },
   });
 

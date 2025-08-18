@@ -2,16 +2,17 @@ import { useNavigate } from "react-router-dom";
 import ListHeader from "./ListHeader";
 import ListItem from "./ListItem";
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
-import type {
-  AssignmentInfo,
-  OrgInfo,
-  RepoInfo,
-} from "@shared/githubInterfaces";
+import type { AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
 import type { SortOption } from "src/utils/sortingUtils";
+import type { OrganizationInput } from "@shared/supabaseInterfaces";
 
 interface BasicListProps {
   type: "org" | "assignment" | "repo" | "submission";
-  items: OrgInfo[] | AssignmentInfo[] | RepoInfo[] | StudentSubmissionInfo[];
+  items:
+    | OrganizationInput[]
+    | AssignmentInfo[]
+    | RepoInfo[]
+    | StudentSubmissionInfo[];
   isLoading: boolean;
   orgName?: string;
   assignmentName?: string;
@@ -42,22 +43,23 @@ export default function BasicList(props: BasicListProps) {
           const key = `${props.type}-${index}`;
 
           switch (props.type) {
-            case "org":
+            case "org": {
+              const orgItem = item as OrganizationInput;
               return (
                 <ListItem
                   key={key}
                   type="org"
-                  data={item as OrgInfo}
+                  data={orgItem}
                   onClick={() =>
-                    navigate(`/orgs/${(item as OrgInfo).name}/assignments`, {
+                    navigate(`/orgs/${orgItem.name}/assignments`, {
                       state: {
-                        orgId: (item as OrgInfo).id
-                      }
+                        orgId: orgItem.external_github_org_id,
+                      },
                     })
                   }
                 />
               );
-
+            }
             case "assignment":
               return (
                 <ListItem

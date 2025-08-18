@@ -12,7 +12,7 @@ import Spinner from "../../components/Spinner";
 import type { OrganizationInput } from "@shared/supabaseInterfaces";
 
 export default function OrgsPage() {
-  const [orgs, setOrgs] = useState<OrgInfo[]>([]);
+  const [orgs, setOrgs] = useState<OrganizationInput[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const github = useGitHub();
@@ -20,25 +20,43 @@ export default function OrgsPage() {
   const [sortOrder, setSortOrder] = useState<SortOption>("A–Z");
 
   useEffect(() => {
-    github
-      .getOrganizations()
-      .then((fetchedOrgs) => {
-        setOrgs(fetchedOrgs);
+    const fetchAndSyncOrgs = async () => {
+      try {
+        setLoading(true);
+
+        // 1. Fetch from GitHub API
+        const fetchedOrgs: OrgInfo[] = await github.getOrganizations();
+
+        // 2. Sync with Supabase (upsert)
         const orgInputs: OrganizationInput[] = fetchedOrgs.map((org) => ({
           name: org.name,
           external_github_org_id: org.id,
+          description: org.description,
+          avatar_url: org.avatarUrl,
         }));
-        supabase.addOrganizations(orgInputs);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+
+        await supabase.addOrganizations(orgInputs);
+
+        // 3. Fetch the ENRICHED data from Supabase
+        const supabaseOrgs = await supabase.getOrganizations();
+
+        // 4. Update state with the Supabase data
+        setOrgs(supabaseOrgs);
+      } catch (error) {
+        console.error("Error fetching and syncing organizations:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndSyncOrgs();
   }, [github, supabase]);
 
   const filteredOrgs = useFilteredList(orgs, searchTerm, (org, term) =>
     org.name.toLowerCase().includes(term.toLowerCase())
   );
   const sortedOrgs = sortData(filteredOrgs, sortOrder);
-
+  console.log(orgs);
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

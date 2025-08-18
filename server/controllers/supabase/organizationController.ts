@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   createOrUpdateOrganizations,
   getOrganizationIdByGithubOrgId,
+  getOrganizations,
 } from "../../services/supabase/organizationService";
 
 export const addOrganizations = async (req: Request, res: Response) => {
@@ -18,6 +19,18 @@ export const addOrganizations = async (req: Request, res: Response) => {
     }
     console.error("Unexpected error storing organization(s):", error);
     res.status(500).json({ error: "Failed to store organization(s)" });
+  }
+};
+
+export const handleGetOrganizations = async (req: Request, res: Response) => {
+  const githubId = (req as any).githubId;
+
+  try {
+    const organizations = await getOrganizations(githubId);
+    res.status(200).json(organizations);
+  } catch (error: any) {
+    console.error("Failed to retrieve organizations:", error);
+    res.status(500).json({ error: "Failed to retrieve organizations" });
   }
 };
 

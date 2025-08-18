@@ -4,6 +4,7 @@ import { validateOrgAccess } from "../middlewares/validateOrgAccess";
 import { attachGithubId } from "../middlewares/attachGitHubId";
 import {
   addOrganizations,
+  handleGetOrganizations,
   getOrgIdFromDB,
 } from "../controllers/supabase/organizationController";
 import {
@@ -37,6 +38,8 @@ router.use(isAuthenticated);
 // -- Organization routes --
 // GET organization ID
 router.get("/organization-id/:orgNum", getOrgIdFromDB);
+
+router.get("/organizations", attachGithubId, handleGetOrganizations);
 // POST organization
 router.post("/organizations", attachGithubId, addOrganizations);
 
@@ -79,9 +82,3 @@ router.post(
 );
 
 export default router;
-
-// get parent repo's uuid from supabase
-// router.get(
-//   "/orgs/:orgName/parent-repo-id/:assignmentName/:account",
-//   handelGetParentRepoId
-// );

@@ -3,7 +3,7 @@ import type { OrganizationInput } from "@shared/supabaseInterfaces";
 
 export const createOrUpdateOrganizations = async (
   githubId: string,
-  organizations: OrganizationInput | OrganizationInput[]
+  organizations: OrganizationInput[]
 ) => {
   const organizationsArray = Array.isArray(organizations)
     ? organizations
@@ -86,3 +86,42 @@ export async function getOrganizationIdByGithubOrgId(
 
   return data.id;
 }
+
+export const getOrganizations = async (githubId: string) => {
+  // Get the logged in user's ID
+  const { data: userRecord, error: userError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("github_id", githubId)
+    .single();
+
+  if (userError || !userRecord) {
+    throw new Error("Unable to find currently logged in user from Supabase");
+  }
+
+  const userId = userRecord.id;
+
+  // Fetch all organizations owned by this user
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("owner_id", userId);
+
+  if (error) {
+    console.error("Error fetching organizations from Supabase:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const updateSubmissionLimit = async (orgId: string, limit: number) => {
+  const { data, error } = await supabase
+    .from("organizations")
+    .update({ submission_limit: limit })
+    .eq("id", orgId)
+    .single();
+
+  if (error) throw error;
+  return data;
+};

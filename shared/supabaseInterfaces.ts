@@ -3,11 +3,17 @@ export interface Organization {
   name: string;
   external_github_org_id: number;
   owner_id: string;
+  submission_limit: number | null;
+  description: string | null;
+  avatar_url: string;
 }
 
 export interface OrganizationInput {
   name: string;
   external_github_org_id: number;
+  description?: string | null;
+  avatar_url?: string;
+  submission_limit?: number | null;
 }
 
 export interface Assignment {
