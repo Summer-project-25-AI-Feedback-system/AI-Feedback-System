@@ -1,8 +1,14 @@
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type { AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
 import type { OrganizationInput } from "@shared/supabaseInterfaces";
+
 type ListItemProps =
-  | { type: "org"; data: OrganizationInput; onClick?: () => void }
+  | {
+      type: "org";
+      data: OrganizationInput;
+      onClick?: () => void;
+      onUpdateSubmissionLimit?: (orgId: string, limit: number) => Promise<void>;
+    }
   | { type: "assignment"; data: AssignmentInfo; onClick?: () => void }
   | { type: "repo"; data: RepoInfo; onClick?: () => void }
   | { type: "submission"; data: StudentSubmissionInfo; onClick?: () => void };
@@ -13,6 +19,21 @@ export default function ListItem(props: ListItemProps) {
 
   let content;
   let className = "";
+
+  const handleLimitChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // ✅ Stop the event from propagating to the parent div
+    e.stopPropagation();
+
+    // Only proceed if the item is an organization and has a valid ID
+    if (
+      props.type === "org" &&
+      props.data.id &&
+      props.onUpdateSubmissionLimit
+    ) {
+      const newLimit = Number(e.target.value);
+      await props.onUpdateSubmissionLimit(props.data.id, newLimit);
+    }
+  };
 
   switch (props.type) {
     case "org": {
@@ -28,7 +49,17 @@ export default function ListItem(props: ListItemProps) {
           />
 
           <p className="text-left">{org.name}</p>
-          <p className="text-left">{org.submission_limit}</p>
+          <select
+            value={org.submission_limit ?? 2}
+            onChange={handleLimitChange}
+            className="border rounded p-1"
+          >
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+            <option value={4}>4</option>
+            <option value={5}>5</option>
+          </select>
           <p className="text-left">{org.description || "No description"}</p>
         </>
       );

@@ -19,6 +19,17 @@ export default function OrgsPage() {
   const supabase = useSupabase();
   const [sortOrder, setSortOrder] = useState<SortOption>("A–Z");
 
+  const handleUpdateLimit = async (orgId: string, newLimit: number) => {
+    try {
+      await supabase.updateSubmissionLimit(orgId, newLimit);
+      // After updating, refetch the data to keep the UI in sync
+      const updatedOrgs = await supabase.getOrganizations();
+      setOrgs(updatedOrgs);
+    } catch (error) {
+      console.error("Failed to update submission limit:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchAndSyncOrgs = async () => {
       try {
@@ -73,6 +84,7 @@ export default function OrgsPage() {
           isLoading={false}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
+          onUpdateSubmissionLimit={handleUpdateLimit}
         />
       )}
     </div>

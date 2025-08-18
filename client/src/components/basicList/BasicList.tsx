@@ -18,6 +18,7 @@ interface BasicListProps {
   assignmentName?: string;
   sortOrder?: SortOption;
   onSortChange?: (option: SortOption) => void;
+  onUpdateSubmissionLimit?: (orgId: string, limit: number) => Promise<void>;
 }
 
 export default function BasicList(props: BasicListProps) {
@@ -57,6 +58,7 @@ export default function BasicList(props: BasicListProps) {
                       },
                     })
                   }
+                  onUpdateSubmissionLimit={props.onUpdateSubmissionLimit}
                 />
               );
             }

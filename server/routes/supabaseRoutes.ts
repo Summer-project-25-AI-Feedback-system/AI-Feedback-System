@@ -6,6 +6,7 @@ import {
   addOrganizations,
   handleGetOrganizations,
   getOrgIdFromDB,
+  handleUpdateSubmissionLimit,
 } from "../controllers/supabase/organizationController";
 import {
   getAssignments,
@@ -79,6 +80,12 @@ router.post(
   attachGithubId,
   validateOrgAccess,
   addEvaluations
+);
+
+router.put(
+  "/organizations/:orgId/submission-limit",
+  validateOrgAccess,
+  handleUpdateSubmissionLimit
 );
 
 export default router;

@@ -3,6 +3,7 @@ import {
   createOrUpdateOrganizations,
   getOrganizationIdByGithubOrgId,
   getOrganizations,
+  updateSubmissionLimit,
 } from "../../services/supabase/organizationService";
 
 export const addOrganizations = async (req: Request, res: Response) => {
@@ -50,3 +51,19 @@ export async function getOrgIdFromDB(
     res.status(500).json({ error: "Failed to retrieve organization ID" });
   }
 }
+
+export const handleUpdateSubmissionLimit = async (
+  req: Request,
+  res: Response
+) => {
+  const { orgId } = req.params;
+  const { limit } = req.body;
+
+  try {
+    await updateSubmissionLimit(orgId, limit);
+    res.status(200).send("Submission limit updated successfully.");
+  } catch (error) {
+    console.error("Failed to update submission limit:", error);
+    res.status(500).json({ error: "Failed to update submission limit." });
+  }
+};

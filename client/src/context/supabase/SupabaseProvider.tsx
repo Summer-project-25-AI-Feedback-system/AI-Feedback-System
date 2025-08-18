@@ -33,6 +33,17 @@ export const SupabaseProvider = ({
     return res.data;
   };
 
+  const updateSubmissionLimit = async (
+    orgId: string,
+    limit: number
+  ): Promise<void> => {
+    await axios.put(
+      `${baseUrl}/api/supabase/organizations/${orgId}/submission-limit`,
+      { limit },
+      { withCredentials: true }
+    );
+  };
+
   const getAssignments = async (
     orgId: string,
     assignmentId?: string
@@ -104,6 +115,7 @@ export const SupabaseProvider = ({
     () => ({
       addOrganizations,
       getOrganizations,
+      updateSubmissionLimit,
       getAssignments,
       addAssignments,
       getRoster,

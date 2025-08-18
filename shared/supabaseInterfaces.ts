@@ -9,6 +9,7 @@ export interface Organization {
 }
 
 export interface OrganizationInput {
+  id?: string | null;
   name: string;
   external_github_org_id: number;
   description?: string | null;

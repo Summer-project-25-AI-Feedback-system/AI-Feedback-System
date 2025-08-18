@@ -13,7 +13,7 @@ export interface SupabaseContextType {
     data: OrganizationInput | OrganizationInput[]
   ) => Promise<void>;
   getOrganizations: () => Promise<OrganizationInput[]>;
-
+  updateSubmissionLimit: (orgId: string, limit: number) => Promise<void>;
   getAssignments: (
     orgId: string,
     assignmentId?: string
