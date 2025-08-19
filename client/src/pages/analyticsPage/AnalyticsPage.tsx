@@ -29,11 +29,9 @@ export default function AnalyticsPage() {
       try {
         github.getOrganization(orgName)
           .then((fetchedOrgData) => {
-            console.log("the organization data id in analytics: " + fetchedOrgData.id)
             setOrgId(fetchedOrgData.id)
             supabase.getAnalyticsData(fetchedOrgData.id)
               .then((fetchedAnalyticsData) => {
-                console.log("the analytics data id in analytics (from supabase): " + fetchedOrgData.id)
                 setAnalyticsData(fetchedAnalyticsData)
               })
             supabase.getAssignmentIssues(fetchedOrgData.id)

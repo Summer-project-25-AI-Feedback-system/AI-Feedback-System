@@ -64,6 +64,7 @@ export const createOrUpdateAssignments = async (
       .eq("organization_id", organizationId);
 
     if (deleteError) {
+      console.error("deleteError:", deleteError);
       throw new Error(
         "Failed to delete assignments from DB that no longer exist in GitHub."
       );

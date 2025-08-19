@@ -4,6 +4,7 @@ import type { RepoInfo, CommitInfo } from "@shared/githubInterfaces";
 import BackButton from "../../components/BackButton";
 import BasicHeading from "../../components/BasicHeading";
 import { useGitHub } from "../../context/useGitHub";
+import { useSupabase } from "../../context/supabase/useSupabase";
 import Tabs from "../../components/Tabs";
 import CodeTab from "./CodeTab";
 import CommitsTab from "./CommitsTab";
@@ -11,6 +12,7 @@ import MetadataTab from "./MetadataTab";
 import DiffTab from "./DiffTab";
 import FeedbackTab from "./FeedbackTab";
 import Spinner from "../../components/Spinner";
+import { stripMarkdown } from "../../utils/markdownUtils";
 
 import { getInitialFeedback } from "../../utils/feedbackUtils";
 
@@ -21,10 +23,13 @@ export default function RepoDetailPage() {
   const repoFromState = location.state as RepoInfo | undefined;
   const { orgName, assignmentName, repoName } = useParams();
   const github = useGitHub();
+  const supabase = useSupabase();
+  const [orgId, setOrgId] = useState<string | null>(null);
 
   const [repo, setRepo] = useState<RepoInfo | null>(repoFromState ?? null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(true); // Add loading state for feedback
 
   const [files, setFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -64,23 +69,23 @@ export default function RepoDetailPage() {
 
   // Fetch initial data
   useEffect(() => {
-    if (repo) {
+    if (repo && orgName) {
       // Load commits
-      github?.getCommits(repo.owner, repo.name).then(setCommits);
+      github?.getCommits(orgName, repo.name).then(setCommits);
 
       // Load file tree
-      github?.getRepoTree(repo.owner, repo.name).then(setFiles);
+      github?.getRepoTree(orgName, repo.name).then(setFiles);
     }
-  }, [repo, github]);
+  }, [repo, github, orgName]);
 
   useEffect(() => {
-    if (!selectedFile || !repo || !github) return;
+    if (!selectedFile || !repo || !github || !orgName) return;
 
     setFileLoading(true);
     setFileContent(null);
 
     github
-      .getFileContents(repo.owner, repo.name, selectedFile)
+      .getFileContents(orgName, repo.name, selectedFile)
       .then((content) => {
         setFileContent(content);
       })
@@ -91,11 +96,51 @@ export default function RepoDetailPage() {
       .finally(() => {
         setFileLoading(false);
       });
-  }, [selectedFile, repo, github]);
+  }, [selectedFile, repo, github, orgName]);
 
   useEffect(() => {
     console.log("repo:", repo);
   }, [repo]);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      if (!repo || !orgId || !assignmentName || !supabase) return;
+
+      try {
+        setFeedbackLoading(true);
+
+        const evaluations = await supabase.getEvaluations(orgId);
+        if (evaluations.length > 0) {
+          const latest = evaluations[0]; // assuming most recent
+          setFeedbackData((prev) => ({
+            ...prev,
+            feedback: stripMarkdown(latest.md_file),
+            grade: latest.grade || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch feedback:", error);
+      } finally {
+        setFeedbackLoading(false);
+      }
+    };
+
+    fetchFeedback();
+  }, [repo, orgId, assignmentName, supabase]);
+
+  useEffect(() => {
+    const fetchOrgId = async () => {
+      if (!orgName || !github) return;
+      try {
+        const id = await github.getOrgIdByName(orgName);
+        setOrgId(id);
+      } catch (error) {
+        console.error("Failed to fetch org ID:", error);
+      }
+    };
+
+    fetchOrgId();
+  }, [orgName, github]);
 
   const tabs = useMemo(
     () => [
@@ -120,7 +165,11 @@ export default function RepoDetailPage() {
       {
         id: "diff",
         label: "Diff",
-        content: repo ? <DiffTab repo={repo} /> : <div>No repo found</div>,
+        content: repo ? (
+          <DiffTab repo={repo} orgName={orgName!} />
+        ) : (
+          <div>No repo found</div>
+        ),
       },
       {
         id: "metadata",
@@ -134,6 +183,7 @@ export default function RepoDetailPage() {
           <FeedbackTab
             isEditing={isEditing}
             feedbackData={feedbackData}
+            feedbackLoading={feedbackLoading}
             onFeedbackChange={handleFeedbackTextChange}
             onGradeChange={(newGrade) =>
               setFeedbackData((prev) => ({ ...prev, grade: newGrade }))
@@ -153,6 +203,7 @@ export default function RepoDetailPage() {
       repo,
       isEditing,
       feedbackData,
+      feedbackLoading,
     ]
   );
 

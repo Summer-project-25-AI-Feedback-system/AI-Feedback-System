@@ -28,6 +28,16 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
     return res.data;
   };
 
+  const getOrgIdByName = async (orgName: string): Promise<string> => {
+    const res = await axios.get(
+      `${baseUrl}/api/github/orgs/${orgName}/getOrgId`,
+      {
+        withCredentials: true,
+      }
+    );
+    return res.data;
+  };
+
   const getAllOrganizationData = async (org: string) => {
     const res = await axios.get(`${baseUrl}/api/github/org-report`, {
       withCredentials: true,
@@ -122,6 +132,7 @@ export const GitHubProvider = ({ children }: { children: React.ReactNode }) => {
   const contextValue: GitHubContextType = useMemo(
     () => ({
       getOrganizations,
+      getOrgIdByName,
       getOrganization,
       getAllOrganizationData,
       getRepos,

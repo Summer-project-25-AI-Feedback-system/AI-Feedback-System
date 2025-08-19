@@ -19,7 +19,7 @@ export type AssignmentClassroomInfo = {
   submitted: number;
   passing: number;
   deadline: Date | null;
-}
+};
 
 export interface RepoInfo {
   id: string;
@@ -32,8 +32,8 @@ export interface RepoInfo {
   createdAt: string;
   updatedAt: string;
   lastPush: string;
-  lastCommitMessage: string;
-  lastCommitDate: string;
+  lastCommitMessage?: string;
+  lastCommitDate?: string;
   collaborators: Collaborator[];
 }
 

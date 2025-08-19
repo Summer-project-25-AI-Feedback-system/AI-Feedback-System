@@ -7,19 +7,23 @@ type CommonIssuesTabProps = {
 };
 
 export default function CommonIssuesTab({ assignmentFeedbacks }: CommonIssuesTabProps) {
-  const loading =
-    !assignmentFeedbacks ||
-    Object.keys(assignmentFeedbacks).length === 0;
+  if (!assignmentFeedbacks) {
+    return <Spinner />;
+  }
+
+  if (assignmentFeedbacks.length === 0) {
+    return (
+      <p className="text-gray-500 italic">
+        There are no common issues present.
+      </p>
+    );
+  }
 
   return (
     <div>
-      {loading ? (
-        <Spinner />
-      ) : (
-        assignmentFeedbacks.map((assignment, index) => (
-          <CommonIssuesCollapsible key={index} assignment={assignment} />
-        ))
-      )}
+      {assignmentFeedbacks.map((assignment, index) => (
+        <CommonIssuesCollapsible key={index} assignment={assignment} />
+      ))}
     </div>
   );
 }

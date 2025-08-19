@@ -18,6 +18,9 @@ server/dist/
 dist-ssr
 *.local
 
+# repomix and evaluation files
+server/output/*
+
 # Environment variables
 .env.*
 client/.env.*

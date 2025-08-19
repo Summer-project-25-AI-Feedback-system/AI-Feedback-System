@@ -25,6 +25,7 @@ export default function AssignmentsPage() {
     EnrichedAssignmentClassroomInfo[]
   >([]);
   const [roster, setRoster] = useState<RosterWithStudents | null>(null);
+  const [orgId, setOrgId] = useState<number | null>(null);
   const github = useGitHub();
   const supabase = useSupabase();
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ export default function AssignmentsPage() {
         .then((fetchedAssignments) => {
           setAssignments(fetchedAssignments);
           github.getAllOrganizationData(orgName).then((fetchedOrgData) => {
+            setOrgId(fetchedOrgData.id)
             const assignments = mapToSupabaseAssignments(fetchedAssignments);
             supabase.addAssignments(fetchedOrgData.orgId, assignments);
             supabase.getRoster(fetchedOrgData.orgId).then((fetchedRoster) => {
@@ -112,11 +114,14 @@ export default function AssignmentsPage() {
                 text="Go To Analytics Page"
                 onClick={handleAnalyticsClick}
               />
-              <GetCSVFileButton
-                text={"Export CSV Report"}
-                orgName={orgName}
-                roster={roster}
-              />
+              {orgId !== null && (
+                <GetCSVFileButton
+                  text={"Export CSV Report"}
+                  orgName={orgName}
+                  orgId={orgId}
+                  roster={roster}
+                />
+              )}
             </div>
           </div>
           {loading ? (
