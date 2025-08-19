@@ -119,7 +119,7 @@ export const updateSubmissionLimit = async (orgId: string, limit: number) => {
   const { data, error } = await supabase
     .from("organizations")
     .update({ submission_limit: limit })
-    .eq("id", orgId)
+    .eq("external_github_org_id", orgId)
     .single();
 
   if (error) throw error;

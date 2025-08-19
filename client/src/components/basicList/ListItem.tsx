@@ -27,12 +27,18 @@ export default function ListItem(props: ListItemProps) {
     // Only proceed if the item is an organization and has a valid ID
     if (
       props.type === "org" &&
-      props.data.id &&
+      props.data.external_github_org_id &&
       props.onUpdateSubmissionLimit
     ) {
       const newLimit = Number(e.target.value);
-      await props.onUpdateSubmissionLimit(props.data.id, newLimit);
+      await props.onUpdateSubmissionLimit(
+        props.data.external_github_org_id.toString(),
+        newLimit
+      );
     }
+  };
+  const handleSelectClick = (e: React.MouseEvent<HTMLSelectElement>) => {
+    e.stopPropagation();
   };
 
   switch (props.type) {
@@ -52,7 +58,8 @@ export default function ListItem(props: ListItemProps) {
           <select
             value={org.submission_limit ?? 2}
             onChange={handleLimitChange}
-            className="border rounded p-1"
+            onClick={handleSelectClick}
+            className="border rounded p-1 w-10"
           >
             <option value={1}>1</option>
             <option value={2}>2</option>

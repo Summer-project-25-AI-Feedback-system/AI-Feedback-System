@@ -84,6 +84,7 @@ router.post(
 
 router.put(
   "/organizations/:orgId/submission-limit",
+  attachGithubId,
   validateOrgAccess,
   handleUpdateSubmissionLimit
 );
