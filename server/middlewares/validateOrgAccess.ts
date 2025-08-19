@@ -6,7 +6,7 @@ export const validateOrgAccess = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { org } = req.params;
+  const { orgId } = req.params;
   const githubId = req.githubId;
   if (!githubId) {
     res.status(401).json({ error: "Missing GitHub ID in request." });
@@ -32,7 +32,7 @@ export const validateOrgAccess = async (
     .from("organizations")
     .select("id")
     // .eq("name", org)
-    .eq("external_github_org_id", org)
+    .eq("external_github_org_id", orgId)
     .eq("owner_id", userId)
     .single();
 
