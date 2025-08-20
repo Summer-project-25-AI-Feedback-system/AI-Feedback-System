@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { runRepomix, runAIEvolution } from "../services/ai/aiService";
+import { createOrUpdateEvaluations } from "../services/supabase/evaluationService";
+import { addOrUpdateAssignmentCommonIssues } from "../services/supabase/assignmentIssuesService";
+import { createOrUpdateAssignmentMaxScore } from "../services/supabase/assignmentService";
 
 export async function handleRunRepomix(
   req: Request,
@@ -42,12 +45,23 @@ export async function handleRunAIEvolution(
   }
 
   try {
-    const markdownContent = await runAIEvolution(
+    const {markdownContent, evaluationData, commonIssues, maxScore} = await runAIEvolution(
       xml,
       organizationId,
       repoName,
       assignmentName
     );
+
+    if (evaluationData && organizationId) {
+      await createOrUpdateEvaluations(organizationId, evaluationData)
+      if (maxScore) {
+        await createOrUpdateAssignmentMaxScore(evaluationData.assignment_id, maxScore)
+      }
+      if (commonIssues) {
+        await addOrUpdateAssignmentCommonIssues(commonIssues, evaluationData.assignment_id)
+      }
+    }
+
     res.json({ markdownContent });
   } catch (error) {
     console.error("AIEvolution error:", error);

@@ -1,23 +1,19 @@
 import { generateCSVFromOrg } from "../utils/generateCSVFromOrg";
 import { useNavigate } from "react-router-dom";
-import { useGitHub } from "../context/useGitHub";
-import type { RosterWithStudentsInput } from "@shared/supabaseInterfaces";
+import type { AnalyticsResponse, AnalyticsSubmission, RosterWithStudentsInput } from "@shared/supabaseInterfaces";
+import { useSupabase } from "../context/supabase/useSupabase";
 
 interface GetCSVFileButtonProps {
   text: string;
   orgName: string | undefined;
   roster: RosterWithStudentsInput | null;
+  orgId: number;
   assignmentFilter?: string[];
 }
 
-interface Submission {
-  student: string;
-  grades: Record<string, number | null>;
-}
-
-export default function GetCSVFileButton({text, orgName, roster, assignmentFilter }: GetCSVFileButtonProps) {
+export default function GetCSVFileButton({text, orgName, roster, assignmentFilter, orgId }: GetCSVFileButtonProps) {
   const navigate = useNavigate();
-  const github = useGitHub()
+  const supabase = useSupabase();
 
   const handleClick = async () => {
     if (!orgName) return;
@@ -31,24 +27,20 @@ export default function GetCSVFileButton({text, orgName, roster, assignmentFilte
     }
 
     try {
-      const data = await github.getAllOrganizationData(orgName);
+      const data = await supabase.getAnalyticsData(orgId);
       
-      const filteredData = assignmentFilter
+      const filteredData: AnalyticsResponse = assignmentFilter
         ? {
             ...data,
-            assignments: assignmentFilter,
-            submissions: data.submissions.map((s: Submission) => ({
+            assignments: data.assignments.filter((a) => assignmentFilter.includes(a.id)),
+            submissions: data.submissions.map((s: AnalyticsSubmission) => ({
               ...s,
-              grades: Object.fromEntries(
-                Object.entries(s.grades || {}).filter(([k]) =>
-                  assignmentFilter.includes(k)
-                )
-              ),
+              grades: s.grades.filter((g) => assignmentFilter.includes(g.assignmentId)),
             })),
           }
         : data;
 
-      generateCSVFromOrg(filteredData, roster);
+      generateCSVFromOrg(filteredData, roster, orgName);
     } catch (error) {
       console.error("Error generating CSV", error);
     }

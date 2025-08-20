@@ -31,7 +31,6 @@ export const getEvaluations = async (req: Request, res: Response) => {
   }
 };
 
-// TODO: is this still needed or working since the service function was completely changed for Ville's command prompt? is this needed in the frontend at all?
 export const addEvaluations = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
   const body = req.body;

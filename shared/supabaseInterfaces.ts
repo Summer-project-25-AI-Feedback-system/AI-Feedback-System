@@ -33,6 +33,12 @@ export interface AssignmentInput {
   submitted?: number;
 }
 
+export interface AssignmentMaxScoreInfo {
+  id: string;
+  name: string;
+  max_points: number;
+}
+
 export interface Roster {
   id: string;
   organization_id: string;
@@ -75,7 +81,7 @@ export interface AiEvaluation {
   created_at: Date;
   ai_model: string;
   md_file: string;
-  total_score: string;
+  total_score: number | null;
 }
 
 export interface AiEvaluationInput {
@@ -85,8 +91,45 @@ export interface AiEvaluationInput {
   created_at: Date;
   ai_model: string;
   md_file: string;
-  total_points: number;
+  total_score: number | null;
   commit_count?: number | null;
+}
+
+export interface CommonIssuesInput {
+  name: string;
+}
+
+export interface AssignmentIssue {
+  issue_id: string;
+  name: string;
+  count: number;
+}
+
+export interface AssignmentWithIssues {
+  assignment_id: string;
+  assignment_name: string;
+  issues: AssignmentIssue[];
+}
+
+export interface AnalyticsAssignment {
+  id: string;
+  name: string;
+  max_points: number;
+}
+
+export interface AnalyticsGrade {
+  assignmentId: string;
+  evaluations: AiEvaluation[]; 
+}
+
+export interface AnalyticsSubmission {
+  student: string | null; 
+  grades: AnalyticsGrade[];
+}
+
+export interface AnalyticsResponse {
+  assignments: AnalyticsAssignment[];
+  submissions: AnalyticsSubmission[];
 }
 
 export interface GithubReqBody {

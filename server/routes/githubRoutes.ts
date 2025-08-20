@@ -6,9 +6,10 @@ import {
   handleGetStudentReposForAssignment,
   handleGetFileContents,
   handleGetRepoTree,
-  handleGetAllOrganizationData,
   handleGetCommits,
   handleCompareCommits,
+  handleGetOrganization,
+  handleGetAllOrganizationData,
   handleGetOrganizationIdByName,
   handleGetCommitCount,
 } from "../controllers/githubController";
@@ -43,6 +44,9 @@ router.get(
 
 // Reporting route
 router.get("/org-report", handleGetAllOrganizationData);
+
+// Analytics route
+router.get("/orgs/:orgName/analytics-data", handleGetOrganization);
 
 // router.get("/get-parent-id/:orgName/:repoName", handelGetParentRepoId);
 

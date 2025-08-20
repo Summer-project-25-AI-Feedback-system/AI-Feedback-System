@@ -14,10 +14,10 @@ Instructions:
 - Max one page
 
 Format:
-1. Rating (0–5)
-2. Strengths (2 points)
-3. Improvements (2 points)
-4. Score
+1. Score
+2. Rating (0–5)
+3. Strengths (2 points)
+4. Improvements (2 points)
 
 Student Code:
 ${truncatedContent}

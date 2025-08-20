@@ -1,17 +1,16 @@
-import type { OrgReport } from "src/types/OrgReport";
 import AveragePointsChart from "./AveragePointsChart";
 import Spinner from "../../../components/Spinner";
+import type { AnalyticsResponse } from "@shared/supabaseInterfaces";
 
 type AveragePointsTabProps = {
-  orgData: OrgReport;
-  maxPointsPerAssignment: { [assignmentName: string]: number };
+  analyticsData: AnalyticsResponse;
 };
 
-export default function AveragePointsTab({ orgData, maxPointsPerAssignment }: AveragePointsTabProps) {
+export default function AveragePointsTab({ analyticsData }: AveragePointsTabProps) {
   const loading =
-    !orgData ||
-    !maxPointsPerAssignment ||
-    Object.keys(maxPointsPerAssignment).length === 0;
+    !analyticsData ||
+    analyticsData.assignments.length === 0 ||
+    analyticsData.submissions.length === 0;
 
   return (
     <div>
@@ -19,8 +18,7 @@ export default function AveragePointsTab({ orgData, maxPointsPerAssignment }: Av
             <Spinner />
         ) : (
             <AveragePointsChart 
-                orgData={orgData}
-                maxPointsPerAssignment={maxPointsPerAssignment}
+                analyticsData={analyticsData}
             />
         )}
     </div>

@@ -27,6 +27,20 @@ export async function handleGetOrganizations(
   }
 }
 
+export async function handleGetOrganization(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const orgName = req.params.orgName;
+  try {
+    const org = await getOrganization(orgName);
+    res.json(org);
+  } catch (error) {
+    console.error("Failed to fetch organization:", error);
+    res.status(500).json({ error: "Failed to fetch organization" });
+  }
+}
+
 export async function handleGetOrganizationIdByName(
   req: Request,
   res: Response
@@ -219,7 +233,6 @@ export async function handleGetAllOrganizationData(
       const assignment = extractAssignmentName(repo.name);
       assignmentSet.add(assignment);
       const student = repo.collaborators?.[0]?.name || "Unknown Student";
-      // TODO: get grade here later from the db (as given by the AI)
 
       if (!studentMap.has(student)) {
         studentMap.set(student, {});
