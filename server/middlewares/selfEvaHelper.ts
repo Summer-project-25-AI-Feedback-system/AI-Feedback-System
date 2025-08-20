@@ -17,6 +17,7 @@ export const isEvaluated = async (
     repoName,
     assignmentName,
     feedback,
+    commitCount,
   }: GithubReqBody = req.body;
 
   if (!githubUsername || !orgName || !orgId || !repoName || !assignmentName) {
@@ -70,6 +71,7 @@ export const isEvaluated = async (
         assignmentUuId,
         rosterStudentUuId,
         feedback,
+        commitCount: commitCount,
       };
     }
 

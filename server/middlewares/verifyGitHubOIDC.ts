@@ -48,7 +48,6 @@ export function verifyGitHubOIDC(
 
         // Optionally attach decoded claims to request
         (req as any).oidcClaims = decoded;
-        console.log("OIDC Claims:", decoded);
         next();
       }
     );

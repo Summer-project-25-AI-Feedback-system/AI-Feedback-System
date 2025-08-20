@@ -86,6 +86,7 @@ export interface AiEvaluationInput {
   ai_model: string;
   md_file: string;
   total_points: number;
+  commit_count?: number | null;
 }
 
 export interface GithubReqBody {
@@ -95,4 +96,13 @@ export interface GithubReqBody {
   repoName: string;
   assignmentName: string;
   feedback?: string;
+  commitCount?: number;
+}
+
+export interface CheckEvaluationExistsReqBody {
+  githubUsername: string;
+  orgName: string;
+  orgId: string;
+  repoName: string;
+  assignmentName: string;
 }

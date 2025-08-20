@@ -549,3 +549,35 @@ export async function getParentRepoId(orgName: string, repoName: string) {
     return null;
   }
 }
+
+export async function getCommitCount(
+  owner: string,
+  repo: string
+): Promise<number> {
+  const octokit = await getOctokit();
+  try {
+    const response = await octokit.rest.repos.listCommits({
+      owner,
+      repo,
+      per_page: 1, // Get only one commit to use the 'Link' header
+    });
+
+    const linkHeader = response.headers.link;
+    if (!linkHeader) {
+      // If there's no link header, it means there's only one page
+      return response.data.length > 0 ? response.data.length : 0;
+    }
+
+    // Extract the last page number from the Link header
+    const matches = linkHeader.match(/&page=([0-9]+)>; rel="last"/);
+    if (matches && matches[1]) {
+      return parseInt(matches[1], 10);
+    }
+
+    // Fallback if parsing the header fails
+    return response.data.length;
+  } catch (error) {
+    console.error("Error fetching commit count from GitHub:", error);
+    throw new Error("Failed to retrieve commit count.");
+  }
+}

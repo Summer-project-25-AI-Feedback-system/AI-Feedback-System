@@ -4,8 +4,7 @@ import {
   createOrUpdateEvaluations,
   checkEvaluationExistsService,
 } from "../../services/supabase/evaluationService";
-import type { AiEvaluationInput } from "../../../shared/supabaseInterfaces";
-import { GithubReqBody } from "../../../shared/supabaseInterfaces";
+import { CheckEvaluationExistsReqBody } from "../../../shared/supabaseInterfaces";
 
 export const getEvaluations = async (req: Request, res: Response) => {
   const organizationId = (req as any).organizationId;
@@ -58,7 +57,7 @@ export async function checkEvaluationExists(req: Request, res: Response) {
     orgId,
     repoName,
     assignmentName,
-  }: GithubReqBody = req.body;
+  }: CheckEvaluationExistsReqBody = req.body;
 
   try {
     const result = await checkEvaluationExistsService({
@@ -90,9 +89,13 @@ export async function addSelfEvaluation(
   res: Response
 ): Promise<void> {
   try {
-    const { organizationUuId, assignmentUuId, rosterStudentUuId, feedback } = (
-      req as any
-    ).evaluationData;
+    const {
+      organizationUuId,
+      assignmentUuId,
+      rosterStudentUuId,
+      feedback,
+      commitCount,
+    } = (req as any).evaluationData;
 
     const evaluationData: any = {
       roster_student_id: rosterStudentUuId,
@@ -101,6 +104,7 @@ export async function addSelfEvaluation(
       created_at: new Date(),
       ai_model: "gpt-4",
       md_file: feedback,
+      commit_count: commitCount,
     };
     console.log("evaluationData:", evaluationData);
 

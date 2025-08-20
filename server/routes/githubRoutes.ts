@@ -10,10 +10,13 @@ import {
   handleGetCommits,
   handleCompareCommits,
   handleGetOrganizationIdByName,
+  handleGetCommitCount,
 } from "../controllers/githubController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = Router();
+
+router.get("/repos/commits/count", handleGetCommitCount);
 
 router.use(isAuthenticated);
 

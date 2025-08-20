@@ -1,10 +1,11 @@
 import { AiEvaluation, AiEvaluationInput } from "@shared/supabaseInterfaces";
 import { supabase } from "../../utils/supabase";
-import { getParentRepoId } from "../github/githubService";
-import { handleGetAssignmentId } from "../supabase/assignmentService";
 import { getOrganizationIdByGithubOrgId } from "../supabase/organizationService";
 import { fetchRosterStudentId } from "../supabase/rosterService";
-import type { GithubReqBody } from "../../../shared/supabaseInterfaces";
+import type {
+  GithubReqBody,
+  CheckEvaluationExistsReqBody,
+} from "../../../shared/supabaseInterfaces";
 
 export const fetchEvaluations = async (
   organizationId: string,
@@ -77,6 +78,7 @@ export const createOrUpdateEvaluations = async (
   const dataToInsert = evaluationsArray.map((e) => ({
     ...e,
     organization_id: organizationId,
+    commit_count: (e as any).commit_count,
   }));
 
   const { data: assignmentData, error: assignmentError } = await supabase
@@ -103,9 +105,7 @@ export const createOrUpdateEvaluations = async (
 
 export const checkEvaluationExistsService = async ({
   githubUsername,
-  // orgName,
   orgId,
-  // repoName,
   assignmentName,
 }: GithubReqBody): Promise<{ exists: boolean }> => {
   const organizationUuId = await getOrganizationIdByGithubOrgId(orgId);
