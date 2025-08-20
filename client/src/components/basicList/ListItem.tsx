@@ -1,7 +1,9 @@
 import type { StudentSubmissionInfo } from "../../types/StudentSubmissionInfo";
 import type { AssignmentInfo, RepoInfo } from "@shared/githubInterfaces";
 import type { OrganizationInput } from "@shared/supabaseInterfaces";
-
+import { useState } from "react";
+import { FaPencilAlt } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa6";
 type ListItemProps =
   | {
       type: "org";
@@ -19,31 +21,42 @@ export default function ListItem(props: ListItemProps) {
 
   let content;
   let className = "";
+  const [isEditing, setIsEditing] = useState(false);
+  const [newLimit, setNewLimit] = useState(
+    (props.type === "org" ? props.data.submission_limit : 2) ?? 2
+  );
 
-  const handleLimitChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // ✅ Stop the event from propagating to the parent div
+  const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsEditing(true);
+  };
 
-    // Only proceed if the item is an organization and has a valid ID
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (
       props.type === "org" &&
       props.data.external_github_org_id &&
       props.onUpdateSubmissionLimit
     ) {
-      const newLimit = Number(e.target.value);
-      await props.onUpdateSubmissionLimit(
-        props.data.external_github_org_id.toString(),
-        newLimit
-      );
+      try {
+        await props.onUpdateSubmissionLimit(
+          props.data.external_github_org_id.toString(),
+          newLimit
+        );
+        setIsEditing(false); // Switch back to display mode on success
+      } catch (error) {
+        console.error("Failed to update submission limit:", error);
+        // Handle error, maybe show an alert to the user
+      }
     }
   };
-  const handleSelectClick = (e: React.MouseEvent<HTMLSelectElement>) => {
-    e.stopPropagation();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewLimit(Number(e.target.value));
   };
 
   switch (props.type) {
     case "org": {
-      // console.log("orgs props.data in listItems:", props.data);
       const org = props.data;
       className = `grid grid-cols-[40px_1fr_1fr_1fr] ${commonClass}`;
       content = (
@@ -55,18 +68,37 @@ export default function ListItem(props: ListItemProps) {
           />
 
           <p className="text-left">{org.name}</p>
-          <select
-            value={org.submission_limit ?? 2}
-            onChange={handleLimitChange}
-            onClick={handleSelectClick}
-            className="border rounded p-1 w-10"
-          >
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-            <option value={4}>4</option>
-            <option value={5}>5</option>
-          </select>
+
+          <div className="flex items-center space-x-2">
+            {isEditing ? (
+              <>
+                <input
+                  type="number"
+                  value={newLimit}
+                  onChange={handleInputChange}
+                  onClick={(e) => e.stopPropagation()}
+                  className="border rounded p-1 w-16"
+                  min="1"
+                />
+                <button
+                  onClick={handleSave}
+                  className="text-gray-600 hover:text-green-500"
+                >
+                  <FaCheck />
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-left">{org.submission_limit ?? 2}</p>
+                <button
+                  onClick={handleEdit}
+                  className="text-gray-600 hover:text-blue-500"
+                >
+                  <FaPencilAlt />
+                </button>
+              </>
+            )}
+          </div>
           <p className="text-left">{org.description || "No description"}</p>
         </>
       );
