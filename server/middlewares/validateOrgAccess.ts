@@ -26,12 +26,10 @@ export const validateOrgAccess = async (
   }
 
   const userId = userRecord.id;
-
   // validating access to organization
   const { data: orgData, error: orgError } = await supabase
     .from("organizations")
     .select("id")
-    // .eq("name", org)
     .eq("external_github_org_id", orgId)
     .eq("owner_id", userId)
     .single();

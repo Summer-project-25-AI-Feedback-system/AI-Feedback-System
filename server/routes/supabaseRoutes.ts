@@ -47,14 +47,14 @@ router.post("/organizations", attachGithubId, addOrganizations);
 // -- Assignment routes --
 // GET assignment(s)
 router.get(
-  "/:org/assignments",
+  "/:orgId/assignments",
   attachGithubId,
   validateOrgAccess,
   getAssignments
 );
 // POST assignment(s)
 router.post(
-  "/:org/assignments",
+  "/:orgId/assignments",
   attachGithubId,
   validateOrgAccess,
   addAssignments
@@ -62,21 +62,21 @@ router.post(
 
 // -- Roster routes (includes roster students) --
 // GET roster
-router.get("/:org/roster", attachGithubId, validateOrgAccess, getRoster);
+router.get("/:orgId/roster", attachGithubId, validateOrgAccess, getRoster);
 // POST roster
-router.post("/:org/roster", attachGithubId, validateOrgAccess, addRoster);
+router.post("/:orgId/roster", attachGithubId, validateOrgAccess, addRoster);
 
 // -- Evaluation routes --
 // GET evaluation(s)
 router.get(
-  "/:org/evaluations",
+  "/:orgId/evaluations",
   attachGithubId,
   validateOrgAccess,
   getEvaluations
 );
 // POST evaluation(s)
 router.post(
-  "/:org/evaluations",
+  "/:orgId/evaluations",
   attachGithubId,
   validateOrgAccess,
   addEvaluations
