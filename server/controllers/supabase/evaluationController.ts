@@ -57,6 +57,7 @@ export async function checkEvaluationExists(req: Request, res: Response) {
     orgId,
     repoName,
     assignmentName,
+    commitCount,
   }: CheckEvaluationExistsReqBody = req.body;
 
   try {
@@ -66,6 +67,7 @@ export async function checkEvaluationExists(req: Request, res: Response) {
       orgId,
       repoName,
       assignmentName,
+      commitCount,
     });
 
     res.status(200).json(result); // returns { exists: true | false }

@@ -107,9 +107,28 @@ export const checkEvaluationExistsService = async ({
   githubUsername,
   orgId,
   assignmentName,
-}: GithubReqBody): Promise<{ exists: boolean }> => {
+  commitCount,
+}: CheckEvaluationExistsReqBody): Promise<{
+  limit_reached: boolean;
+}> => {
   const organizationUuId = await getOrganizationIdByGithubOrgId(orgId);
   if (!organizationUuId) throw new Error("Organization not found.");
+
+  const { data: orgData, error: orgError } = await supabase
+    .from("organizations")
+    .select("submission_limit")
+    .eq("id", organizationUuId)
+    .single();
+
+  if (orgError || !orgData) {
+    console.error("Failed to fetch organization submission limit:", orgError);
+  }
+
+  const submissionLimit = orgData?.submission_limit || 2;
+
+  if (commitCount >= submissionLimit) {
+    return { limit_reached: true };
+  }
 
   const rosterStudentUuId = await fetchRosterStudentId(githubUsername);
   if (!rosterStudentUuId) throw new Error("Student not found.");
@@ -127,11 +146,6 @@ export const checkEvaluationExistsService = async ({
   }
   const assignmentUuId = assignment.id;
 
-  console.log("Querying for evaluation with:");
-  console.log(`- roster_student_id: ${rosterStudentUuId}`);
-  console.log(`- assignment_id: ${assignmentUuId}`);
-  console.log(`- organization_id: ${organizationUuId}`);
-
   const { data: evaluation } = await supabase
     .from("ai_evaluations")
     .select("id")
@@ -142,5 +156,5 @@ export const checkEvaluationExistsService = async ({
     })
     .single();
 
-  return { exists: !!evaluation };
+  return { limit_reached: !!evaluation };
 };

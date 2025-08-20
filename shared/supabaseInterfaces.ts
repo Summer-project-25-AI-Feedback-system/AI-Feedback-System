@@ -105,4 +105,5 @@ export interface CheckEvaluationExistsReqBody {
   orgId: string;
   repoName: string;
   assignmentName: string;
+  commitCount: number;
 }
