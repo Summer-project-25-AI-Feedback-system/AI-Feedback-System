@@ -111,7 +111,7 @@ export default function AssignmentsPage() {
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
               <BasicButton
-                text="Go To Analytics Page"
+                text="Go to Analytics"
                 onClick={handleAnalyticsClick}
               />
               {orgId !== null && (

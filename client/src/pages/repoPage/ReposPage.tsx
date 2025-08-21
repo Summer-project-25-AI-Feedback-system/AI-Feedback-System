@@ -4,7 +4,7 @@ import BasicSearchBar from "../../components/BasicSearchBar";
 import type { RepoInfo } from "@shared/githubInterfaces";
 import { useEffect, useState } from "react";
 import { useGitHub } from "../../context/useGitHub";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useFilteredList } from "../../hooks/useFilteredList";
 import BackButton from "../../components/BackButton";
 import BasicButton from "../../components/BasicButton";
@@ -18,6 +18,7 @@ export default function ReposPage() {
     assignmentName: string;
   }>();
   const github = useGitHub();
+  const navigate = useNavigate();
   const [repos, setRepos] = useState<RepoInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,11 +40,17 @@ export default function ReposPage() {
     }
   }, [orgName, assignmentName, github]);
 
-  const handleClick = (action: string) => {
-    console.log(`Clicked ${action}`);
+  const handleClick = (name: string) => {
+    switch (name) {
+      case "Force Evaluation":
+        navigate("/force-evaluation");
+        break;
+      case "Prompt Editor":
+        navigate("/prompt");
+        break;
+    }
   };
 
-  console.log("repos", repos);
   return (
     <div className="flex flex-col space-y-10 p-4 md:p-12">
       <div className="flex flex-col space-y-6">
@@ -58,12 +65,12 @@ export default function ReposPage() {
         </div>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
           <BasicButton
-            onClick={() => handleClick("Run Analysis")}
-            text="Run Analysis"
+            onClick={() => handleClick("Prompt Editor")}
+            text="Edit Evaluation Prompt"
           />
           <BasicButton
-            onClick={() => handleClick("View Summary")}
-            text="View Summary"
+            onClick={() => handleClick("Force Evaluation")}
+            text="Go to Evaluation"
           />
         </div>
       </div>
