@@ -73,7 +73,7 @@ export default function UploadStudentRosterCSVButton({ text, onUpload, orgId }: 
   return (
     <div>
       <button onClick={handleClick} className="flex items-center justify-between border border-[#D9D9D9] px-6 py-3 h-[40px] rounded-full w-fit min-w-[95px] gap-2 bg-[#1D1B20] hover:opacity-90 text-white">
-        {text}
+        <span className="text-xs sm:text-sm">{text}</span>
       </button>
       <input
         ref={fileInputRef}
