@@ -62,11 +62,11 @@ export default function MissingSubmissionsTab({ analyticsData, orgId }: MissingS
                 {selectedAssignment !== "all" && (
                   <GetCSVFileButton 
                     text={`Export ${
-                      analyticsData.assignments.find(a => a.id === selectedAssignment)?.name || "Assignment"
+                      analyticsData.assignments.find(a => a.name === selectedAssignment)?.name || "Assignment"
                     } CSV`}
                     orgName={orgName}
                     roster={roster}
-                    assignmentFilter={[selectedAssignment]}
+                    assignmentFilter={selectedAssignment}
                     orgId={orgId}
                   />
                 )}

@@ -8,7 +8,7 @@ interface GetCSVFileButtonProps {
   orgName: string | undefined;
   roster: RosterWithStudentsInput | null;
   orgId: number;
-  assignmentFilter?: string[];
+  assignmentFilter?: string; // the assignment name
 }
 
 export default function GetCSVFileButton({text, orgName, roster, assignmentFilter, orgId }: GetCSVFileButtonProps) {
@@ -28,17 +28,31 @@ export default function GetCSVFileButton({text, orgName, roster, assignmentFilte
 
     try {
       const data = await supabase.getAnalyticsData(orgId);
-      
-      const filteredData: AnalyticsResponse = assignmentFilter
-        ? {
+
+      let filteredData: AnalyticsResponse = data;
+
+       if (assignmentFilter) {
+        const targetAssignment = data.assignments.find(
+          (a) => a.name === assignmentFilter
+        );
+
+        if (targetAssignment) {
+          const targetId = targetAssignment.id;
+
+          filteredData = {
             ...data,
-            assignments: data.assignments.filter((a) => assignmentFilter.includes(a.id)),
+            assignments: data.assignments.filter((a) => a.id === targetId),
             submissions: data.submissions.map((s: AnalyticsSubmission) => ({
               ...s,
-              grades: s.grades.filter((g) => assignmentFilter.includes(g.assignmentId)),
+              grades: s.grades.filter((g) => g.assignmentId === targetId),
             })),
-          }
-        : data;
+          };
+        } else {
+          console.warn(
+            `No assignment found with name "${assignmentFilter}". Returning all data.`
+          );
+        }
+      }
 
       generateCSVFromOrg(filteredData, roster, orgName);
     } catch (error) {

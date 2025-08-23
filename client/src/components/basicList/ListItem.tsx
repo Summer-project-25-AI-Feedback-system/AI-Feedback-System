@@ -106,7 +106,6 @@ export default function ListItem(props: ListItemProps) {
     }
 
     case "assignment": {
-      console.log("assignment props.data in listItems:", props.data);
       const assignment = props.data;
       const assignmentName = assignment.name;
       const amountOfStudents = assignment.amountOfStudents;
