@@ -1,5 +1,8 @@
 import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend } from 'chart.js';
 import type { AssignmentWithIssues } from '@shared/supabaseInterfaces';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend);
 
 type CommonIssuesChartProps = {
   assignment: AssignmentWithIssues;
