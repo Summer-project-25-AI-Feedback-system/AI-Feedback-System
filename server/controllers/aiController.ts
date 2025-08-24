@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { runRepomix, runAIEvolution } from "../services/ai/aiService";
 import { createOrUpdateEvaluations } from "../services/supabase/evaluationService";
 import { addOrUpdateAssignmentCommonIssues } from "../services/supabase/assignmentIssuesService";
-import { createOrUpdateAssignmentMaxScore } from "../services/supabase/assignmentService";
+import { createOrUpdateAssignmentMaxScore, createOrUpdateAssignmentSubmittedValue } from "../services/supabase/assignmentService";
 
 export async function handleRunRepomix(
   req: Request,
@@ -54,6 +54,7 @@ export async function handleRunAIEvolution(
 
     if (evaluationData && organizationId) {
       await createOrUpdateEvaluations(organizationId, evaluationData)
+      await createOrUpdateAssignmentSubmittedValue(evaluationData.organization_id, evaluationData.assignment_id, evaluationData. roster_student_id)
       if (maxScore) {
         await createOrUpdateAssignmentMaxScore(evaluationData.assignment_id, maxScore)
       }

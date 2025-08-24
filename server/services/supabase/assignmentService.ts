@@ -98,6 +98,49 @@ export const createOrUpdateAssignmentMaxScore = async (
   }
 }
 
+export const createOrUpdateAssignmentSubmittedValue = async (
+  organizationId: string,
+  assignmentId: string,
+  rosterStudentId: string
+) => {
+  const { data, error: selectEvalError } = await supabase
+    .from("ai_evaluations")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("assignment_id", assignmentId)
+    .eq("roster_student_id", rosterStudentId)
+    .single();
+
+  if (selectEvalError && selectEvalError.code !== "PGRST116") {
+    throw new Error(`failed to fetch evaluation for assignment and student: ${selectEvalError.message}`);
+  }
+
+  if (data == null) {
+    const { data: submittedValue, error: selectSubmittedError } = await supabase
+      .from("assignments")
+      .select("submitted")
+      .eq("organization_id", organizationId)
+      .eq("id", assignmentId)
+      .single();
+
+    if (selectSubmittedError) {
+      throw new Error(`failed to fetch submitted value for assignment: ${selectEvalError.message}`);
+    }
+
+    const currentSubmitted = submittedValue?.submitted ?? 0;
+
+    const { error: updateError } = await supabase
+      .from("assignments")
+      .update({ submitted: currentSubmitted + 1 }) 
+      .eq("id", assignmentId)
+      .eq("organization_id", organizationId);
+
+    if (updateError) {
+      throw new Error(`Failed to increment submission: ${updateError.message}`);
+    } 
+  }
+}
+
 /* export const fetchAssignmentMaxScores = async (
   externalOrganizationId: number,
  ): Promise<AssignmentMaxScoreInfo[]> => {
