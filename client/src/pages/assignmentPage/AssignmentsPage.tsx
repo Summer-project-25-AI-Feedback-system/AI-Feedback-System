@@ -51,21 +51,19 @@ export default function AssignmentsPage() {
 
   useEffect(() => {
     if (orgName) {
-      github
-        .getAssignments(orgName)
-        .then((fetchedAssignments) => {
+      github.getAssignments(orgName).then((fetchedAssignments) => {
           setAssignments(fetchedAssignments);
-          github.getAllOrganizationData(orgName).then((fetchedOrgData) => {
-            setOrgId(fetchedOrgData.id)
+          github.getOrgIdByName(orgName).then((fetchedOrgId) => {
+            const orgIdAsNumber = Number(fetchedOrgId)
+            setOrgId(orgIdAsNumber) 
             const assignments = mapToSupabaseAssignments(fetchedAssignments);
-            supabase.addAssignments(fetchedOrgData.orgId, assignments);
-            supabase.getRoster(fetchedOrgData.orgId).then((fetchedRoster) => {
+            supabase.addAssignments(fetchedOrgId, assignments);
+            supabase.getRoster(fetchedOrgId).then((fetchedRoster) => {
               setRoster(fetchedRoster);
               setRosterLoaded(true);
               const students = fetchedRoster?.amount_of_students ?? 0;
-              github
-                .getAssignmentClassroomInfo(orgName)
-                .then((fetchedAssignmentClassroomInfo) => {
+              github.getAssignmentClassroomInfo(orgName).then(
+                (fetchedAssignmentClassroomInfo) => {
                   const enrichedAssignments: EnrichedAssignmentClassroomInfo[] =
                     fetchedAssignmentClassroomInfo.map((assignment) => ({
                       id: assignment.id,
@@ -80,7 +78,8 @@ export default function AssignmentsPage() {
                     }));
                   setEnrichedAssignments(enrichedAssignments);
                   setAssignmentsLoaded(true);
-                });
+                }
+              );
             });
           });
         })
@@ -118,8 +117,8 @@ export default function AssignmentsPage() {
                 <GetCSVFileButton
                   text={"Export CSV Report"}
                   orgName={orgName}
-                  orgId={orgId}
                   roster={roster}
+                  orgId={orgId}
                 />
               )}
             </div>
