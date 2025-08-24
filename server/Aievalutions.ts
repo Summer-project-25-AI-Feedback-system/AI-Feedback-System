@@ -1,4 +1,4 @@
-// import * as dotenv from "dotenv";
+ import * as dotenv from "dotenv";
 import * as fs from "fs/promises";
 import axios from "axios";
 import * as nodemailer from "nodemailer";
@@ -7,12 +7,12 @@ import { simpleGit, SimpleGit } from "simple-git";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import type { AiEvaluationInput } from "@shared/supabaseInterfaces";
-// import { supabase } from "./utils/supabase";
+ import { supabase } from "./utils/supabase";
 
 // Load environment variables from .env file
-// dotenv.config();
-// console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
-// console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY);
+ dotenv.config();
+ //console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+ //console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY);
 
 // OpenAI API response types
 interface OpenAIResponse {
@@ -57,12 +57,12 @@ function splitXmlIntoChunks(xmlContent: string): string[] {
   const totalLength = xmlContent.length;
 
   // If the file is small, do not split
-  if (totalLength <= 100000) {
+  if (totalLength <= 50000) { // Pienennetty 100000 -> 50000
     return [xmlContent];
   }
 
-  // For large files: split into four parts
-  const chunkCount = 4;
+  // For large files: split into 12 parts (sijaan 4)
+  const chunkCount = 12; // Muutettu 4 -> 12
   const chunkSize = Math.ceil(totalLength / chunkCount);
   const chunks: string[] = [];
 
@@ -573,7 +573,8 @@ export async function evaluateWithOpenAI(
                       content: chunk,
                     },
                   ],
-                  temperature: 0.3,
+                  temperature: 0.5
+                  ,
                   max_tokens: 2000,
                 },
                 {
@@ -680,7 +681,7 @@ export async function evaluateWithOpenAI(
           response = await axios.post(
             "https://api.anthropic.com/v1/messages",
             {
-              model: "claude-3-opus-20240229",
+              model: "claude-3-5-haiku-20241022",
               messages: [
                 {
                   role: "user",
