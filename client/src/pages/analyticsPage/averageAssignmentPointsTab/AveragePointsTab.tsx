@@ -1,6 +1,6 @@
-import AveragePointsChart from "./AveragePointsChart";
 import Spinner from "../../../components/Spinner";
 import type { AnalyticsResponse } from "@shared/supabaseInterfaces";
+import AveragePointsList from "./AveragePointsList";
 
 type AveragePointsTabProps = {
   analyticsData: AnalyticsResponse;
@@ -17,9 +17,14 @@ export default function AveragePointsTab({ analyticsData }: AveragePointsTabProp
        {loading ? (
             <Spinner />
         ) : (
-            <AveragePointsChart 
+          <div>
+            <h2 className="text-[16px] mb-6">
+              The average amount of points students have gained for each respective assignment.
+            </h2>
+            <AveragePointsList
                 analyticsData={analyticsData}
             />
+          </div>
         )}
     </div>
   )
