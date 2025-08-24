@@ -14,13 +14,13 @@ export default function StudentTable({ roster, analyticsData, assignmentFilter }
   const students = roster.roster_students;
 
   const assignmentsToDisplay = assignmentFilter
-    ? analyticsData.assignments.filter((a) => assignmentFilter.includes(a.id))
+    ? analyticsData.assignments.filter((a) => assignmentFilter.includes(a.id)) 
     : analyticsData.assignments;
 
   const studentsInRosterWithSubmissionInfo = students.map((student) => {
     const username = student.github_username;
 
-    if (!username || !submissionMap.has(username)) {
+    if (!username || !submissionMap.has(username)) { 
       return {
         ...student,
         grades: assignmentsToDisplay.map(() => "N/A"),
@@ -29,21 +29,23 @@ export default function StudentTable({ roster, analyticsData, assignmentFilter }
       };
     }
 
-    const submission = submissionMap.get(username);
+    const submission = submissionMap.get(username); 
 
-    const grades = assignmentsToDisplay.map((assignment) => {
-      const gradeEntry = submission?.grades.find(
-        (g) => g.assignmentId === assignment.id
+    const grades = assignmentsToDisplay.map((assignment) => { 
+      const gradeEntry = submission?.grades.find( 
+        (g) => g.assignmentId === assignment.id 
       );
-      if (!gradeEntry) return "N/A";
+
+      if (!gradeEntry) return "N/A"; 
 
       const totalPoints = gradeEntry.evaluations.reduce(
         (sum, ev) => sum + (ev.total_score ?? 0),
         0
       );
+
       return gradeEntry.evaluations.length > 0
         ? totalPoints / gradeEntry.evaluations.length
-        : 0;
+        : "N/A";
     });
 
     const numericGrades = grades.filter((g) => typeof g === "number") as number[];
@@ -70,7 +72,7 @@ export default function StudentTable({ roster, analyticsData, assignmentFilter }
       <StudentTableHeader assignmentNames={assignmentsToDisplay.map((a) => a.name)}/>
       <tbody>
         {sortedStudents.map((student) => (
-          <StudentTableRow key={student.github_roster_identifier} studentInfo={student} assignmentNames={assignmentsToDisplay.map((a) => a.name)} />
+          <StudentTableRow key={student.github_roster_identifier} studentInfo={student} assignmentNames={assignmentsToDisplay.map((a) => a.name)} /> 
         ))}
     </tbody>
    </table>
