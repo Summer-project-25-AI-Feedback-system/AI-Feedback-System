@@ -67,15 +67,15 @@ export default function AssignmentsPage() {
                   Promise.all(
                   fetchedAssignmentClassroomInfo.map(async (assignment) => {
                     let submitted = assignment.submitted;
-                     console.log("submitted value:" + submitted)
                     if (submitted == null) {
                       let stringId = String(assignment.id)
                       const submittedFetch = await supabase.getAssignmentSubmittedValue(fetchedOrgId, stringId)
                       if (submittedFetch != null) {
                         submitted = submittedFetch
+                      } else {
+                        submitted = 0;
                       }
                     }
-                    console.log("submitted value 2nd:" + submitted)
                     return {
                       id: assignment.id,
                       name: assignment.name,
