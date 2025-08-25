@@ -7,10 +7,11 @@ type AveragePointsTabProps = {
 };
 
 export default function AveragePointsTab({ analyticsData }: AveragePointsTabProps) {
-  const loading =
-    !analyticsData ||
-    analyticsData.assignments.length === 0 ||
-    analyticsData.submissions.length === 0;
+  const loading = !analyticsData;
+
+  if (analyticsData.assignments.length === 0 || analyticsData.submissions.length === 0) { 
+    return ( <p className="text-gray-500 italic"> There are no average assignment points yet. </p> ); 
+  }
 
   return (
     <div>
