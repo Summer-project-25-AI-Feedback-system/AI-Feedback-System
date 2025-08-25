@@ -233,7 +233,7 @@ export async function getAssignmentClassroomInfo(
       id: assignment.id,
       name: assignment.title ?? "Untitled Assignment",
       accepted: assignment.accepted ?? 0,
-      submitted: assignment.submitted ?? 0, // problem with retrieving submission values
+      submitted: assignment.submitted, 
       passing: assignment.passing ?? 0,
       deadline: assignment.deadline ? new Date(assignment.deadline) : null,
     })

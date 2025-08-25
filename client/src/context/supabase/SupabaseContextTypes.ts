@@ -24,6 +24,7 @@ export interface SupabaseContextType {
     orgId: string,
     data: AssignmentInput | AssignmentInput[]
   ) => Promise<void>;
+  getAssignmentSubmittedValue: (orgId: string, assignmentId: string) => Promise<number | null>;
 
   getRoster: (orgId: string) => Promise<RosterWithStudents | null>;
   addRoster: (orgId: string, data: RosterWithStudentsInput) => Promise<void>;

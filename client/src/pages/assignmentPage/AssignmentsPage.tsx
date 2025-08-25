@@ -64,26 +64,38 @@ export default function AssignmentsPage() {
               const students = fetchedRoster?.amount_of_students ?? 0;
               github.getAssignmentClassroomInfo(orgName).then(
                 (fetchedAssignmentClassroomInfo) => {
-                  const enrichedAssignments: EnrichedAssignmentClassroomInfo[] =
-                    fetchedAssignmentClassroomInfo.map((assignment) => ({
+                  Promise.all(
+                  fetchedAssignmentClassroomInfo.map(async (assignment) => {
+                    let submitted = assignment.submitted;
+                     console.log("submitted value:" + submitted)
+                    if (submitted == null) {
+                      let stringId = String(assignment.id)
+                      const submittedFetch = await supabase.getAssignmentSubmittedValue(fetchedOrgId, stringId)
+                      if (submittedFetch != null) {
+                        submitted = submittedFetch
+                      }
+                    }
+                    console.log("submitted value 2nd:" + submitted)
+                    return {
                       id: assignment.id,
                       name: assignment.name,
                       accepted: assignment.accepted,
-                      submitted: assignment.submitted,
+                      submitted,
                       passing: assignment.passing,
                       totalStudents: students,
-                      deadline: assignment.deadline
-                        ? new Date(assignment.deadline)
-                        : null,
-                    }));
-                  setEnrichedAssignments(enrichedAssignments);
-                  setAssignmentsLoaded(true);
-                }
-              );
+                      deadline: assignment.deadline ? new Date(assignment.deadline) : null,
+                    } as EnrichedAssignmentClassroomInfo;
+                  })
+                  ).then((enrichedAssignments) => {
+                    setEnrichedAssignments(enrichedAssignments);
+                    setAssignmentsLoaded(true);
+                  }
+                  );
+              });
             });
-          });
-        })
+          })
         .catch(console.error);
+      })
     }
   }, [orgName, github, supabase]);
 

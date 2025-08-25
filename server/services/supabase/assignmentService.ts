@@ -75,7 +75,7 @@ export const createOrUpdateAssignments = async (
   const dataToInsert = assignmentsArray.map((a) => ({
     ...a,
     organization_id: organizationId,
-  }));
+  })); 
 
   const { error } = await supabase
     .from("assignments")
@@ -96,6 +96,24 @@ export const createOrUpdateAssignmentMaxScore = async (
   if (error) {
     throw new Error(`Failed to upsert assignment max points: ${error.message}`);
   }
+}
+
+export const fetchAssignmentSubmittedValue = async (
+  organizationId: string,
+  assignmentId: number,
+): Promise<number | null> => {
+  const { data, error } = await supabase
+    .from("assignments")
+    .select("submitted")
+    .eq("organization_id", organizationId)
+    .eq("external_github_assignment_id", assignmentId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to fetch assignment submitted value: ${error.message}`);
+  }
+
+  return data?.submitted ?? null;
 }
 
 export const createOrUpdateAssignmentSubmittedValue = async (

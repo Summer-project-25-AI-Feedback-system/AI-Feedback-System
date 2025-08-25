@@ -29,7 +29,7 @@ export interface Assignment {
 export interface AssignmentInput {
   external_github_assignment_id: number;
   name: string;
-  max_points: number;
+  max_points?: number;
   submitted?: number;
 }
 

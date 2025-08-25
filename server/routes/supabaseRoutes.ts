@@ -11,6 +11,7 @@ import {
 import {
   getAssignments,
   addAssignments,
+  getAssignmentSubmittedValue,
 } from "../controllers/supabase/assignmentController";
 import { getRoster, addRoster } from "../controllers/supabase/rosterController";
 import {
@@ -61,6 +62,8 @@ router.post(
   validateOrgAccess,
   addAssignments
 );
+// GET assignment submitted value
+router.get("/:orgId/assignments/submitted", attachGithubId, validateOrgAccess, getAssignmentSubmittedValue)
 
 // -- Roster routes (includes roster students) --
 // GET roster

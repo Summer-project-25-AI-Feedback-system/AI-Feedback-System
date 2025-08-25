@@ -16,7 +16,7 @@ export type AssignmentClassroomInfo = {
   id: number;
   name: string;
   accepted: number;
-  submitted: number;
+  submitted: number | null;
   passing: number;
   deadline: Date | null;
 };

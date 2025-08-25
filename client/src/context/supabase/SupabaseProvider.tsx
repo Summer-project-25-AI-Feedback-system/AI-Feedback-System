@@ -44,6 +44,14 @@ export const SupabaseProvider = ({children}: { children: React.ReactNode }) => {
     });
   };
 
+  const getAssignmentSubmittedValue = async (orgId: string, assignmentId: string): Promise<number | null> => {
+    const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/assignments/submitted`, {
+      params: { assignmentId }, 
+      withCredentials: true,
+    });
+    return res.data;
+  };
+
   const getRoster = async (orgId: string): Promise<RosterWithStudents | null> => {
     const res = await axios.get(`${baseUrl}/api/supabase/${orgId}/roster`, {
       withCredentials: true,
@@ -97,6 +105,7 @@ export const SupabaseProvider = ({children}: { children: React.ReactNode }) => {
       updateSubmissionLimit,
       getAssignments,
       addAssignments,
+      getAssignmentSubmittedValue,
       getRoster,
       addRoster,
       getEvaluations,
