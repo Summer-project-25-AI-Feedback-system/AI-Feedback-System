@@ -96,7 +96,7 @@ The user interface and user experience design for AFS are documented in our Figm
 
 ## :video_camera: Video Demonstration
 
-**TBD**
+[Demonstration](https://youtu.be/IeoL9rik9YQ)
 
 ---
 
